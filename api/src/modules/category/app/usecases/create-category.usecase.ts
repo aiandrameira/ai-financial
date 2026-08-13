@@ -1,8 +1,8 @@
 import { ValidationError } from "@/http/errors/errors"
 
-import type { CategoryDto } from "../dtos/category.dto"
-import type { CreateCategorySchema } from "../schemas/category.schema"
-import type { CategoryRepository } from "../../domain/repositories/category.repository"
+import type { CategoryDto } from "../dtos"
+import type { CreateCategorySchema } from "../schemas"
+import type { CategoryRepository } from "../../domain/repositories"
 
 export class CreateCategoryUseCase {
     constructor(private repository: CategoryRepository) {}

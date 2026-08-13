@@ -1,6 +1,6 @@
-import type { AccountDto } from "../dtos/account.dto"
-import type { CreateAccountSchema } from "../schemas/account.schema"
-import type { AccountRepository } from "../../domain/repositories/account.repository"
+import type { AccountDto } from "../dtos"
+import type { CreateAccountSchema } from "../schemas"
+import type { AccountRepository } from "../../domain/repositories"
 
 export class CreateAccountUseCase {
     constructor(private repository: AccountRepository) {}

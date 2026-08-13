@@ -1,8 +1,8 @@
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
-import type { CategoryDto } from "../../app/dtos/category.dto"
-import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas/category.schema"
+import type { CategoryDto } from "../../app/dtos"
+import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas"
 
 export interface CategoryRepository {
     find(userId: string, params: PaginationParams): Promise<IPaginated<CategoryDto>>

@@ -1,8 +1,10 @@
 import { z } from "zod"
 
+import { tpCategoryEnum } from "../../domain/enums/tp-category.enum"
+
 export const createCategorySchema = z.object({
     name: z.string().min(1).max(120),
-    type: z.enum(["income", "expense"]),
+    type: z.enum(tpCategoryEnum),
     parentId: z.string().min(1).optional(),
     icon: z.string().max(60).optional(),
     color: z.string().max(40).optional(),

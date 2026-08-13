@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { TransactionDto } from "../dtos/transaction.dto"
-import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+import type { TransactionDto } from "../dtos"
+import type { TransactionRepository } from "../../domain/repositories"
 
 export class GetTransactionUseCase {
     constructor(private repository: TransactionRepository) {}

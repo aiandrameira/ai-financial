@@ -1,23 +1,24 @@
 import { eq } from "drizzle-orm"
 
 import { env } from "@/env"
+import { tpCategoryEnum } from "@/modules/category/domain/enums"
 
 import { db } from "./client"
 import { categories } from "./schema"
 
 const DEFAULT_CATEGORIES = [
-    { name: "Salário", type: "income" as const, icon: "money-dollar-circle", color: "success" },
-    { name: "Investimentos", type: "income" as const, icon: "line-chart", color: "success" },
-    { name: "Outras receitas", type: "income" as const, icon: "add-circle", color: "success" },
+    { name: "Salário", type: tpCategoryEnum.INCOME, icon: "money-dollar-circle", color: "success" },
+    { name: "Investimentos", type: tpCategoryEnum.INCOME, icon: "line-chart", color: "success" },
+    { name: "Outras receitas", type: tpCategoryEnum.INCOME, icon: "add-circle", color: "success" },
 
-    { name: "Moradia", type: "expense" as const, icon: "home-4", color: "primary" },
-    { name: "Alimentação", type: "expense" as const, icon: "restaurant", color: "warning" },
-    { name: "Transporte", type: "expense" as const, icon: "car", color: "info" },
-    { name: "Saúde", type: "expense" as const, icon: "heart-pulse", color: "destructive" },
-    { name: "Lazer", type: "expense" as const, icon: "gamepad", color: "accent" },
-    { name: "Educação", type: "expense" as const, icon: "book-open", color: "info" },
-    { name: "Assinaturas", type: "expense" as const, icon: "repeat", color: "default" },
-    { name: "Outras despesas", type: "expense" as const, icon: "more", color: "default" },
+    { name: "Moradia", type: tpCategoryEnum.EXPENSE, icon: "home-4", color: "primary" },
+    { name: "Alimentação", type: tpCategoryEnum.EXPENSE, icon: "restaurant", color: "warning" },
+    { name: "Transporte", type: tpCategoryEnum.EXPENSE, icon: "car", color: "info" },
+    { name: "Saúde", type: tpCategoryEnum.EXPENSE, icon: "heart-pulse", color: "destructive" },
+    { name: "Lazer", type: tpCategoryEnum.EXPENSE, icon: "gamepad", color: "accent" },
+    { name: "Educação", type: tpCategoryEnum.EXPENSE, icon: "book-open", color: "info" },
+    { name: "Assinaturas", type: tpCategoryEnum.EXPENSE, icon: "repeat", color: "default" },
+    { name: "Outras despesas", type: tpCategoryEnum.EXPENSE, icon: "more", color: "default" },
 ]
 
 async function seed() {

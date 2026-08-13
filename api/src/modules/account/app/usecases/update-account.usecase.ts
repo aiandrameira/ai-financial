@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { UpdateAccountSchema } from "../schemas/account.schema"
-import type { AccountRepository } from "../../domain/repositories/account.repository"
+import type { UpdateAccountSchema } from "../schemas"
+import type { AccountRepository } from "../../domain/repositories"
 
 export class UpdateAccountUseCase {
     constructor(private repository: AccountRepository) {}

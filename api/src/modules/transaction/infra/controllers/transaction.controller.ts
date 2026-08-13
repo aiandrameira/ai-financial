@@ -5,14 +5,16 @@ import type {
     CreateTransferSchema,
     FindTransactionsQuery,
     UpdateTransactionSchema,
-} from "../../app/schemas/transaction.schema"
-import type { CreateTransactionUseCase } from "../../app/usecases/create-transaction.usecase"
-import type { CreateTransferUseCase } from "../../app/usecases/create-transfer.usecase"
-import type { DeleteTransactionUseCase } from "../../app/usecases/delete-transaction.usecase"
-import type { FindTransactionsUseCase } from "../../app/usecases/find-transactions.usecase"
-import type { GenerateDueRecurrencesUseCase } from "../../app/usecases/generate-due-recurrences.usecase"
-import type { GetTransactionUseCase } from "../../app/usecases/get-transaction.usecase"
-import type { UpdateTransactionUseCase } from "../../app/usecases/update-transaction.usecase"
+} from "../../app/schemas"
+import type {
+    CreateTransactionUseCase,
+    CreateTransferUseCase,
+    DeleteTransactionUseCase,
+    FindTransactionsUseCase,
+    GenerateDueRecurrencesUseCase,
+    GetTransactionUseCase,
+    UpdateTransactionUseCase,
+} from "../../app/usecases"
 
 type UseCases = {
     find: FindTransactionsUseCase

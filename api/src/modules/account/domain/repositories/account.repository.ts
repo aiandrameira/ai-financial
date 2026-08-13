@@ -1,8 +1,8 @@
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
-import type { AccountDto } from "../../app/dtos/account.dto"
-import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas/account.schema"
+import type { AccountDto } from "../../app/dtos"
+import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas"
 
 export interface AccountRepository {
     find(userId: string, params: PaginationParams): Promise<IPaginated<AccountDto>>

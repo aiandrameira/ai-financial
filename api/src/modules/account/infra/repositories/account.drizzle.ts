@@ -4,20 +4,14 @@ import { db } from "@/db/client"
 import { accounts, transactions } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
+import { addDecimal } from "@/http/helpers"
 
-import type { AccountDto } from "../../app/dtos/account.dto"
-import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas/account.schema"
-import type { AccountRepository } from "../../domain/repositories/account.repository"
+import type { AccountDto } from "../../app/dtos"
+import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas"
+import type { AccountRepository } from "../../domain/repositories"
 
 type AccountRow = typeof accounts.$inferSelect
 type Balances = { current: string; projected: string }
-
-// Amount é sempre armazenado em centavos inteiros no cálculo para evitar erro de ponto flutuante
-// em soma decimal — ver docs/planning.md seção 5.1 ("valores derivados não são fonte de verdade").
-function addDecimal(a: string, b: string): string {
-    const toCents = (value: string) => Math.round(Number(value) * 100)
-    return ((toCents(a) + toCents(b)) / 100).toFixed(2)
-}
 
 async function computeBalances(accountIds: string[]): Promise<Map<string, Balances>> {
     if (accountIds.length === 0) return new Map()

@@ -5,9 +5,9 @@ import { categories } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
-import type { CategoryDto } from "../../app/dtos/category.dto"
-import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas/category.schema"
-import type { CategoryRepository } from "../../domain/repositories/category.repository"
+import type { CategoryDto } from "../../app/dtos"
+import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas"
+import type { CategoryRepository } from "../../domain/repositories"
 
 type CategoryRow = typeof categories.$inferSelect
 

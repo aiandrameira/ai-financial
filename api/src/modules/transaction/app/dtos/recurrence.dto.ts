@@ -1,8 +1,8 @@
-import type { RecurrenceFrequency } from "../../domain/services/compute-next-occurrence"
+import type { tpRecurrenceFrequencyEnum } from "../../domain/enums/tp-recurrence-frequency.enum"
 
 export type RecurrenceDto = {
     id: string
-    frequency: RecurrenceFrequency
+    frequency: tpRecurrenceFrequencyEnum
     interval: number
     startDate: string
     endDate: string | null

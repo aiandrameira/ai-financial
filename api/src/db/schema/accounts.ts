@@ -1,7 +1,12 @@
 import { randomUUIDv7 } from "bun"
 import { numeric, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
-export const accountTypeEnum = pgEnum("account_type", ["checking", "savings", "wallet"])
+import { tpAccountEnum } from "@/modules/account/domain/enums/tp-account.enum"
+
+export const accountTypePgEnum = pgEnum(
+    "account_type",
+    Object.values(tpAccountEnum) as [tpAccountEnum, ...tpAccountEnum[]],
+)
 
 export const accounts = pgTable("accounts", {
     id: text("id")
@@ -9,7 +14,7 @@ export const accounts = pgTable("accounts", {
         .$defaultFn(() => randomUUIDv7()),
     userId: text("user_id").notNull(),
     name: text("name").notNull(),
-    type: accountTypeEnum("type").notNull(),
+    type: accountTypePgEnum("type").notNull(),
     institution: text("institution"),
     initialBalance: numeric("initial_balance", { precision: 14, scale: 2 }).notNull().default("0"),
     color: text("color"),

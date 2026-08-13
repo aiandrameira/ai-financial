@@ -1,6 +1,6 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { AccountRepository } from "../../domain/repositories/account.repository"
+import type { AccountRepository } from "../../domain/repositories"
 
 export class RestoreAccountUseCase {
     constructor(private repository: AccountRepository) {}

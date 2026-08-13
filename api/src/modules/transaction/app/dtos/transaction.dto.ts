@@ -1,11 +1,12 @@
+import type { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
+import type { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+
 export type TransactionDto = {
     id: string
     accountId: string
     categoryId: string | null
-    type: "income" | "expense" | "transfer"
-    status: "planned" | "pending" | "completed" | "cancelled"
-    // Assinado: positivo entra na conta, negativo sai — ver docs/planning.md seção 5.1 e
-    // o comentário em infra/repositories/transaction.drizzle.ts.
+    type: tpTransactionEnum
+    status: stTransactionEnum
     amount: string
     description: string | null
     date: string

@@ -1,9 +1,9 @@
-import type { AccountRepository } from "@/modules/account/domain/repositories/account.repository"
+import type { AccountRepository } from "@/modules/account/domain/repositories"
 import { NotFoundError, ValidationError } from "@/http/errors/errors"
 
-import type { TransactionDto } from "../dtos/transaction.dto"
-import type { CreateTransferSchema } from "../schemas/transaction.schema"
-import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+import type { TransactionDto } from "../dtos"
+import type { CreateTransferSchema } from "../schemas"
+import type { TransactionRepository } from "../../domain/repositories"
 
 export class CreateTransferUseCase {
     constructor(

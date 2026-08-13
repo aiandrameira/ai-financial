@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { AccountDto } from "../dtos/account.dto"
-import type { AccountRepository } from "../../domain/repositories/account.repository"
+import type { AccountDto } from "../dtos"
+import type { AccountRepository } from "../../domain/repositories"
 
 export class GetAccountUseCase {
     constructor(private repository: AccountRepository) {}

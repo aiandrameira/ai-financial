@@ -29,3 +29,5 @@ yarn-error.log*
 **/*.log
 package-lock.json
 **/*.bun
+
+/src/db/migrations

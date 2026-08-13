@@ -1,11 +1,9 @@
-import type { TransactionDto } from "../dtos/transaction.dto"
+import type { TransactionDto } from "../dtos"
 import { computeNextOccurrence } from "../../domain/services/compute-next-occurrence"
-import type { RecurrenceRepository } from "../../domain/repositories/recurrence.repository"
-import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+import { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
+import type { RecurrenceRepository, TransactionRepository } from "../../domain/repositories"
 
-// Materializa a próxima ocorrência de cada recorrência vencida, clonando a última transação
-// gerada por ela como modelo. Sem scheduler embutido ainda — chamado manualmente via
-// POST /transactions/recurrences/generate, ou por um cron externo no futuro (docs/planning.md Fase 1).
 export class GenerateDueRecurrencesUseCase {
     constructor(
         private repository: TransactionRepository,
@@ -19,7 +17,7 @@ export class GenerateDueRecurrencesUseCase {
 
         for (const recurrence of due) {
             const template = await this.repository.findLatestByRecurrence(userId, recurrence.id)
-            if (!template || template.type === "transfer") continue
+            if (!template || template.type === tpTransactionEnum.TRANSFER) continue
 
             const occurrenceDate = new Date(recurrence.nextOccurrence)
 
@@ -27,7 +25,7 @@ export class GenerateDueRecurrencesUseCase {
                 accountId: template.accountId,
                 categoryId: template.categoryId,
                 type: template.type,
-                status: "planned",
+                status: stTransactionEnum.PLANNED,
                 amount: template.amount,
                 description: template.description,
                 date: occurrenceDate,

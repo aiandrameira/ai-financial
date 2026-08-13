@@ -41,10 +41,10 @@ export const uploadRoutes = new Elysia({ prefix: "/uploads", tags: ["Uploads"] }
             detail: {
                 summary: "Upload a file to Cloudinary",
                 description:
-                    "Multipart/form-data, campo `file`. Aceita pdf/png/jpg/jpeg/webp, até 10MB. Devolve a URL pública, o `publicId` e o `resourceType` — quem chama é responsável por guardar a URL onde fizer sentido (ex.: comprovante de despesa, nota fiscal, contrato de financiamento) e por chamar DELETE /uploads com `publicId`/`resourceType` caso o salvamento subsequente falhe, evitando arquivo órfão no storage.",
+                    "Multipart/form-data, `file` field. Accepts pdf/png/jpg/jpeg/webp, up to 10MB. Returns the public URL, the `publicId`, and the `resourceType` — the caller is responsible for storing the URL wherever it makes sense (e.g. expense receipt, invoice, loan contract) and for calling DELETE /uploads with `publicId`/`resourceType` if the subsequent save fails, avoiding an orphaned file in storage.",
                 responses: {
-                    201: { description: "Arquivo enviado" },
-                    400: { description: "Arquivo ausente, tipo não suportado, ou maior que 10MB" },
+                    201: { description: "File uploaded" },
+                    400: { description: "Missing file, unsupported type, or larger than 10MB" },
                 },
             },
         },
@@ -63,8 +63,8 @@ export const uploadRoutes = new Elysia({ prefix: "/uploads", tags: ["Uploads"] }
             detail: {
                 summary: "Remove a file from Cloudinary",
                 description:
-                    "Usado para limpar um upload órfão — quando o arquivo foi enviado com sucesso, mas o salvamento subsequente (registro no banco) falhou.",
-                responses: { 200: { description: "Arquivo removido" } },
+                    "Used to clean up an orphaned upload — when the file was uploaded successfully but the subsequent save (database record) failed.",
+                responses: { 200: { description: "File removed" } },
             },
         },
     )

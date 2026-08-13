@@ -9,14 +9,16 @@ import {
     createTransferSchema,
     findTransactionsQuerySchema,
     updateTransactionSchema,
-} from "../../app/schemas/transaction.schema"
-import { CreateTransactionUseCase } from "../../app/usecases/create-transaction.usecase"
-import { CreateTransferUseCase } from "../../app/usecases/create-transfer.usecase"
-import { DeleteTransactionUseCase } from "../../app/usecases/delete-transaction.usecase"
-import { FindTransactionsUseCase } from "../../app/usecases/find-transactions.usecase"
-import { GenerateDueRecurrencesUseCase } from "../../app/usecases/generate-due-recurrences.usecase"
-import { GetTransactionUseCase } from "../../app/usecases/get-transaction.usecase"
-import { UpdateTransactionUseCase } from "../../app/usecases/update-transaction.usecase"
+} from "../../app/schemas"
+import {
+    CreateTransactionUseCase,
+    CreateTransferUseCase,
+    DeleteTransactionUseCase,
+    FindTransactionsUseCase,
+    GenerateDueRecurrencesUseCase,
+    GetTransactionUseCase,
+    UpdateTransactionUseCase,
+} from "../../app/usecases"
 import { TransactionController } from "../controllers/transaction.controller"
 import { RecurrenceDrizzleRepository } from "../repositories/recurrence.drizzle"
 import { TransactionDrizzleRepository } from "../repositories/transaction.drizzle"
@@ -45,8 +47,8 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
         query: findTransactionsQuerySchema,
         detail: {
             summary: "List transactions",
-            description: "Suporta filtros por conta, categoria, status, tipo e intervalo de data.",
-            responses: { 200: { description: "Lista paginada de transações" } },
+            description: "Supports filters by account, category, status, type, and date range.",
+            responses: { 200: { description: "Paginated list of transactions" } },
         },
     })
     .post(
@@ -59,9 +61,8 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
             body: createTransferSchema,
             detail: {
                 summary: "Create a transfer between two accounts",
-                description:
-                    "Cria duas transações vinculadas (saída/entrada) e o registro de transferência, de forma atômica.",
-                responses: { 201: { description: "Transferência criada" } },
+                description: "Creates two linked transactions (outflow/inflow) and the transfer record, atomically.",
+                responses: { 201: { description: "Transfer created" } },
             },
         },
     )
@@ -69,17 +70,14 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
         detail: {
             summary: "Generate due recurring transaction occurrences",
             description:
-                "Materializa a próxima ocorrência de cada recorrência vencida. Chamada manual até existir um scheduler.",
-            responses: { 200: { description: "Ocorrências geradas" } },
+                "Materializes the next occurrence for each due recurrence. Manual trigger until a scheduler exists.",
+            responses: { 200: { description: "Occurrences generated" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Get transaction",
-            responses: {
-                200: { description: "Transação encontrada" },
-                404: { description: "Transação não encontrada" },
-            },
+            responses: { 200: { description: "Transaction found" }, 404: { description: "Transaction not found" } },
         },
     })
     .post(
@@ -92,8 +90,8 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
             body: createTransactionSchema,
             detail: {
                 summary: "Create transaction",
-                description: "Aceita um bloco `recurrence` opcional para criar uma transação recorrente.",
-                responses: { 201: { description: "Transação criada" } },
+                description: "Accepts an optional `recurrence` block to create a recurring transaction.",
+                responses: { 201: { description: "Transaction created" } },
             },
         },
     )
@@ -101,15 +99,12 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
         body: updateTransactionSchema,
         detail: {
             summary: "Update transaction",
-            responses: {
-                200: { description: "Transação atualizada" },
-                404: { description: "Transação não encontrada" },
-            },
+            responses: { 200: { description: "Transaction updated" }, 404: { description: "Transaction not found" } },
         },
     })
     .delete("/:id", ({ params }) => controller.delete(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Delete transaction",
-            responses: { 200: { description: "Transação excluída" }, 404: { description: "Transação não encontrada" } },
+            responses: { 200: { description: "Transaction deleted" }, 404: { description: "Transaction not found" } },
         },
     })

@@ -1,12 +1,14 @@
 import { ApiResponse } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
-import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas/category.schema"
-import type { CreateCategoryUseCase } from "../../app/usecases/create-category.usecase"
-import type { DeleteCategoryUseCase } from "../../app/usecases/delete-category.usecase"
-import type { FindCategoriesUseCase } from "../../app/usecases/find-categories.usecase"
-import type { GetCategoryUseCase } from "../../app/usecases/get-category.usecase"
-import type { UpdateCategoryUseCase } from "../../app/usecases/update-category.usecase"
+import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas"
+import type {
+    CreateCategoryUseCase,
+    DeleteCategoryUseCase,
+    FindCategoriesUseCase,
+    GetCategoryUseCase,
+    UpdateCategoryUseCase,
+} from "../../app/usecases"
 
 type UseCases = {
     find: FindCategoriesUseCase

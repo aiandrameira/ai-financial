@@ -2,9 +2,10 @@ import { and, eq, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { recurrences } from "@/db/schema"
+import { toDateString } from "@/http/helpers"
 
-import type { RecurrenceDto } from "../../app/dtos/recurrence.dto"
-import type { CreateRecurrenceData, RecurrenceRepository } from "../../domain/repositories/recurrence.repository"
+import type { RecurrenceDto } from "../../app/dtos"
+import type { CreateRecurrenceData, RecurrenceRepository } from "../../domain/repositories"
 
 type RecurrenceRow = typeof recurrences.$inferSelect
 
@@ -58,8 +59,4 @@ export class RecurrenceDrizzleRepository implements RecurrenceRepository {
             .set({ nextOccurrence: toDateString(nextOccurrence), active, updatedAt: new Date() })
             .where(eq(recurrences.id, id))
     }
-}
-
-function toDateString(date: Date): string {
-    return date.toISOString().slice(0, 10)
 }

@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { CategoryDto } from "../dtos/category.dto"
-import type { CategoryRepository } from "../../domain/repositories/category.repository"
+import type { CategoryDto } from "../dtos"
+import type { CategoryRepository } from "../../domain/repositories"
 
 export class GetCategoryUseCase {
     constructor(private repository: CategoryRepository) {}

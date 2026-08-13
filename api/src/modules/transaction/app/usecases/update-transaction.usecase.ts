@@ -1,9 +1,11 @@
-import type { AccountRepository } from "@/modules/account/domain/repositories/account.repository"
-import type { CategoryRepository } from "@/modules/category/domain/repositories/category.repository"
+import type { AccountRepository } from "@/modules/account/domain/repositories"
+import type { CategoryRepository } from "@/modules/category/domain/repositories"
 import { NotFoundError, ValidationError } from "@/http/errors/errors"
 
-import type { UpdateTransactionSchema } from "../schemas/transaction.schema"
-import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+import type { UpdateTransactionSchema } from "../schemas"
+import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+import { matchesCategoryType } from "../../domain/services"
+import type { TransactionRepository } from "../../domain/repositories"
 
 export class UpdateTransactionUseCase {
     constructor(
@@ -15,7 +17,7 @@ export class UpdateTransactionUseCase {
     async execute(userId: string, id: string, body: UpdateTransactionSchema): Promise<void> {
         const transaction = await this.repository.get(userId, id)
         if (!transaction) throw new NotFoundError("Transaction not found")
-        if (transaction.type === "transfer") {
+        if (transaction.type === tpTransactionEnum.TRANSFER) {
             throw new ValidationError("Transfer transactions cannot be edited directly")
         }
 
@@ -28,14 +30,15 @@ export class UpdateTransactionUseCase {
         if (body.categoryId) {
             const category = await this.categoryRepository.get(userId, body.categoryId)
             if (!category) throw new NotFoundError("Category not found")
-            if (category.type !== nextType)
+            if (!matchesCategoryType(category.type, nextType)) {
                 throw new ValidationError("Category must have the same type as the transaction")
+            }
         }
 
         let amount: string | undefined
         if (body.amount !== undefined || body.type !== undefined) {
             const baseAmount = body.amount ?? Math.abs(Number(transaction.amount))
-            amount = (nextType === "expense" ? -baseAmount : baseAmount).toFixed(2)
+            amount = (nextType === tpTransactionEnum.EXPENSE ? -baseAmount : baseAmount).toFixed(2)
         }
 
         await this.repository.update(userId, id, {

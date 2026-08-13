@@ -1,7 +1,7 @@
 import { NotFoundError } from "@/http/errors/errors"
 
-import type { UpdateCategorySchema } from "../schemas/category.schema"
-import type { CategoryRepository } from "../../domain/repositories/category.repository"
+import type { UpdateCategorySchema } from "../schemas"
+import type { CategoryRepository } from "../../domain/repositories"
 
 export class UpdateCategoryUseCase {
     constructor(private repository: CategoryRepository) {}

@@ -1,13 +1,15 @@
 import { ApiResponse } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
-import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas/account.schema"
-import type { ArchiveAccountUseCase } from "../../app/usecases/archive-account.usecase"
-import type { CreateAccountUseCase } from "../../app/usecases/create-account.usecase"
-import type { FindAccountsUseCase } from "../../app/usecases/find-accounts.usecase"
-import type { GetAccountUseCase } from "../../app/usecases/get-account.usecase"
-import type { RestoreAccountUseCase } from "../../app/usecases/restore-account.usecase"
-import type { UpdateAccountUseCase } from "../../app/usecases/update-account.usecase"
+import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas"
+import type {
+    ArchiveAccountUseCase,
+    CreateAccountUseCase,
+    FindAccountsUseCase,
+    GetAccountUseCase,
+    RestoreAccountUseCase,
+    UpdateAccountUseCase,
+} from "../../app/usecases"
 
 type UseCases = {
     find: FindAccountsUseCase

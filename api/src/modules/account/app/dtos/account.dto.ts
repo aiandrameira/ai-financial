@@ -1,10 +1,11 @@
+import type { tpAccountEnum } from "../../domain/enums/tp-account.enum"
+
 export type AccountDto = {
     id: string
     name: string
-    type: "checking" | "savings" | "wallet"
+    type: tpAccountEnum
     institution: string | null
     initialBalance: string
-    // Derivados a partir das transações — nunca armazenados. Ver docs/planning.md seção 5.1.
     currentBalance: string
     projectedBalance: string
     color: string | null

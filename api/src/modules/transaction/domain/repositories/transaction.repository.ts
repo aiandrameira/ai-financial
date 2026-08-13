@@ -1,15 +1,15 @@
 import type { IPaginated } from "@/http/api/response"
 
-import type { TransactionDto } from "../../app/dtos/transaction.dto"
-import type { FindTransactionsQuery } from "../../app/schemas/transaction.schema"
+import type { TransactionDto } from "../../app/dtos"
+import type { FindTransactionsQuery } from "../../app/schemas"
+import type { stTransactionEnum } from "../enums/st-transaction.enum"
+import type { tpTransactionEnum } from "../enums/tp-transaction.enum"
 
 export type CreateTransactionData = {
     accountId: string
     categoryId: string | null
-    // "transfer" nunca passa por aqui — ver createTransfer, que grava as duas pernas diretamente.
-    type: "income" | "expense"
-    status: "planned" | "pending" | "completed" | "cancelled"
-    // Já assinado (positivo = entrada, negativo = saída) e fixado em 2 casas — ver transaction.dto.ts.
+    type: Exclude<tpTransactionEnum, tpTransactionEnum.TRANSFER>
+    status: stTransactionEnum
     amount: string
     description: string | null
     date: Date
@@ -24,14 +24,13 @@ export type CreateTransferData = {
     amount: string
     description: string | null
     date: Date
-    status: "planned" | "pending" | "completed" | "cancelled"
+    status: stTransactionEnum
 }
 
 export type UpdateTransactionData = Partial<{
     accountId: string
     categoryId: string | null
-    status: "planned" | "pending" | "completed" | "cancelled"
-    // Já assinado, quando presente — ver CreateTransactionData.
+    status: stTransactionEnum
     amount: string
     description: string | null
     date: Date

@@ -1,6 +1,6 @@
 import { ConflictError, NotFoundError } from "@/http/errors/errors"
 
-import type { CategoryRepository } from "../../domain/repositories/category.repository"
+import type { CategoryRepository } from "../../domain/repositories"
 
 export class DeleteCategoryUseCase {
     constructor(private repository: CategoryRepository) {}

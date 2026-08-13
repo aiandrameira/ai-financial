@@ -3,12 +3,14 @@ import { Elysia } from "elysia"
 import { env } from "@/env"
 import { paginationQuerySchema } from "@/http/api/schema/schemas"
 
-import { createCategorySchema, updateCategorySchema } from "../../app/schemas/category.schema"
-import { CreateCategoryUseCase } from "../../app/usecases/create-category.usecase"
-import { DeleteCategoryUseCase } from "../../app/usecases/delete-category.usecase"
-import { FindCategoriesUseCase } from "../../app/usecases/find-categories.usecase"
-import { GetCategoryUseCase } from "../../app/usecases/get-category.usecase"
-import { UpdateCategoryUseCase } from "../../app/usecases/update-category.usecase"
+import { createCategorySchema, updateCategorySchema } from "../../app/schemas"
+import {
+    CreateCategoryUseCase,
+    DeleteCategoryUseCase,
+    FindCategoriesUseCase,
+    GetCategoryUseCase,
+    UpdateCategoryUseCase,
+} from "../../app/usecases"
 import { CategoryController } from "../controllers/category.controller"
 import { CategoryDrizzleRepository } from "../repositories/category.drizzle"
 
@@ -30,16 +32,13 @@ export const categoryRoutes = new Elysia({ prefix: "/categories", tags: ["Catego
         query: paginationQuerySchema,
         detail: {
             summary: "List categories",
-            responses: { 200: { description: "Lista paginada de categorias" } },
+            responses: { 200: { description: "Paginated list of categories" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Get category",
-            responses: {
-                200: { description: "Categoria encontrada" },
-                404: { description: "Categoria não encontrada" },
-            },
+            responses: { 200: { description: "Category found" }, 404: { description: "Category not found" } },
         },
     })
     .post(
@@ -52,7 +51,7 @@ export const categoryRoutes = new Elysia({ prefix: "/categories", tags: ["Catego
             body: createCategorySchema,
             detail: {
                 summary: "Create category",
-                responses: { 201: { description: "Categoria criada" } },
+                responses: { 201: { description: "Category created" } },
             },
         },
     )
@@ -60,19 +59,16 @@ export const categoryRoutes = new Elysia({ prefix: "/categories", tags: ["Catego
         body: updateCategorySchema,
         detail: {
             summary: "Update category",
-            responses: {
-                200: { description: "Categoria atualizada" },
-                404: { description: "Categoria não encontrada" },
-            },
+            responses: { 200: { description: "Category updated" }, 404: { description: "Category not found" } },
         },
     })
     .delete("/:id", ({ params }) => controller.delete(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Delete category",
             responses: {
-                200: { description: "Categoria excluída" },
-                404: { description: "Categoria não encontrada" },
-                409: { description: "Categoria em uso por subcategorias ou transações" },
+                200: { description: "Category deleted" },
+                404: { description: "Category not found" },
+                409: { description: "Category is in use by subcategories or transactions" },
             },
         },
     })

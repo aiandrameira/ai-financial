@@ -4,14 +4,15 @@ import { db } from "@/db/client"
 import { transactions, transfers } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 
-import type { TransactionDto } from "../../app/dtos/transaction.dto"
-import type { FindTransactionsQuery } from "../../app/schemas/transaction.schema"
+import type { TransactionDto } from "../../app/dtos"
+import type { FindTransactionsQuery } from "../../app/schemas"
+import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
 import type {
     CreateTransactionData,
     CreateTransferData,
     TransactionRepository,
     UpdateTransactionData,
-} from "../../domain/repositories/transaction.repository"
+} from "../../domain/repositories"
 
 type TransactionRow = typeof transactions.$inferSelect
 
@@ -111,9 +112,8 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 .values({
                     userId,
                     accountId: data.sourceAccountId,
-                    type: "transfer",
+                    type: tpTransactionEnum.TRANSFER,
                     status: data.status,
-                    // Negativo: sai da conta de origem — ver docs/planning.md seção 5.1 "Transferências".
                     amount: `-${data.amount}`,
                     description: data.description,
                     date: data.date,
@@ -125,7 +125,7 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 .values({
                     userId,
                     accountId: data.destinationAccountId,
-                    type: "transfer",
+                    type: tpTransactionEnum.TRANSFER,
                     status: data.status,
                     amount: data.amount,
                     description: data.description,

@@ -1,12 +1,12 @@
-import type { AccountRepository } from "@/modules/account/domain/repositories/account.repository"
-import type { CategoryRepository } from "@/modules/category/domain/repositories/category.repository"
+import type { AccountRepository } from "@/modules/account/domain/repositories"
+import type { CategoryRepository } from "@/modules/category/domain/repositories"
 import { NotFoundError, ValidationError } from "@/http/errors/errors"
 
-import type { TransactionDto } from "../dtos/transaction.dto"
-import type { CreateTransactionSchema } from "../schemas/transaction.schema"
-import { computeNextOccurrence } from "../../domain/services/compute-next-occurrence"
-import type { RecurrenceRepository } from "../../domain/repositories/recurrence.repository"
-import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+import type { TransactionDto } from "../dtos"
+import type { CreateTransactionSchema } from "../schemas"
+import { computeNextOccurrence, matchesCategoryType } from "../../domain/services"
+import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+import type { RecurrenceRepository, TransactionRepository } from "../../domain/repositories"
 
 export class CreateTransactionUseCase {
     constructor(
@@ -23,8 +23,9 @@ export class CreateTransactionUseCase {
         if (body.categoryId) {
             const category = await this.categoryRepository.get(userId, body.categoryId)
             if (!category) throw new NotFoundError("Category not found")
-            if (category.type !== body.type)
+            if (!matchesCategoryType(category.type, body.type)) {
                 throw new ValidationError("Category must have the same type as the transaction")
+            }
         }
 
         let recurrenceId: string | null = null
@@ -39,7 +40,7 @@ export class CreateTransactionUseCase {
             recurrenceId = recurrence.id
         }
 
-        const signedAmount = body.type === "expense" ? -body.amount : body.amount
+        const signedAmount = body.type === tpTransactionEnum.EXPENSE ? -body.amount : body.amount
 
         return this.repository.create(userId, {
             accountId: body.accountId,

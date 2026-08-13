@@ -12,7 +12,6 @@ const envSchema = z.object({
 
     API_PUBLIC_URL: z.url().default("http://localhost:3006"),
 
-    // Usuário fixo usado enquanto a autenticação (Fase 7) não existe — ver docs/planning.md seção 3.
     DEV_USER_ID: z.string().min(1).default("00000000-0000-0000-0000-000000000001"),
 
     RESEND_API_KEY: z.string().default(""),

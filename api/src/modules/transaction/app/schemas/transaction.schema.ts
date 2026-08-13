@@ -2,8 +2,12 @@ import { z } from "zod"
 
 import { paginationQuerySchema } from "@/http/api/schema/schemas"
 
+import { tpRecurrenceFrequencyEnum } from "../../domain/enums/tp-recurrence-frequency.enum"
+import { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
+import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+
 const recurrenceInputSchema = z.object({
-    frequency: z.enum(["daily", "weekly", "monthly", "yearly"]),
+    frequency: z.enum(tpRecurrenceFrequencyEnum),
     interval: z.number().int().positive().default(1),
     endDate: z.coerce.date().optional(),
 })
@@ -13,8 +17,8 @@ export type RecurrenceInputSchema = z.infer<typeof recurrenceInputSchema>
 const baseTransactionSchema = z.object({
     accountId: z.string().min(1),
     categoryId: z.string().min(1).optional(),
-    type: z.enum(["income", "expense"]),
-    status: z.enum(["planned", "pending", "completed", "cancelled"]).default("completed"),
+    type: z.enum(tpTransactionEnum).exclude(["TRANSFER"]),
+    status: z.enum(stTransactionEnum).default(stTransactionEnum.COMPLETED),
     amount: z.number().positive(),
     description: z.string().max(280).optional(),
     date: z.coerce.date(),
@@ -38,7 +42,7 @@ export const createTransferSchema = z.object({
     amount: z.number().positive(),
     description: z.string().max(280).optional(),
     date: z.coerce.date(),
-    status: z.enum(["planned", "pending", "completed", "cancelled"]).default("completed"),
+    status: z.enum(stTransactionEnum).default(stTransactionEnum.COMPLETED),
 })
 
 export type CreateTransferSchema = z.infer<typeof createTransferSchema>
@@ -46,8 +50,8 @@ export type CreateTransferSchema = z.infer<typeof createTransferSchema>
 export const findTransactionsQuerySchema = paginationQuerySchema.extend({
     accountId: z.string().optional(),
     categoryId: z.string().optional(),
-    status: z.enum(["planned", "pending", "completed", "cancelled"]).optional(),
-    type: z.enum(["income", "expense", "transfer"]).optional(),
+    status: z.enum(stTransactionEnum).optional(),
+    type: z.enum(tpTransactionEnum).optional(),
     dateFrom: z.coerce.date().optional(),
     dateTo: z.coerce.date().optional(),
 })
