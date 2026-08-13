@@ -1,0 +1,57 @@
+import type { AccountRepository } from "@/modules/account/domain/repositories/account.repository"
+import type { CategoryRepository } from "@/modules/category/domain/repositories/category.repository"
+import { NotFoundError, ValidationError } from "@/http/errors/errors"
+
+import type { TransactionDto } from "../dtos/transaction.dto"
+import type { CreateTransactionSchema } from "../schemas/transaction.schema"
+import { computeNextOccurrence } from "../../domain/services/compute-next-occurrence"
+import type { RecurrenceRepository } from "../../domain/repositories/recurrence.repository"
+import type { TransactionRepository } from "../../domain/repositories/transaction.repository"
+
+export class CreateTransactionUseCase {
+    constructor(
+        private repository: TransactionRepository,
+        private accountRepository: AccountRepository,
+        private categoryRepository: CategoryRepository,
+        private recurrenceRepository: RecurrenceRepository,
+    ) {}
+
+    async execute(userId: string, body: CreateTransactionSchema): Promise<TransactionDto> {
+        const account = await this.accountRepository.get(userId, body.accountId)
+        if (!account) throw new NotFoundError("Account not found")
+
+        if (body.categoryId) {
+            const category = await this.categoryRepository.get(userId, body.categoryId)
+            if (!category) throw new NotFoundError("Category not found")
+            if (category.type !== body.type)
+                throw new ValidationError("Category must have the same type as the transaction")
+        }
+
+        let recurrenceId: string | null = null
+        if (body.recurrence) {
+            const recurrence = await this.recurrenceRepository.create(userId, {
+                frequency: body.recurrence.frequency,
+                interval: body.recurrence.interval,
+                startDate: body.date,
+                endDate: body.recurrence.endDate ?? null,
+                nextOccurrence: computeNextOccurrence(body.date, body.recurrence.frequency, body.recurrence.interval),
+            })
+            recurrenceId = recurrence.id
+        }
+
+        const signedAmount = body.type === "expense" ? -body.amount : body.amount
+
+        return this.repository.create(userId, {
+            accountId: body.accountId,
+            categoryId: body.categoryId ?? null,
+            type: body.type,
+            status: body.status,
+            amount: signedAmount.toFixed(2),
+            description: body.description ?? null,
+            date: body.date,
+            tags: body.tags,
+            recurrenceId,
+            attachmentUrl: body.attachmentUrl ?? null,
+        })
+    }
+}

@@ -1,3 +1,5 @@
-// Nenhuma tabela ainda. O schema financeiro (accounts, categories, transactions...)
-// entra na Fase 1 do roadmap — ver docs/planning.md seção 5.
-export {}
+export * from "./accounts"
+export * from "./categories"
+export * from "./recurrences"
+export * from "./transactions"
+export * from "./transfers"

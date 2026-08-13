@@ -5,6 +5,9 @@ import { Elysia } from "elysia"
 import { env } from "./env"
 import { ApiResponse } from "./http/api/response"
 import { uploadRoutes } from "./http/uploads/uploads.routes"
+import { accountRoutes } from "./modules/account/infra/routes/account.routes"
+import { categoryRoutes } from "./modules/category/infra/routes/category.routes"
+import { transactionRoutes } from "./modules/transaction/infra/routes/transaction.routes"
 
 const start = async () => {
     const app = new Elysia()
@@ -17,6 +20,9 @@ const start = async () => {
         })
         .get("/health", () => ApiResponse.success("ok"))
         .use(uploadRoutes)
+        .use(accountRoutes)
+        .use(categoryRoutes)
+        .use(transactionRoutes)
         .listen(env.PORT)
 
     console.log(`💰 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
