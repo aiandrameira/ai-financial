@@ -1,0 +1,65 @@
+<div class="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
+    <div>
+        <h1 class="font-title text-2xl font-semibold text-foreground">Transações</h1>
+        <p class="text-sm text-muted-foreground">Despesas e receitas lançadas nas suas contas.</p>
+    </div>
+
+    <ai-card title="Nova transação" variant="default" icon="exchange">
+        <form class="flex flex-col gap-4 mt-4" (submit)="$event.preventDefault(); onSubmit()">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ai-select class="w-full" label="Tipo" [value]="form().type" (valueChange)="setType($event)">
+                    @for (type of transactionTypes; track type) {
+                        <ai-select-item [value]="type">{{ typeMap.get(type) }}</ai-select-item>
+                    }
+                </ai-select>
+
+                <ai-select class="w-full" label="Conta" placeholder="Selecione..." [value]="form().accountId" (valueChange)="setAccount($event)">
+                    @for (account of facade.accounts(); track account.id) {
+                        <ai-select-item [value]="account.id">{{ account.name }}</ai-select-item>
+                    }
+                </ai-select>
+
+                <ai-select
+                    class="w-full"
+                    label="Categoria"
+                    placeholder="Selecione..."
+                    [value]="form().categoryId ?? ''"
+                    (valueChange)="setCategory($event)"
+                >
+                    @for (category of categoriesForType(); track category.id) {
+                        <ai-select-item [value]="category.id">{{ category.name }}</ai-select-item>
+                    }
+                </ai-select>
+
+                <ai-input class="w-full" label="Valor" type="number" [value]="form().amount" (valueChange)="setAmount($event)" />
+
+                <ai-input
+                    class="w-full"
+                    label="Descrição"
+                    [value]="form().description ?? ''"
+                    (valueChange)="setDescription($event)"
+                />
+
+                <ai-input class="w-full" label="Data" type="text" placeholder="AAAA-MM-DD" [value]="form().date" (valueChange)="setDate($event)" />
+            </div>
+
+            <div>
+                <ai-button type="submit" variant="primary" [disabled]="!canSubmit()" [loading]="saving()">
+                    Lançar transação
+                </ai-button>
+            </div>
+        </form>
+    </ai-card>
+
+    @if (facade.loading()) {
+        <ai-loader />
+    } @else if (facade.transactions().length === 0) {
+        <ai-empty icon="exchange" title="Nenhuma transação" description="Lance a primeira despesa ou receita acima." />
+    } @else {
+        <ai-table [config]="{ columns: columns, data: facade.transactions() }">
+            <ng-template aiCellTemplate="amount" let-item>
+                <ai-badge [variant]="item.amount.startsWith('-') ? 'destructive' : 'success'">{{ item.amount }}</ai-badge>
+            </ng-template>
+        </ai-table>
+    }
+</div>

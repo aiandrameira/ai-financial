@@ -1,0 +1,55 @@
+<div class="flex flex-col gap-6 p-6 max-w-5xl mx-auto">
+    <div>
+        <h1 class="font-title text-2xl font-semibold text-foreground">Contas</h1>
+        <p class="text-sm text-muted-foreground">Contas correntes, poupança e carteira.</p>
+    </div>
+
+    <ai-card title="Nova conta" variant="default" icon="wallet">
+        <form class="flex flex-col gap-4 mt-4" (submit)="$event.preventDefault(); onSubmit()">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ai-input
+                    class="w-full"
+                    label="Nome"
+                    [value]="form().name"
+                    (valueChange)="setName($event)"
+                    [required]="true"
+                />
+
+                <ai-select class="w-full" label="Tipo" [value]="form().type" (valueChange)="setType($event)">
+                    @for (type of accountTypes; track type) {
+                        <ai-select-item [value]="type">{{ typeMap.get(type) }}</ai-select-item>
+                    }
+                </ai-select>
+
+                <ai-input
+                    class="w-full"
+                    label="Instituição"
+                    [value]="form().institution ?? ''"
+                    (valueChange)="setInstitution($event)"
+                />
+
+                <ai-input
+                    class="w-full"
+                    label="Saldo inicial"
+                    type="number"
+                    [value]="form().initialBalance"
+                    (valueChange)="setInitialBalance($event)"
+                />
+            </div>
+
+            <div>
+                <ai-button type="submit" variant="primary" [disabled]="!canSubmit()" [loading]="saving()">
+                    Criar conta
+                </ai-button>
+            </div>
+        </form>
+    </ai-card>
+
+    @if (facade.loading()) {
+        <ai-loader />
+    } @else if (facade.accounts().length === 0) {
+        <ai-empty icon="wallet" title="Nenhuma conta" description="Crie a primeira conta para começar a lançar transações." />
+    } @else {
+        <ai-table [config]="{ columns: columns, data: facade.accounts() }" />
+    }
+</div>

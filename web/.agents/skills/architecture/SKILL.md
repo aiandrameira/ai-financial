@@ -31,11 +31,11 @@ The product modules planned for this app (per `docs/planning.md` sections 4 and 
 - **Variables/Functions**: `camelCase` (e.g., `getTransactionById`).
 - **Private Methods**: Must be prefixed with an underscore (`_`) to clearly distinguish them from private properties (e.g., `private _loadTransaction()`).
 - **Private Properties**: Must use ECMAScript private fields (`#`) instead of the `private` keyword (e.g., `#apiUrl = ''`, `#http = inject(HttpClient)`).
-- **Enums**:
-  - `tp-` for types/enums (e.g., `tp-transaction-status.enum.ts`)
-  - `st-` for status (e.g., `st-invoice.enum.ts`)
+- **Enums**: a fixed set of string values is always a real TypeScript `enum`, never an inline string-literal union or a bare `z.enum([...])`. File and enum name share the same prefix, and the prefix is never repeated as a word in the name (it already says what kind it is):
+  - `tp-` for a type/category (e.g., `tp-transaction.enum.ts` → `export enum tpTransactionEnum { INCOME = "income", EXPENSE = "expense", TRANSFER = "transfer" }` — not `tpTransactionTypeEnum`)
+  - `st-` for a status/lifecycle state (e.g., `st-transaction.enum.ts` → `export enum stTransactionEnum { PLANNED = "planned", ... }` — not `tpTransactionStatusEnum`)
   - `lg-` for logical flags (e.g., `lg-active.enum.ts`)
-  - Associated maps should be exported (e.g., `export const tpTransactionStatusMap = new Map(...)`).
+  - Associated display maps are a `Map`, named `<prefix><Entity>Map`, exported next to the enum (e.g., `export const tpTransactionMap = new Map<tpTransactionEnum, string>([[tpTransactionEnum.INCOME, "Receita"], ...])`) — not a `Record`/object literal.
 - **Repository Methods**:
   - `find`: returns a list
   - `get`: returns a single item
@@ -63,7 +63,7 @@ core/
     ├── helpers/                        # Functions that may depend on Angular but are not specific to business logic
     │   └── format-dayjs.helper.ts      # e.g., `formatDayjs.helper.ts`
     ├── pipes/                          # Reusable Angular pipes
-    │   └── tp-transaction-status.pipe.ts
+    │   └── st-transaction.pipe.ts
     └── ui/                             # Atomic, reusable UI components
         └── components/                 # Reusable components
 ```
@@ -72,7 +72,7 @@ core/
 
 - **Schemas (`domain/schemas/`)**: Use `zod` for validation. Export the schema, the TypeScript type inferred via `z.infer`, and a factory function (e.g., `makeTransaction`) to parse raw data and instantiate default states for UI;
 - **Repositories (`domain/repositories/`)**: Interfaces defining data contracts returning Observables (e.g., `TransactionRepository`);
-- **Filters (`domain/filters/`)**: Implement classes that handle search criteria, using `zod` for prop validation to mount query params;
+- **Filters (`domain/filters/`)**: One class per entity that needs query filtering beyond plain pagination, wrapping a `FilterProps<Props>` from `@core/ui` and exposing `getFilters(): FilterManager` (see `core/ui/lib/filter/filter.md`). Only add one when there's a real filter surface (e.g. `TransactionFilter` for account/category/status/date-range) — plain pagination-only lists just pass `{ page, size }` directly, no filter class needed;
 - **Enums (`domain/enums/`)**: Definition of constant values and maps for UI display.
 
 Structure:
@@ -86,12 +86,12 @@ domain/
     ├── filters/                        # Filter classes using zod
     │   └── entity.filter.ts            # e.g., `transaction.filter.ts`
     └── enums/                          # Enums and associated maps for UI
-        └── tp-entity.enum.ts           # e.g., `tp-transaction-status.enum.ts`
+        └── tp-entity.enum.ts           # e.g., `tp-transaction.enum.ts`, `st-transaction.enum.ts`
 ```
 
 ## 5. Infra Layer (`infra/`)
 
-- **Services (`infra/services/`)**: Implement Domain Repository interfaces. Handle HTTP requests (using `#client = inject(HttpClient)`), pointed at `ai-financial/api` (`environment.apiUrl`). Group files by entity (e.g., `services/transaction/transaction.service.ts` and `.spec.ts`);
+- **Services (`infra/services/`)**: Implement Domain Repository interfaces. Handle HTTP requests (using `#client = inject(HttpClient)`, `#api = environment.apiUrl.concat("/entities")`), pointed at `ai-financial/api`. Unwrap the API's response envelope with `mapGet`/`mapFind`/`mapPaginated` from `@core/ui` inside `.pipe(map(...))` — never read `response.data` by hand. Group files by entity (e.g., `services/transaction/transaction.service.ts` and `.spec.ts`);
 - **Facades (`infra/facades/`)**: Encapsulate logic for external services to avoid bloating components, orchestrating Services and signal-based state: `providedIn: 'root'`, a private writable signal, a public `.asReadonly()`, `load()`/mutation methods that resubscribe.
 
 _Note: Provide barrel files (`index.ts`) for public folders to export relevant symbols._
@@ -135,3 +135,11 @@ When generating new code in this project:
 - **Private Properties:** Use ECMAScript private fields (`#property`) instead of the `private` keyword.
 - **Private Methods:** Prefix private methods with an underscore (`private _methodName()`).
 - **Design system:** Use `@aiandralves/ai-ui` components first (see `DESIGN.md`) — don't build a parallel component for something the design system already covers.
+
+## 8. Code Style
+
+- **No comments.** Naming and structure carry the intent. The only exception is genuinely shareable, library-style code where a comment documents usage for a consumer — narrow and rare.
+- **`index.ts` barrels**: every `domain/repositories/`, `domain/schemas/`, `infra/services/`, and `infra/facades/` folder re-exports its contents from an `index.ts`. Import from the barrel outside the folder, not the individual file.
+- **Extract reusable functions** into `core/utils/` or `core/helpers/` (section 3) instead of inlining them in a component or service — especially anything more than one view needs.
+- **English only** for identifiers, file/folder names, route paths, and any (rare) comment. **Portuguese only for text actually shown to the user** — labels, placeholders, button text, toasts, validation messages.
+- **Singular, always** (repeats section 2, called out because it's the easiest rule to slip on): pages, routes, services, view/feature folders, components. `list-transaction.page.ts`, `transaction.routes.ts`, `form-transaction`, `table-transaction`, `transaction.service.ts` — never the plural.
