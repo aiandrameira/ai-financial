@@ -1,0 +1,14 @@
+{
+    "singleQuote": false,
+    "printWidth": 180,
+    "tabWidth": 4,
+    "arrowParens": "avoid",
+    "overrides": [
+        {
+            "files": "*.html",
+            "options": {
+                "parser": "html"
+            }
+        }
+    ]
+}

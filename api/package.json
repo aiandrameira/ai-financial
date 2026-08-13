@@ -1,0 +1,46 @@
+{
+    "name": "@aiandrameira/ai-financial-api",
+    "version": "0.0.2",
+    "license": "UNLICENSED",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/aiandrameira/ai-financial.git",
+        "directory": "api"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com",
+        "access": "restricted"
+    },
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "test": "bun test",
+        "typecheck": "bunx tsc --noEmit",
+        "format": "biome format --write",
+        "db:generate": "bun --env-file .env --bun drizzle-kit generate",
+        "db:migrate": "bun --env-file .env --bun drizzle-kit migrate",
+        "db:seed": "bun --env-file .env --bun src/db/seed.ts",
+        "studio": "bun --env-file .env --bun drizzle-kit studio",
+        "db:push": "bun --env-file .env --bun drizzle-kit push",
+        "docs:dev": "ai-docs dev",
+        "docs:build": "ai-docs build"
+    },
+    "dependencies": {
+        "@elysia/openapi": "^1.4.15",
+        "@elysiajs/cors": "^1.4.2",
+        "cloudinary": "^2.10.0",
+        "drizzle-orm": "^0.45.2",
+        "elysia": "latest",
+        "pdfkit": "^0.19.1",
+        "pg": "^8.21.0",
+        "resend": "^6.18.0",
+        "zod": "^4.4.3"
+    },
+    "devDependencies": {
+        "@aiandralves/ai-docs": "^0.1.4",
+        "@biomejs/biome": "2.4.16",
+        "@types/pdfkit": "^0.17.6",
+        "@types/pg": "^8.16.0",
+        "bun-types": "latest",
+        "drizzle-kit": "^0.31.10"
+    }
+}

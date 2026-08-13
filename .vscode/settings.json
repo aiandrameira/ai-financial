@@ -1,0 +1,94 @@
+{
+    "editor.tabSize": 4,
+    "commit-message-editor.view.defaultView": "form",
+    "commit-message-editor.dynamicTemplate": [
+        "{type}{scope}{breaking_change}: {description}{taskid}"
+    ],
+    "commit-message-editor.tokens": [
+        {
+            "label": "Type",
+            "name": "type",
+            "type": "enum",
+            "options": [
+                {
+                    "label": "✨ feat",
+                    "description": "✨ Uma nova funcionalidade"
+                },
+                {
+                    "label": "🚧 chore",
+                    "description": "🚧 Atualizações em tarefas de build, sem alterações no código de produção"
+                },
+                {
+                    "label": "🐛 fix",
+                    "description": "🐛 Correção de bugs"
+                },
+                {
+                    "label": "📦 refactor",
+                    "description": "📦 Alterações no código que não corrigem bugs nem adicionam funcionalidades"
+                },
+                {
+                    "label": "🔧 ci",
+                    "description": "🔧 Alterações nos arquivos de scripts CI/CD"
+                },
+                {
+                    "label": "📚 docs",
+                    "description": "📚 Alterações apenas na documentação"
+                },
+                {
+                    "label": "🚀 perf",
+                    "description": "🚀 Alterações que melhoram a performance"
+                },
+                {
+                    "label": "⏪️ revert",
+                    "description": "⏪️ Reverter alterações"
+                },
+                {
+                    "label": "🏗️ build",
+                    "description": "🏗️ Alterações que afetam o sistema de build ou dependências externas"
+                },
+                {
+                    "label": "💄 style",
+                    "description": "💄 Alterações no estilo ou formatação do código"
+                },
+                {
+                    "label": "🧪 test",
+                    "description": "🧪 Adicionando testes ausentes ou corrigindo testes existentes"
+                },
+                {
+                    "label": "🎉 initial",
+                    "description": "🎉 Apenas usado uma vez no commit inicial do repositório"
+                },
+            ],
+            "description": "Tipo de alterações"
+        },
+        {
+            "label": "Short description",
+            "name": "description",
+            "description": "Descrição curta na linha de assunto.",
+            "type": "text",
+            "multiline": false
+        },
+        {
+            "label": "Scope",
+            "name": "scope",
+            "description": "Escopo das alterações",
+            "type": "text",
+            "prefix": "(",
+            "suffix": ")"
+        },
+        {
+            "label": "TaskID",
+            "name": "taskid",
+            "description": "ID from Jira, Azure DevOps, etc.",
+            "type": "text",
+            "prefix": " (",
+            "suffix": ")"
+        },
+        {
+            "label": "Breaking change",
+            "name": "breaking_change",
+            "type": "boolean",
+            "default": false
+        }
+    ],
+}
