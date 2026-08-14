@@ -42,4 +42,9 @@ export class AccountFacade {
             await this.create(input);
         }
     }
+
+    async archive(id: string): Promise<void> {
+        await firstValueFrom(this.#service.archive(id));
+        await this.load();
+    }
 }

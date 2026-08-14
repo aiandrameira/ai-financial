@@ -10,6 +10,7 @@ import type {
     CreateTransactionUseCase,
     CreateTransferUseCase,
     DeleteTransactionUseCase,
+    DeleteTransferUseCase,
     FindTransactionsUseCase,
     GenerateDueRecurrencesUseCase,
     GetTransactionUseCase,
@@ -23,6 +24,7 @@ type UseCases = {
     update: UpdateTransactionUseCase
     delete: DeleteTransactionUseCase
     createTransfer: CreateTransferUseCase
+    deleteTransfer: DeleteTransferUseCase
     generateDueRecurrences: GenerateDueRecurrencesUseCase
 }
 
@@ -57,6 +59,11 @@ export class TransactionController {
     async createTransfer(userId: string, body: CreateTransferSchema) {
         const result = await this.usecases.createTransfer.execute(userId, body)
         return ApiResponse.item(result, "Transfer created", 201)
+    }
+
+    async deleteTransfer(userId: string, transferId: string) {
+        await this.usecases.deleteTransfer.execute(userId, transferId)
+        return ApiResponse.success("Transfer deleted")
     }
 
     async generateDueRecurrences(userId: string) {

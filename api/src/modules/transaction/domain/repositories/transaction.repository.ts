@@ -4,6 +4,7 @@ import type { TransactionDto } from "../../app/dtos"
 import type { FindTransactionsQuery } from "../../app/schemas"
 import type { stTransactionEnum } from "../enums/st-transaction.enum"
 import type { tpTransactionEnum } from "../enums/tp-transaction.enum"
+import type { tpTransferMethodEnum } from "../enums/tp-transfer-method.enum"
 
 export type CreateTransactionData = {
     accountId: string
@@ -25,6 +26,7 @@ export type CreateTransferData = {
     description: string | null
     date: Date
     status: stTransactionEnum
+    method: tpTransferMethodEnum
 }
 
 export type UpdateTransactionData = Partial<{
@@ -49,6 +51,7 @@ export interface TransactionRepository {
     ): Promise<{ source: TransactionDto; destination: TransactionDto }>
     update(userId: string, id: string, data: UpdateTransactionData): Promise<void>
     delete(userId: string, id: string): Promise<void>
+    deleteTransfer(userId: string, transferId: string): Promise<boolean>
 }
 
 export type { TransactionDto }

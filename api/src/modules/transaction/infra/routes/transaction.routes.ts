@@ -14,6 +14,7 @@ import {
     CreateTransactionUseCase,
     CreateTransferUseCase,
     DeleteTransactionUseCase,
+    DeleteTransferUseCase,
     FindTransactionsUseCase,
     GenerateDueRecurrencesUseCase,
     GetTransactionUseCase,
@@ -36,6 +37,7 @@ function buildController() {
         update: new UpdateTransactionUseCase(repository, accountRepository, categoryRepository),
         delete: new DeleteTransactionUseCase(repository),
         createTransfer: new CreateTransferUseCase(repository, accountRepository),
+        deleteTransfer: new DeleteTransferUseCase(repository),
         generateDueRecurrences: new GenerateDueRecurrencesUseCase(repository, recurrenceRepository),
     })
 }
@@ -66,6 +68,13 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
             },
         },
     )
+    .delete("/transfer/:transferId", ({ params }) => controller.deleteTransfer(env.DEV_USER_ID, params.transferId), {
+        detail: {
+            summary: "Delete a transfer",
+            description: "Deletes both linked transactions (outflow/inflow) and the transfer record, atomically.",
+            responses: { 200: { description: "Transfer deleted" }, 404: { description: "Transfer not found" } },
+        },
+    })
     .post("/recurrences/generate", () => controller.generateDueRecurrences(env.DEV_USER_ID), {
         detail: {
             summary: "Generate due recurring transaction occurrences",

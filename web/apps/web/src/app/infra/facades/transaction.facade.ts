@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
 import type { AccountDto, CategoryDto, TransactionDto } from "@domain/repositories";
-import type { RequestTransactionDto } from "@domain/schemas";
+import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
 import { AccountService, CategoryService, TransactionService } from "@infra/services";
 
 @Injectable({ providedIn: "root" })
@@ -55,5 +55,20 @@ export class TransactionFacade {
         } else {
             await this.create(input);
         }
+    }
+
+    async createTransfer(input: RequestTransferDto): Promise<void> {
+        await firstValueFrom(this.#transactionService.createTransfer(input));
+        await this.load();
+    }
+
+    async delete(id: string): Promise<void> {
+        await firstValueFrom(this.#transactionService.delete(id));
+        await this.load();
+    }
+
+    async deleteTransfer(transferId: string): Promise<void> {
+        await firstValueFrom(this.#transactionService.deleteTransfer(transferId));
+        await this.load();
     }
 }

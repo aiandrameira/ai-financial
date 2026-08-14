@@ -4,17 +4,25 @@
     </ng-template>
 
     <ng-template aiCellTemplate="currentBalance" let-item>
-        {{ item.currentBalance | currency}}
+        @let trend = balanceTrend(item.currentBalance);
+        <ai-badge fill="line" [variant]="trend.variant">
+            <ai-icon-material [icon]="trend.icon" size="sm" />
+            {{ abs(item.currentBalance) | currency }}
+        </ai-badge>
     </ng-template>
-    
+
     <ng-template aiCellTemplate="projectedBalance" let-item>
-        {{ item.projectedBalance | currency}}
+        @let trend = balanceTrend(item.projectedBalance);
+        <ai-badge fill="line" [variant]="trend.variant">
+            <ai-icon-material [icon]="trend.icon" size="sm" />
+            {{ abs(item.projectedBalance) | currency }}
+        </ai-badge>
     </ng-template>
 
     <ng-template aiCellTemplate="remove" let-item>
-        <ai-button variant="destructive" 
+        <ai-button variant="destructive"
             fill="line"
-            icon="delete-bin"
+            icon="archive"
             size="xs"
             (click)="onRemove($event, item)" />
     </ng-template>

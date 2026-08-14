@@ -26,4 +26,8 @@ export class AccountService implements AccountRepository {
     update(id: string, body: RequestAccountDto): Observable<void> {
         return this.#client.put<void>(`${this.#api}/${id}`, body);
     }
+
+    archive(id: string): Observable<void> {
+        return this.#client.post<void>(`${this.#api}/${id}/archive`, {});
+    }
 }

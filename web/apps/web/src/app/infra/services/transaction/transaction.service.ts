@@ -6,7 +6,7 @@ import { map } from "rxjs";
 import { mapFind, mapGet } from "@core/ui";
 import { TransactionFilter, type TransactionFilterProps } from "@domain/filters";
 import type { TransactionDto, TransactionRepository } from "@domain/repositories";
-import type { RequestTransactionDto } from "@domain/schemas";
+import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
 import { environment } from "@env/environment";
 
 @Injectable({
@@ -29,5 +29,17 @@ export class TransactionService implements TransactionRepository {
     update(id: string, body: RequestTransactionDto): Observable<void> {
         const payload = { ...body, categoryId: body.categoryId || undefined };
         return this.#client.put<void>(`${this.#api}/${id}`, payload);
+    }
+
+    createTransfer(body: RequestTransferDto): Observable<void> {
+        return this.#client.post<void>(this.#api.concat("/transfer"), body);
+    }
+
+    delete(id: string): Observable<void> {
+        return this.#client.delete<void>(`${this.#api}/${id}`);
+    }
+
+    deleteTransfer(transferId: string): Observable<void> {
+        return this.#client.delete<void>(`${this.#api}/transfer/${transferId}`);
     }
 }

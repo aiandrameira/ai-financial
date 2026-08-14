@@ -6,14 +6,23 @@
     </ng-template>
 
     <ng-template aiCellTemplate="type" let-item>
-        <ai-badge-tp-transaction [type]="item.type" />
+        <ai-badge-tp-transaction [type]="item.type" [method]="item.transferMethod" />
     </ng-template>
 
     <ng-template aiCellTemplate="amount" let-item>
-        @let type = item.type | tpCategory;
-        <ai-badge fill="line" [variant]="type.variant" [icon]="type.icon">
-            {{ abs(item.amount) | currency }}
-        </ai-badge>
+        @if (item.transferMethod === 'pix') {
+            <ai-badge fill="line" variant="info" icon="qr-code">
+                {{ abs(item.amount) | currency }}
+            </ai-badge>
+        } @else {
+            @let type = item.type | tpTransaction;
+            <ai-badge fill="line" [variant]="type.variant" [icon]="trendIcon(item.type) ? undefined : type.icon">
+                @if (trendIcon(item.type); as icon) {
+                    <ai-icon-material [icon]="icon" size="sm" />
+                }
+                {{ abs(item.amount) | currency }}
+            </ai-badge>
+        }
     </ng-template>
 
     <ng-template aiCellTemplate="description" let-item>

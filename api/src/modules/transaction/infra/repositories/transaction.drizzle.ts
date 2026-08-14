@@ -6,6 +6,7 @@ import type { IPaginated } from "@/http/api/response"
 
 import type { TransactionDto } from "../../app/dtos"
 import type { FindTransactionsQuery } from "../../app/schemas"
+import type { tpTransferMethodEnum } from "../../domain/enums/tp-transfer-method.enum"
 import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
 import type {
     CreateTransactionData,
@@ -16,7 +17,7 @@ import type {
 
 type TransactionRow = typeof transactions.$inferSelect
 
-function toDto(row: TransactionRow): TransactionDto {
+function toDto(row: TransactionRow, transferMethod: tpTransferMethodEnum | null = null): TransactionDto {
     return {
         id: row.id,
         accountId: row.accountId,
@@ -29,6 +30,7 @@ function toDto(row: TransactionRow): TransactionDto {
         tags: row.tags,
         recurrenceId: row.recurrenceId,
         transferId: row.transferId,
+        transferMethod,
         attachmentUrl: row.attachmentUrl,
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),
@@ -49,8 +51,9 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
         const [rows, [{ total }]] = await Promise.all([
             db
-                .select()
+                .select({ transaction: transactions, transferMethod: transfers.method })
                 .from(transactions)
+                .leftJoin(transfers, eq(transactions.transferId, transfers.id))
                 .where(where)
                 .orderBy(desc(transactions.date), desc(transactions.createdAt))
                 .limit(params.size)
@@ -58,16 +61,22 @@ export class TransactionDrizzleRepository implements TransactionRepository {
             db.select({ total: count() }).from(transactions).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return {
+            data: rows.map((row) => toDto(row.transaction, row.transferMethod)),
+            page: params.page,
+            size: params.size,
+            total,
+        }
     }
 
     async get(userId: string, id: string): Promise<TransactionDto | null> {
         const [row] = await db
-            .select()
+            .select({ transaction: transactions, transferMethod: transfers.method })
             .from(transactions)
+            .leftJoin(transfers, eq(transactions.transferId, transfers.id))
             .where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
 
-        return row ? toDto(row) : null
+        return row ? toDto(row.transaction, row.transferMethod) : null
     }
 
     async findLatestByRecurrence(userId: string, recurrenceId: string): Promise<TransactionDto | null> {
@@ -135,7 +144,12 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
             const [transfer] = await tx
                 .insert(transfers)
-                .values({ userId, sourceTransactionId: source.id, destinationTransactionId: destination.id })
+                .values({
+                    userId,
+                    sourceTransactionId: source.id,
+                    destinationTransactionId: destination.id,
+                    method: data.method,
+                })
                 .returning()
 
             await tx
@@ -144,8 +158,8 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 .where(inArray(transactions.id, [source.id, destination.id]))
 
             return {
-                source: toDto({ ...source, transferId: transfer.id }),
-                destination: toDto({ ...destination, transferId: transfer.id }),
+                source: toDto({ ...source, transferId: transfer.id }, transfer.method),
+                destination: toDto({ ...destination, transferId: transfer.id }, transfer.method),
             }
         })
     }
@@ -159,5 +173,24 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
     async delete(userId: string, id: string): Promise<void> {
         await db.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
+    }
+
+    async deleteTransfer(userId: string, transferId: string): Promise<boolean> {
+        return db.transaction(async (tx) => {
+            const [transfer] = await tx
+                .select()
+                .from(transfers)
+                .where(and(eq(transfers.userId, userId), eq(transfers.id, transferId)))
+
+            if (!transfer) return false
+
+            await tx.delete(transfers).where(eq(transfers.id, transferId))
+
+            await tx
+                .delete(transactions)
+                .where(inArray(transactions.id, [transfer.sourceTransactionId, transfer.destinationTransactionId]))
+
+            return true
+        })
     }
 }

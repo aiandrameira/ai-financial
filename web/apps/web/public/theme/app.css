@@ -2,6 +2,24 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.font-icon-line {
+    font-family: "Material Symbols Outlined";
+    font-variation-settings:
+        "FILL" 0,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24;
+}
+
+.font-icon-fill {
+    font-family: "Material Symbols Outlined";
+    font-variation-settings:
+        "FILL" 1,
+        "wght" 400,
+        "GRAD" 0,
+        "opsz" 24;
+}
+
 :root {
     --font-title: "Lexend", sans-serif;
     --font-text: "Nunito Sans", sans-serif;

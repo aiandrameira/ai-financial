@@ -5,3 +5,4 @@ export * from "./badge-tp-category/badge-tp-category";
 export * from "./badge-tp-transaction/badge-tp-transaction";
 export * from "./button-form/button-form";
 export * from "./heading/heading";
+export * from "./icon-material/icon-material";
