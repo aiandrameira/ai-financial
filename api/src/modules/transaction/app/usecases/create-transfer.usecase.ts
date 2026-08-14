@@ -33,6 +33,7 @@ export class CreateTransferUseCase {
             description: body.description ?? null,
             date: body.date,
             status: body.status,
+            method: body.method,
         })
     }
 }

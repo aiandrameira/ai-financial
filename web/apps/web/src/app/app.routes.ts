@@ -17,6 +17,10 @@ export const appRoutes: Route[] = [
                 path: "transactions",
                 loadChildren: () => import("./views/transaction/transaction.routes").then(m => m.transactionRoutes),
             },
+            {
+                path: "categories",
+                loadChildren: () => import("./views/category/category.routes").then(m => m.categoryRoutes),
+            },
         ],
     },
 ];

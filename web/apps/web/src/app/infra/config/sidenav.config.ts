@@ -6,6 +6,7 @@ export const SIDENAV_MODULES: SidenavGroup[] = [
         items: [
             { icon: "wallet", label: "Contas", path: "/accounts" },
             { icon: "exchange", label: "Transações", path: "/transactions" },
+            { icon: "shapes", label: "Categorias", path: "/categories" },
         ],
     },
 ];

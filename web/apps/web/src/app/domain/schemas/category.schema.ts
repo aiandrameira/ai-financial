@@ -1,12 +1,37 @@
-import type { tpCategoryEnum } from "../enums";
+import { z } from "zod";
 
-export type CategoryDto = {
-    id: string;
-    name: string;
-    type: tpCategoryEnum;
-    parentId: string | null;
-    icon: string | null;
-    color: string | null;
-    createdAt: string;
-    updatedAt: string;
-};
+import { tpCategoryEnum } from "../enums";
+
+export const requestCategorySchema = z.object({
+    id: z
+        .union([z.uuidv7(), z.literal("")])
+        .default("")
+        .optional(),
+    name: z.string().min(2, "O nome precisa ter no mínimo 2 caracteres.").default(""),
+    type: z.enum(tpCategoryEnum).default(tpCategoryEnum.EXPENSE),
+    parentId: z
+        .union([z.uuidv7(), z.literal("")])
+        .default("")
+        .optional(),
+    icon: z.string().default(""),
+    color: z.string().default(""),
+});
+
+export type RequestCategoryDto = z.infer<typeof requestCategorySchema>;
+
+export function makeRequestCategory(raw: Partial<RequestCategoryDto> = {}): RequestCategoryDto {
+    return requestCategorySchema.parse(raw);
+}
+
+export const categorySchema = z.object({
+    id: z.uuidv7(),
+    name: z.string(),
+    type: z.enum(tpCategoryEnum),
+    parentId: z.string().nullable(),
+    icon: z.string().nullable(),
+    color: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+});
+
+export type CategoryDto = z.infer<typeof categorySchema>;

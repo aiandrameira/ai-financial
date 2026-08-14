@@ -5,6 +5,7 @@ import { paginationQuerySchema } from "@/http/api/schema/schemas"
 import { tpRecurrenceFrequencyEnum } from "../../domain/enums/tp-recurrence-frequency.enum"
 import { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
 import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+import { tpTransferMethodEnum } from "../../domain/enums/tp-transfer-method.enum"
 
 const recurrenceInputSchema = z.object({
     frequency: z.enum(tpRecurrenceFrequencyEnum),
@@ -43,6 +44,7 @@ export const createTransferSchema = z.object({
     description: z.string().max(280).optional(),
     date: z.coerce.date(),
     status: z.enum(stTransactionEnum).default(stTransactionEnum.COMPLETED),
+    method: z.enum(tpTransferMethodEnum).default(tpTransferMethodEnum.TRANSFER),
 })
 
 export type CreateTransferSchema = z.infer<typeof createTransferSchema>

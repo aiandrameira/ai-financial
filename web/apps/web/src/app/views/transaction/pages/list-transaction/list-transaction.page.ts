@@ -4,7 +4,7 @@ import { AiHeading } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
 import { TransactionDto } from "@domain/schemas";
 
-import { DialogTransaction, TableTransaction } from "../../components";
+import { DialogTransaction, DialogTransfer, TableTransaction } from "../../components";
 
 @Component({
     selector: "ai-list-transaction",
@@ -21,6 +21,13 @@ export class ListTransactionPage {
 
     protected openEdit(transaction: TransactionDto) {
         this._openDialog(transaction);
+    }
+
+    protected openTransfer() {
+        this.#dialog.create<DialogTransfer, never>({
+            ...formDialogOptions("Nova transferência", "Transfira valores entre suas contas.", "exchange"),
+            component: DialogTransfer,
+        });
     }
 
     private _openDialog(transaction: TransactionDto | null) {

@@ -1,5 +1,6 @@
 import type { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
 import type { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
+import type { tpTransferMethodEnum } from "../../domain/enums/tp-transfer-method.enum"
 
 export type TransactionDto = {
     id: string
@@ -13,6 +14,7 @@ export type TransactionDto = {
     tags: string[]
     recurrenceId: string | null
     transferId: string | null
+    transferMethod: tpTransferMethodEnum | null
     attachmentUrl: string | null
     createdAt: string
     updatedAt: string

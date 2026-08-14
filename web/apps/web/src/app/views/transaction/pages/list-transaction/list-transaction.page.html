@@ -5,9 +5,14 @@
             title="Transações"
             description="Despesas e receitas lançadas nas suas contas."
          />
-        <ai-button size="sm" icon="add-circle" (click)="openCreate()">
-            Cadastrar transação
-        </ai-button>
+        <div class="flex items-center gap-x-2">
+            <ai-button size="sm" variant="outline" icon="exchange" (click)="openTransfer()">
+                Nova transferência
+            </ai-button>
+            <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+                Cadastrar transação
+            </ai-button>
+        </div>
     </div>
 
     <ai-table-transaction (edit)="openEdit($event)" />

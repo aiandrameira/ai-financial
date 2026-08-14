@@ -1,0 +1,14 @@
+<div class="main">
+    <div class="flex items-center justify-between">
+        <ai-heading
+            icon="shapes"
+            title="Categorias"
+            description="Categorias de receitas e despesas."
+         />
+        <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+            Cadastrar categoria
+        </ai-button>
+    </div>
+
+    <ai-table-category (edit)="openEdit($event)" />
+</div>

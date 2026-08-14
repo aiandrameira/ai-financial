@@ -1,0 +1,82 @@
+<div class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-2">
+        <span class="text-xs text-muted-foreground">Método</span>
+        <div class="flex gap-x-2">
+            @for (method of transferMethods; track method) {
+                <ai-button
+                    class="flex-1"
+                    size="sm"
+                    [variant]="form().value().method === method ? 'primary' : 'outline'"
+                    [icon]="transferMethodIcons[method]"
+                    (click)="onMethodChange(method)">
+                    {{ transferMethodMap.get(method) }}
+                </ai-button>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Conta de origem"
+                [value]="form().value().sourceAccountId"
+                (selectionChange)="onSourceChange($event)">
+                @for (account of accounts(); track account.id) {
+                    <ai-select-item [value]="account.id">
+                        @let accountBadge = account.type | tpAccount;
+                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedSource(); as account) {
+                @let accountBadge = account.type | tpAccount;
+                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
+                    {{ account.name }}
+                </ai-badge>
+            }
+        </div>
+
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Conta de destino"
+                [value]="form().value().destinationAccountId"
+                (selectionChange)="onDestinationChange($event)">
+                @for (account of accounts(); track account.id) {
+                    <ai-select-item [value]="account.id">
+                        @let accountBadge = account.type | tpAccount;
+                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedDestination(); as account) {
+                @let accountBadge = account.type | tpAccount;
+                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
+                    {{ account.name }}
+                </ai-badge>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
+        <ai-input class="w-full" label="Valor" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
+
+        <ai-date-picker
+            class="w-full"
+            placeholder="Selecione a data"
+            format="dd/MM/yyyy"
+            [value]="form().value().date"
+            (valueChange)="onDateChange($event)" />
+    </div>
+
+    <ai-textarea class="w-full" label="Descrição" [rows]="6" [maxlength]="280" [formField]="form.description" />
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        <ai-button size="sm" [icon]="transferMethodIcons[form().value().method]" [loading]="loading()" (click)="onSave()">
+            Transferir
+        </ai-button>
+    </div>
+</div>
