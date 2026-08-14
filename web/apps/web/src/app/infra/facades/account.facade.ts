@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 
 import type { AccountDto } from "@domain/repositories";
-import type { CreateAccount } from "@domain/schemas";
+import type { RequestAccountDto } from "@domain/schemas";
 import { AccountService } from "@infra/services";
 
 @Injectable({ providedIn: "root" })
@@ -25,8 +25,21 @@ export class AccountFacade {
         }
     }
 
-    async create(input: CreateAccount): Promise<void> {
+    async create(input: RequestAccountDto): Promise<void> {
         await firstValueFrom(this.#service.create(input));
         await this.load();
+    }
+
+    async update(id: string, input: RequestAccountDto): Promise<void> {
+        await firstValueFrom(this.#service.update(id, input));
+        await this.load();
+    }
+
+    async save(input: RequestAccountDto): Promise<void> {
+        if (input.id) {
+            await this.update(input.id, input);
+        } else {
+            await this.create(input);
+        }
     }
 }

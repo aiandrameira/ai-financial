@@ -1,0 +1,14 @@
+<div class="main">
+    <div class="flex items-center justify-between">
+        <ai-heading
+            icon="wallet"
+            title="Contas"
+            description="Contas correntes, poupança e carteira."
+         />
+        <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+            Cadastrar conta
+        </ai-button>
+    </div>
+
+    <ai-table-account (edit)="openEdit($event)" />
+</div>

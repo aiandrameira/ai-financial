@@ -1,0 +1,36 @@
+<ai-table [config]="config()" (rowClick)="rowClick($event)">
+    <ng-template aiCellTemplate="date" let-item>
+        <ai-badge variant="default">
+            {{ item.date | date: "dd/MM/yyyy" }}
+        </ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="type" let-item>
+        <ai-badge-tp-transaction [type]="item.type" />
+    </ng-template>
+
+    <ng-template aiCellTemplate="amount" let-item>
+        @let type = item.type | tpCategory;
+        <ai-badge fill="line" [variant]="type.variant" [icon]="type.icon">
+            {{ abs(item.amount) | currency }}
+        </ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="description" let-item>
+        <div class="max-w-56 overflow-hidden whitespace-nowrap text-ellipsis">
+            {{ item.description }}
+        </div>
+    </ng-template>
+    
+    <ng-template aiCellTemplate="status" let-item>
+        <ai-badge-st-transaction [status]="item.status" />
+    </ng-template>
+
+    <ng-template aiCellTemplate="remove" let-item>
+        <ai-button variant="destructive"
+            fill="line"
+            icon="delete-bin"
+            size="xs"
+            (click)="onRemove($event, item)" />
+    </ng-template>
+</ai-table>

@@ -1,0 +1,14 @@
+<div class="main">
+    <div class="flex items-center justify-between">
+        <ai-heading
+            icon="exchange"
+            title="Transações"
+            description="Despesas e receitas lançadas nas suas contas."
+         />
+        <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+            Cadastrar transação
+        </ai-button>
+    </div>
+
+    <ai-table-transaction (edit)="openEdit($event)" />
+</div>

@@ -3,6 +3,8 @@ import type { Route } from "@angular/router";
 export const transactionRoutes: Route[] = [
     {
         path: "",
-        loadComponent: () => import("./pages/list-transaction.page").then(m => m.ListTransactionPage),
+        title: "Transações",
+        data: { breadcrumb: "Transações", icon: "exchange" },
+        loadComponent: () => import("./pages/list-transaction/list-transaction.page").then(c => c.ListTransactionPage),
     },
 ];

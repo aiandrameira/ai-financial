@@ -1,0 +1,19 @@
+<header class="flex items-center gap-3 border-b border-border px-4 py-3">
+    <ai-breadcrumb-content>
+        <ai-breadcrumb-list>
+            @for (crumb of breadcrumbService.breadcrumbs(); track crumb.path; let last = $last) {
+                <ai-breadcrumb-item>
+                    @if (last) {
+                        <ai-breadcrumb-page>{{ crumb.label }}</ai-breadcrumb-page>
+                    } @else {
+                        <ai-breadcrumb-link [link]="crumb.path || '/'">{{ crumb.label }}</ai-breadcrumb-link>
+                    }
+                </ai-breadcrumb-item>
+
+                @if (!last) {
+                    <ai-breadcrumb-separator />
+                }
+            }
+        </ai-breadcrumb-list>
+    </ai-breadcrumb-content>
+</header>

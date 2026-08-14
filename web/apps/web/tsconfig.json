@@ -7,11 +7,13 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "isolatedModules": true,
+        "resolveJsonModule": true,
         "target": "es2022",
         "emitDecoratorMetadata": false,
         "module": "preserve",
         "baseUrl": ".",
         "paths": {
+            "@package": ["../../package.json"],
             "@public/*": ["public/*"],
             "@env/*": ["src/environments/*"],
             "@core/*": ["src/app/core/*"],

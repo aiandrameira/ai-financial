@@ -1,16 +1,13 @@
-import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
+import { AiToast } from "@aiandralves/ai-ui";
+import { Component } from "@angular/core";
+import { RouterOutlet } from "@angular/router";
 
 @Component({
     selector: "app-root",
-    imports: [RouterOutlet, RouterLink, RouterLinkActive],
-    templateUrl: "./app.html",
-    styleUrl: "./app.scss",
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [RouterOutlet, AiToast],
+    template: `
+        <ai-toast />
+        <router-outlet />
+    `,
 })
-export class App {
-    protected navLinks = [
-        { path: "/accounts", label: "Contas" },
-        { path: "/transactions", label: "Transações" },
-    ];
-}
+export class App {}

@@ -1,0 +1,50 @@
+@if (user(); as currentUser) {
+    <div class="border-b border-border p-2">
+        @if (userMenuItems().length > 0) {
+            <button type="button" ai-menu [menu]="userMenu" class="flex w-full items-center gap-2 rounded-md p-2 hover:bg-border" [class.justify-center]="collapsed()">
+                <ai-avatar [image]="currentUser.avatarUrl ?? ''" [fallback]="initials(currentUser.name)" size="sm" />
+
+                @if (!collapsed()) {
+                    <span class="flex flex-1 flex-col overflow-hidden text-left">
+                        <span class="flex items-center gap-x-1 truncate font-title text-sm font-medium text-primary">
+                            {{ currentUser.name }}
+                            <ai-icon size="xs" icon="verified-badge" type="fill" class="text-accent" />
+                        </span>
+                    </span>
+
+                    <ai-icon icon="expand-up-down" size="sm" class="text-muted-foreground" />
+                }
+            </button>
+
+            <ai-menu-content #userMenu="aiMenuContent">
+                <ai-menu-label>Conta</ai-menu-label>
+                <div class="px-2 pb-1">
+                    <span class="flex items-center gap-x-1 truncate font-title text-sm font-medium text-primary">
+                        {{ currentUser?.name }}
+                        <ai-icon size="xs" icon="verified-badge" type="fill" class="text-accent" />
+                    </span>
+                    <p class="truncate text-xs font-text font-semibold text-muted-foreground">{{ currentUser?.email }}</p>
+                </div>
+
+                <ai-separator />
+
+                @for (item of userMenuItems(); track item.action) {
+                    <ai-menu-item (click)="onUserMenuAction(item.action)">
+                        <ai-icon [icon]="item.icon" size="sm" />
+                        {{ item.label }}
+                    </ai-menu-item>
+                }
+            </ai-menu-content>
+        } @else {
+            <div class="flex items-center gap-2 rounded-md p-2" [class.justify-center]="collapsed()">
+                <ai-avatar [image]="currentUser.avatarUrl ?? ''" [fallback]="initials(currentUser.name)" size="sm" />
+
+                @if (!collapsed()) {
+                    <span class="flex flex-1 flex-col overflow-hidden text-left">
+                        <span class="truncate text-sm font-title font-medium text-primary">{{ currentUser.name }}</span>
+                    </span>
+                }
+            </div>
+        }
+    </div>
+}

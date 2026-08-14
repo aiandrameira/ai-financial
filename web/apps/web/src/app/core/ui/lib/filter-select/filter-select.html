@@ -1,0 +1,60 @@
+<button
+    type="button"
+    aiPopover
+    [content]="panel"
+    position="bottom"
+    class="inline-flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-1.5 text-sm text-foreground hover:bg-ghost"
+>
+    <ai-icon icon="add-circle" size="sm" class="text-muted-foreground" />
+    <span class="font-medium">{{ label() }}</span>
+
+    @if (summary(); as text) {
+        <ai-separator orientation="vertical" class="h-4" />
+        <span class="max-w-48 truncate text-muted-foreground">{{ text }}</span>
+    }
+
+    <ai-icon icon="arrow-down-s" size="sm" class="text-muted-foreground" />
+</button>
+
+<ng-template #panel>
+    <ai-popover class="w-72 p-0">
+        <div class="flex items-center gap-2 border-b border-border px-3 py-2">
+            <ai-icon icon="search" size="sm" class="text-muted-foreground" />
+            <input
+                type="text"
+                [value]="search()"
+                (input)="setSearch($any($event.target).value)"
+                [placeholder]="searchPlaceholder()"
+                class="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+        </div>
+
+        <div class="max-h-64 overflow-y-auto p-2">
+            @for (option of filteredOptions(); track option.value) {
+                <label class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 hover:bg-ghost">
+                    <ai-checkbox [checked]="isSelected(option.value)" (checkedChange)="toggle(option.value)" />
+
+                    @if (option.badgeVariant) {
+                        <ai-badge [variant]="option.badgeVariant" [icon]="option.icon">{{ option.label }}</ai-badge>
+                    } @else {
+                        <span class="text-sm text-foreground">{{ option.label }}</span>
+                    }
+                </label>
+            } @empty {
+                <p class="px-2 py-4 text-center text-sm text-muted-foreground">Nenhum resultado</p>
+            }
+        </div>
+
+        @if (value().length > 0) {
+            <div class="border-t border-border p-2">
+                <button
+                    type="button"
+                    (click)="clear()"
+                    class="w-full rounded-md py-1.5 text-center text-sm text-muted-foreground hover:bg-ghost hover:text-foreground"
+                >
+                    Limpar {{ label().toLowerCase() }}
+                </button>
+            </div>
+        }
+    </ai-popover>
+</ng-template>

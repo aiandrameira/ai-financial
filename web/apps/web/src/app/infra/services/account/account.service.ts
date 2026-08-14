@@ -5,7 +5,7 @@ import { map } from "rxjs";
 
 import { mapFind, mapGet } from "@core/ui";
 import type { AccountDto, AccountRepository } from "@domain/repositories";
-import type { CreateAccount } from "@domain/schemas";
+import type { RequestAccountDto } from "@domain/schemas";
 import { environment } from "@env/environment";
 
 @Injectable({
@@ -19,7 +19,11 @@ export class AccountService implements AccountRepository {
         return this.#client.get(this.#api, { params: { page: 1, size: 100 } }).pipe(map(response => mapFind(response)));
     }
 
-    create(body: CreateAccount): Observable<AccountDto> {
+    create(body: RequestAccountDto): Observable<AccountDto> {
         return this.#client.post(this.#api, body).pipe(map(response => mapGet(response)));
+    }
+
+    update(id: string, body: RequestAccountDto): Observable<void> {
+        return this.#client.put<void>(`${this.#api}/${id}`, body);
     }
 }

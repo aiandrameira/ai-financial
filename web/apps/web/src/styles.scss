@@ -1,0 +1,27 @@
+@use "app.css";
+@use "tailwindcss" as tailwind;
+
+@source "../../../node_modules/@aiandralves/ai-ui";
+
+@layer base {
+    html,
+    body {
+        @apply h-full;
+    }
+    body {
+        @apply bg-background text-muted-foreground text-base font-text font-semibold;
+    }
+}
+
+@layer utilities {
+    .main {
+        @apply flex flex-col gap-y-6 p-6 max-w-5xl mx-auto;
+    }
+
+    ::-webkit-scrollbar {
+        @apply w-[0.4rem] h-[0.4rem] bg-zinc-300 rounded-sm;
+        &-thumb {
+            @apply bg-zinc-400 rounded-sm;
+        }
+    }
+}

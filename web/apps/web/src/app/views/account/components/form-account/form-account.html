@@ -1,0 +1,52 @@
+<div class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-2">
+        <ai-input class="w-full" 
+            label="Nome" 
+            [maxlength]="80" 
+            [formField]="form.name" />
+
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12 [&_button]:capitalize"
+                placeholder="Selecione o tipo de conta"
+                [value]="form().value().type"
+                [disabled]="form().disabled()"
+                (selectionChange)="onTypeChange($event)">
+                @for (type of accountTypes; track type) {
+                    <ai-select-item [value]="type">
+                        <ai-badge-tp-account [type]="type" />
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedType(); as type) {
+                <ai-badge-tp-account [type]="type" />
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
+        <ai-input class="w-full" 
+            label="Instituição" 
+            [maxlength]="120" 
+            [formField]="form.institution" />
+
+        <ai-input class="w-full" 
+            label="Saldo inicial" 
+            [maskConfig]="vlMaskConfig" 
+            [formField]="form.initialBalance" />
+    </div>
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        @let isNew = !id();
+        @let isDisabled = form().disabled();
+
+        <ai-button-form
+            [isNew]="isNew"
+            [disabled]="isDisabled"
+            [loading]="loading()"
+            (cancelEdit)="enabled.set(true)"
+            (edit)="enabled.set(false)"
+            (save)="onSave()" />
+    </div>
+</div>

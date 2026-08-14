@@ -52,7 +52,9 @@ The product modules planned for this app (per `docs/planning.md` sections 4 and 
 - **Utils (`core/utils/`)**: Pure functions and helpers that are framework-agnostic;
 - **Helpers (`core/helpers/`)**: Functions that may depend on Angular but are not specific to business logic (e.g., `formatDayjs`, `handleError`);
 - **Pipes (`core/pipes/`)**: Reusable Angular pipes for formatting and transforming data in templates;
-- **UI (`core/ui/`)**: Atomic, reusable UI components that do not depend on specific business logic. Prefer `@aiandralves/ai-ui` components first — only build a custom one here when the design system doesn't cover the need.
+- **UI (`core/ui/`)**: Reusable, business-agnostic UI built on top of `@aiandralves/ai-ui` — only build one here when the design system doesn't cover the need. Selector prefix is `ai-`, not `app-` (the app-wide ESLint `component-selector`/`directive-selector` rules allow both) — this marks it as design-system-level, matching `@aiandralves/ai-ui`'s own `ai-*` components and the sibling `ai-auth` project's own `ai-sidenav`. Two kinds of subfolder:
+  - **`core/ui/lib/`**: code brought over verbatim from another project (currently `api-response/`, `filter/`, copied from `ai-auth` — see the Code Style section's note on that pattern). Don't add new things here casually; it's specifically for adopted shared code.
+  - **`core/ui/<feature>/`** (sibling to `lib/`, not inside it): components we build ourselves — e.g. `layout/sidenav/`, `filter-select/`. A component with real state/services mirrors `ai-auth`'s layered pattern (`core/components/`, `domain/schemas/`, `infra/services/`) — see `ai-sidenav` for the reference shape, and its `SIDENAV.md`-equivalent thinking (state lives in a service, persisted via `core/utils/local-storage-signal.util.ts`, not in the component). A simple, stateless component (like `FilterSelect`) stays flat — don't force the three-layer split where there's no real state to separate out.
 
 Structure:
 
@@ -64,8 +66,16 @@ core/
     │   └── format-dayjs.helper.ts      # e.g., `formatDayjs.helper.ts`
     ├── pipes/                          # Reusable Angular pipes
     │   └── st-transaction.pipe.ts
-    └── ui/                             # Atomic, reusable UI components
-        └── components/                 # Reusable components
+    └── ui/
+        ├── lib/                        # Adopted shared code (currently from ai-auth)
+        │   ├── api-response/
+        │   └── filter/
+        ├── layout/
+        │   └── sidenav/
+        │       ├── core/components/    # ai-sidenav
+        │       ├── domain/schemas/     # SidenavGroup, SidenavItem, SidenavUser
+        │       └── infra/services/     # SidenavService (collapsed state, persisted)
+        └── filter-select/              # ai-filter-select — flat, no state to layer out
 ```
 
 ## 4. Domain Layer (`domain/`)

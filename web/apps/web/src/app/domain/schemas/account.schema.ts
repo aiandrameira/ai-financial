@@ -2,36 +2,39 @@ import { z } from "zod";
 
 import { tpAccountEnum } from "../enums";
 
-export const createAccountSchema = z.object({
-    name: z.string().min(1, "Informe um nome"),
-    type: z.enum(tpAccountEnum),
-    institution: z.string().optional(),
-    initialBalance: z.number(),
+export const requestAccountSchema = z.object({
+    id: z
+        .union([z.uuidv7(), z.literal("")])
+        .default("")
+        .optional(),
+    name: z.string().min(2, "O nome precisa ter no mínimo 2 caracteres.").default(""),
+    type: z.enum(tpAccountEnum).default(tpAccountEnum.CHECKING),
+    institution: z.string().default(""),
+    initialBalance: z.number().default(0),
 });
 
-export type CreateAccount = z.infer<typeof createAccountSchema>;
+export type RequestAccountDto = z.infer<typeof requestAccountSchema>;
 
-export function makeCreateAccount(overrides: Partial<CreateAccount> = {}): CreateAccount {
-    return {
-        name: "",
-        type: tpAccountEnum.CHECKING,
-        institution: "",
-        initialBalance: 0,
-        ...overrides,
-    };
+export function makeRequestAccount(raw: Partial<RequestAccountDto> = {}): RequestAccountDto {
+    return requestAccountSchema.parse(raw);
 }
 
-export type AccountDto = {
-    id: string;
-    name: string;
-    type: tpAccountEnum;
-    institution: string | null;
-    initialBalance: string;
-    currentBalance: string;
-    projectedBalance: string;
-    color: string | null;
-    icon: string | null;
-    archivedAt: string | null;
-    createdAt: string;
-    updatedAt: string;
-};
+export const accountSchema = z.object({
+    id: z
+        .union([z.uuidv7(), z.literal("")])
+        .default("")
+        .optional(),
+    name: z.string(),
+    type: z.enum(tpAccountEnum),
+    institution: z.string().nullable(),
+    initialBalance: z.string(),
+    currentBalance: z.string(),
+    projectedBalance: z.string(),
+    color: z.string().nullable(),
+    icon: z.string().nullable(),
+    archivedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+});
+
+export type AccountDto = z.infer<typeof accountSchema>;

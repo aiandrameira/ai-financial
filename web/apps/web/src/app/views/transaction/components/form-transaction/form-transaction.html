@@ -1,0 +1,91 @@
+<div class="flex flex-col gap-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12 [&_button]:capitalize"
+                placeholder="Selecione o tipo"
+                [value]="form().value().type"
+                [disabled]="form().disabled()"
+                (selectionChange)="onTypeChange($event)">
+                @for (type of transactionTypes; track type) {
+                    <ai-select-item [value]="type">
+                        <ai-badge-tp-transaction [type]="type" />
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedType(); as type) {
+                <ai-badge-tp-transaction [type]="type" />
+            }
+        </div>
+
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Selecione a conta"
+                [value]="form().value().accountId"
+                [disabled]="form().disabled()"
+                (selectionChange)="onAccountChange($event)">
+                @for (account of accounts(); track account.id) {
+                    <ai-select-item [value]="account.id">
+                        @let accountBadge = account.type | tpAccount;
+                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedAccount(); as account) {
+                @let accountBadge = account.type | tpAccount;
+                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
+                    {{ account.name }}
+                </ai-badge>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Selecione a categoria"
+                [value]="form().value().categoryId"
+                [disabled]="form().disabled()"
+                (selectionChange)="onCategoryChange($event)">
+                @for (category of categoriesForType(); track category.id) {
+                    <ai-select-item [value]="category.id">
+                        <ai-badge-category [category]="category" />
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedCategory(); as category) {
+                <ai-badge-category [category]="category" />
+            }
+        </div>
+
+        <ai-input class="w-full" label="Valor" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
+    </div>
+
+    <ai-date-picker
+        class="w-full"
+        placeholder="Selecione a data"
+        format="dd/MM/yyyy"
+        [value]="form().value().date"
+        [disabled]="form().disabled()"
+        (valueChange)="onDateChange($event)" />
+
+    <ai-textarea class="w-full" label="Descrição" [rows]="6" [maxlength]="280" [formField]="form.description" />
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        @let isNew = !id();
+        @let isDisabled = form().disabled();
+
+        <ai-button-form
+            [isNew]="isNew"
+            [disabled]="isDisabled"
+            [loading]="loading()"
+            (cancelEdit)="enabled.set(true)"
+            (edit)="enabled.set(false)"
+            (save)="onSave()" />
+    </div>
+</div>
