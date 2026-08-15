@@ -1,0 +1,27 @@
+<div
+    class="flex cursor-pointer flex-col gap-y-3 rounded-xl border border-border p-4 transition-colors hover:bg-muted/30"
+    role="button"
+    tabindex="0"
+    (click)="onCardClick()"
+    (keydown.enter)="onCardClick()"
+    (keydown.space)="onCardClick()">
+    <div class="flex items-center justify-between gap-x-2">
+        @if (category(); as cat) {
+            <ai-badge-category [category]="cat" />
+        }
+        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove($event)" />
+    </div>
+
+    <ai-progress-bar [progress]="progressPercent()" [barClass]="barClass()" />
+
+    <div class="flex items-center justify-between text-sm">
+        <span class="font-semibold">{{ realized() | currency }}</span>
+        <span class="text-muted-foreground">de {{ planned() | currency }}</span>
+    </div>
+
+    @if (status() === "destructive") {
+        <ai-badge variant="destructive" fill="line" class="w-max">Orçamento estourado</ai-badge>
+    } @else if (status() === "warning") {
+        <ai-badge variant="warning" fill="line" class="w-max">Perto do limite</ai-badge>
+    }
+</div>

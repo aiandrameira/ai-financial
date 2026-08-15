@@ -1,0 +1,43 @@
+<div class="flex flex-col gap-y-4">
+    @let isNew = !id();
+
+    @if (isNew) {
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Selecione a categoria"
+                [value]="form().value().categoryId"
+                [disabled]="form().disabled()"
+                (selectionChange)="onCategoryChange($event)">
+                @for (category of availableCategories(); track category.id) {
+                    <ai-select-item [value]="category.id">
+                        <ai-badge-category [category]="category" />
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (selectedCategory(); as category) {
+                <ai-badge-category [category]="category" />
+            }
+        </div>
+    } @else if (selectedCategory(); as category) {
+        <div class="flex flex-col gap-y-1">
+            <span class="text-xs text-muted-foreground">Categoria</span>
+            <ai-badge-category [category]="category" class="w-max" />
+        </div>
+    }
+
+    <ai-input class="w-full" label="Valor planejado" [maskConfig]="vlMaskConfig" [formField]="form.plannedAmount" />
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        @let isDisabled = form().disabled();
+
+        <ai-button-form
+            [isNew]="isNew"
+            [disabled]="isDisabled"
+            [loading]="loading()"
+            (cancelEdit)="enabled.set(true)"
+            (edit)="enabled.set(false)"
+            (save)="onSave()" />
+    </div>
+</div>

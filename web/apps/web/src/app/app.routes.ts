@@ -25,6 +25,10 @@ export const appRoutes: Route[] = [
                 path: "credit-cards",
                 loadChildren: () => import("./views/credit-card/credit-card.routes").then(m => m.creditCardRoutes),
             },
+            {
+                path: "budget",
+                loadChildren: () => import("./views/budget/budget.routes").then(m => m.budgetRoutes),
+            },
         ],
     },
 ];

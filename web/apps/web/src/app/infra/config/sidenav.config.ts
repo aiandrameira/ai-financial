@@ -8,6 +8,7 @@ export const SIDENAV_MODULES: SidenavGroup[] = [
             { icon: "exchange", label: "Transações", path: "/transactions" },
             { icon: "shapes", label: "Categorias", path: "/categories" },
             { icon: "bank-card", label: "Cartões", path: "/credit-cards" },
+            { icon: "pie-chart", label: "Orçamento", path: "/budget" },
         ],
     },
 ];
