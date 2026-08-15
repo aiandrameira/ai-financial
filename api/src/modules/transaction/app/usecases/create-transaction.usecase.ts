@@ -6,9 +6,14 @@ import { NotFoundError, ValidationError } from "@/http/errors/errors"
 
 import type { TransactionDto } from "../dtos"
 import type { CreateTransactionSchema } from "../schemas"
-import { computeNextOccurrence, matchesCategoryType } from "../../domain/services"
+import { addMonthsUtc, computeNextOccurrence, matchesCategoryType, splitAmount } from "../../domain/services"
 import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
-import type { RecurrenceRepository, TransactionRepository } from "../../domain/repositories"
+import type {
+    CreateTransactionData,
+    InstallmentGroupRepository,
+    RecurrenceRepository,
+    TransactionRepository,
+} from "../../domain/repositories"
 
 export class CreateTransactionUseCase {
     constructor(
@@ -18,11 +23,27 @@ export class CreateTransactionUseCase {
         private recurrenceRepository: RecurrenceRepository,
         private creditCardRepository: CreditCardRepository,
         private creditCardInvoiceRepository: CreditCardInvoiceRepository,
+        private installmentGroupRepository: InstallmentGroupRepository,
     ) {}
 
     async execute(userId: string, body: CreateTransactionSchema): Promise<TransactionDto> {
         if (!body.accountId === !body.creditCardId) {
             throw new ValidationError("Provide exactly one of accountId or creditCardId")
+        }
+        if (body.installments && !body.creditCardId) {
+            throw new ValidationError("Installments require a credit card")
+        }
+
+        if (body.categoryId) {
+            const category = await this.categoryRepository.get(userId, body.categoryId)
+            if (!category) throw new NotFoundError("Category not found")
+            if (!matchesCategoryType(category.type, body.type)) {
+                throw new ValidationError("Category must have the same type as the transaction")
+            }
+        }
+
+        if (body.creditCardId && body.installments && body.installments >= 2) {
+            return this._createInstallmentPurchase(userId, body.creditCardId, body)
         }
 
         let accountId: string | null = null
@@ -44,14 +65,6 @@ export class CreateTransactionUseCase {
                 body.date,
             )
             invoiceId = invoice.id
-        }
-
-        if (body.categoryId) {
-            const category = await this.categoryRepository.get(userId, body.categoryId)
-            if (!category) throw new NotFoundError("Category not found")
-            if (!matchesCategoryType(category.type, body.type)) {
-                throw new ValidationError("Category must have the same type as the transaction")
-            }
         }
 
         let recurrenceId: string | null = null
@@ -79,7 +92,63 @@ export class CreateTransactionUseCase {
             date: body.date,
             tags: body.tags,
             recurrenceId,
+            installmentGroupId: null,
+            installmentNumber: null,
             attachmentUrl: body.attachmentUrl ?? null,
         })
+    }
+
+    private async _createInstallmentPurchase(
+        userId: string,
+        creditCardId: string,
+        body: CreateTransactionSchema,
+    ): Promise<TransactionDto> {
+        const creditCard = await this.creditCardRepository.get(userId, creditCardId)
+        if (!creditCard) throw new NotFoundError("Credit card not found")
+
+        const count = body.installments as number
+        const amounts = splitAmount(body.amount, count)
+        const sign = body.type === tpTransactionEnum.EXPENSE ? -1 : 1
+
+        const installments: Omit<CreateTransactionData, "installmentGroupId">[] = []
+        for (let index = 0; index < count; index++) {
+            const installmentDate = addMonthsUtc(body.date, index)
+            const invoice = await this.creditCardInvoiceRepository.getOrCreateForDate(
+                userId,
+                creditCard.id,
+                creditCard.closingDay,
+                creditCard.dueDay,
+                installmentDate,
+            )
+
+            installments.push({
+                accountId: null,
+                invoiceId: invoice.id,
+                categoryId: body.categoryId ?? null,
+                type: body.type,
+                status: body.status,
+                amount: (sign * amounts[index]).toFixed(2),
+                description: body.description ?? null,
+                date: installmentDate,
+                tags: body.tags,
+                recurrenceId: null,
+                installmentNumber: index + 1,
+                attachmentUrl: body.attachmentUrl ?? null,
+            })
+        }
+
+        const created = await this.installmentGroupRepository.createWithTransactions(
+            userId,
+            {
+                creditCardId: creditCard.id,
+                description: body.description ?? null,
+                totalAmount: (sign * body.amount).toFixed(2),
+                installmentsTotal: count,
+                purchaseDate: body.date,
+            },
+            installments,
+        )
+
+        return created.find((transaction) => transaction.installmentNumber === 1) ?? created[0]
     }
 }

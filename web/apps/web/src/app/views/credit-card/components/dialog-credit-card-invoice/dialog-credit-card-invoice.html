@@ -100,7 +100,13 @@
                                 <div class="flex items-center gap-x-2 text-[11px] text-muted-foreground">
                                     <span>{{ transaction.date | date: "dd/MM/yyyy" }}</span>
                                     <span class="inline-block w-1 h-1 rounded-full bg-muted-foreground/40"></span>
-                                    <span class="bg-muted px-1.5 py-0.5 rounded text-[10px] font-medium">Compra</span>
+                                    <span class="bg-muted px-1.5 py-0.5 rounded text-[10px] font-medium">
+                                        @if (transaction.installmentNumber && transaction.installmentsTotal) {
+                                            Parcela {{ transaction.installmentNumber }}/{{ transaction.installmentsTotal }}
+                                        } @else {
+                                            Compra
+                                        }
+                                    </span>
                                 </div>
                             </div>
                         </div>

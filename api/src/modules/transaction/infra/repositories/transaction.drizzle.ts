@@ -1,7 +1,7 @@
 import { and, count, desc, eq, gte, inArray, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { creditCardInvoices, transactions, transfers } from "@/db/schema"
+import { creditCardInvoices, installmentGroups, transactions, transfers } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 
 import type { TransactionDto } from "../../app/dtos"
@@ -21,6 +21,7 @@ function toDto(
     row: TransactionRow,
     transferMethod: tpTransferMethodEnum | null = null,
     creditCardId: string | null = null,
+    installmentsTotal: number | null = null,
 ): TransactionDto {
     return {
         id: row.id,
@@ -37,6 +38,9 @@ function toDto(
         recurrenceId: row.recurrenceId,
         transferId: row.transferId,
         transferMethod,
+        installmentGroupId: row.installmentGroupId,
+        installmentNumber: row.installmentNumber,
+        installmentsTotal,
         attachmentUrl: row.attachmentUrl,
         createdAt: row.createdAt.toISOString(),
         updatedAt: row.updatedAt.toISOString(),
@@ -58,10 +62,16 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
         const [rows, [{ total }]] = await Promise.all([
             db
-                .select({ transaction: transactions, transferMethod: transfers.method, creditCardId: creditCardInvoices.creditCardId })
+                .select({
+                    transaction: transactions,
+                    transferMethod: transfers.method,
+                    creditCardId: creditCardInvoices.creditCardId,
+                    installmentsTotal: installmentGroups.installmentsTotal,
+                })
                 .from(transactions)
                 .leftJoin(transfers, eq(transactions.transferId, transfers.id))
                 .leftJoin(creditCardInvoices, eq(transactions.invoiceId, creditCardInvoices.id))
+                .leftJoin(installmentGroups, eq(transactions.installmentGroupId, installmentGroups.id))
                 .where(where)
                 .orderBy(desc(transactions.date), desc(transactions.createdAt))
                 .limit(params.size)
@@ -70,7 +80,7 @@ export class TransactionDrizzleRepository implements TransactionRepository {
         ])
 
         return {
-            data: rows.map((row) => toDto(row.transaction, row.transferMethod, row.creditCardId)),
+            data: rows.map((row) => toDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal)),
             page: params.page,
             size: params.size,
             total,
@@ -79,13 +89,19 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
     async get(userId: string, id: string): Promise<TransactionDto | null> {
         const [row] = await db
-            .select({ transaction: transactions, transferMethod: transfers.method, creditCardId: creditCardInvoices.creditCardId })
+            .select({
+                transaction: transactions,
+                transferMethod: transfers.method,
+                creditCardId: creditCardInvoices.creditCardId,
+                installmentsTotal: installmentGroups.installmentsTotal,
+            })
             .from(transactions)
             .leftJoin(transfers, eq(transactions.transferId, transfers.id))
             .leftJoin(creditCardInvoices, eq(transactions.invoiceId, creditCardInvoices.id))
+            .leftJoin(installmentGroups, eq(transactions.installmentGroupId, installmentGroups.id))
             .where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
 
-        return row ? toDto(row.transaction, row.transferMethod, row.creditCardId) : null
+        return row ? toDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal) : null
     }
 
     async findLatestByRecurrence(userId: string, recurrenceId: string): Promise<TransactionDto | null> {
@@ -114,6 +130,8 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 date: data.date,
                 tags: data.tags,
                 recurrenceId: data.recurrenceId,
+                installmentGroupId: data.installmentGroupId,
+                installmentNumber: data.installmentNumber,
                 attachmentUrl: data.attachmentUrl,
             })
             .returning()
@@ -183,6 +201,12 @@ export class TransactionDrizzleRepository implements TransactionRepository {
 
     async delete(userId: string, id: string): Promise<void> {
         await db.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
+    }
+
+    async deleteByInstallmentGroup(userId: string, installmentGroupId: string): Promise<void> {
+        await db
+            .delete(transactions)
+            .where(and(eq(transactions.userId, userId), eq(transactions.installmentGroupId, installmentGroupId)))
     }
 
     async deleteTransfer(userId: string, transferId: string): Promise<boolean> {

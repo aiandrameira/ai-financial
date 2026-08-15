@@ -94,6 +94,19 @@
         <ai-input class="w-full" label="Valor" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
     </div>
 
+    @if (canInstall()) {
+        <div class="flex items-center justify-between gap-x-4 rounded-lg border border-border p-3">
+            <div class="flex items-center gap-x-2">
+                <ai-switch [checked]="parcelar()" [disabled]="form().disabled()" (changeCheck)="onParcelarChange($event)" />
+                <span class="text-sm font-medium">Parcelar compra</span>
+            </div>
+
+            @if (parcelar()) {
+                <ai-input class="w-28" type="number" label="Parcelas" [formField]="form.installments" />
+            }
+        </div>
+    }
+
     <ai-date-picker
         class="w-full"
         placeholder="Selecione a data"

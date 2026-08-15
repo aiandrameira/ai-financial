@@ -17,6 +17,9 @@ export type TransactionDto = {
     recurrenceId: string | null
     transferId: string | null
     transferMethod: tpTransferMethodEnum | null
+    installmentGroupId: string | null
+    installmentNumber: number | null
+    installmentsTotal: number | null
     attachmentUrl: string | null
     createdAt: string
     updatedAt: string

@@ -14,6 +14,7 @@ export const requestTransactionSchema = z.object({
     amount: z.number().positive("Informe um valor maior que zero").default(0),
     description: z.string().default(""),
     date: z.string().min(1, "Informe a data").default(new Date().toISOString().slice(0, 10)),
+    installments: z.number().int().min(1).max(48).default(1),
 });
 
 export type RequestTransactionDto = z.infer<typeof requestTransactionSchema>;
@@ -57,6 +58,9 @@ export const transactionSchema = z.object({
     recurrenceId: z.string().nullable(),
     transferId: z.string().nullable(),
     transferMethod: z.enum(tpTransferMethodEnum).nullable(),
+    installmentGroupId: z.string().nullable(),
+    installmentNumber: z.number().nullable(),
+    installmentsTotal: z.number().nullable(),
     attachmentUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),

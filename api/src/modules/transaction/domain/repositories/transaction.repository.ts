@@ -17,6 +17,8 @@ export type CreateTransactionData = {
     date: Date
     tags: string[]
     recurrenceId: string | null
+    installmentGroupId: string | null
+    installmentNumber: number | null
     attachmentUrl: string | null
 }
 
@@ -54,6 +56,7 @@ export interface TransactionRepository {
     update(userId: string, id: string, data: UpdateTransactionData): Promise<void>
     delete(userId: string, id: string): Promise<void>
     deleteTransfer(userId: string, transferId: string): Promise<boolean>
+    deleteByInstallmentGroup(userId: string, installmentGroupId: string): Promise<void>
 }
 
 export type { TransactionDto }

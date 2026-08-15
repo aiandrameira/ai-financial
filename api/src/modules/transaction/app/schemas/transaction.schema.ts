@@ -30,6 +30,7 @@ const baseTransactionSchema = z.object({
 
 export const createTransactionSchema = baseTransactionSchema.extend({
     recurrence: recurrenceInputSchema.optional(),
+    installments: z.number().int().min(2).max(48).optional(),
 })
 
 export type CreateTransactionSchema = z.infer<typeof createTransactionSchema>

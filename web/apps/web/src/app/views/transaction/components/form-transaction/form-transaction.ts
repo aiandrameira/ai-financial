@@ -1,5 +1,5 @@
 import type { AiButtonToggleItem, AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiButtonToggle, AiDatePicker, AiInput, AiSelectImports, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
+import { AiBadge, AiButtonToggle, AiDatePicker, AiInput, AiSelectImports, AiSwitch, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
@@ -22,7 +22,7 @@ const ORIGIN_ITEMS: AiButtonToggleItem[] = [
 
 @Component({
     selector: "ai-form-transaction",
-    imports: [FormField, AiInput, AiBadge, AiButtonToggle, AiSelectImports, ButtonForm, BadgeTpTransaction, BadgeCategory, TpAccountPipe, AiDatePicker, AiTextarea],
+    imports: [FormField, AiInput, AiBadge, AiButtonToggle, AiSwitch, AiSelectImports, ButtonForm, BadgeTpTransaction, BadgeCategory, TpAccountPipe, AiDatePicker, AiTextarea],
     templateUrl: "./form-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -37,6 +37,7 @@ export class FormTransaction {
 
     readonly enabled = signal<boolean>(false);
     readonly origin = signal<TransactionOrigin>("account");
+    readonly parcelar = signal<boolean>(false);
     protected transactionSchema = signal<RequestTransactionDto>(makeRequestTransaction());
 
     readonly form = form(this.transactionSchema, schema => {
@@ -57,6 +58,7 @@ export class FormTransaction {
     readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
     readonly selectedCreditCard = computed(() => this.creditCards().find(creditCard => creditCard.id === this.form().value().creditCardId) ?? null);
     readonly selectedCategory = computed(() => this.categoriesForType().find(category => category.id === this.form().value().categoryId) ?? null);
+    readonly canInstall = computed(() => this.origin() === "creditCard" && this.form().value().type === tpTransactionEnum.EXPENSE && !this.id());
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
@@ -86,12 +88,19 @@ export class FormTransaction {
     protected onOriginChange(value: unknown): void {
         const origin = (Array.isArray(value) ? value[0] : value) as TransactionOrigin;
         this.origin.set(origin);
-        this.transactionSchema.update(current => ({ ...current, accountId: "", creditCardId: "" }));
+        this.parcelar.set(false);
+        this.transactionSchema.update(current => ({ ...current, accountId: "", creditCardId: "", installments: 1 }));
     }
 
     protected onTypeChange(value: unknown): void {
         const type = (Array.isArray(value) ? value[0] : value) as RequestTransactionDto["type"];
-        this.transactionSchema.update(current => ({ ...current, type, categoryId: "" }));
+        this.parcelar.set(false);
+        this.transactionSchema.update(current => ({ ...current, type, categoryId: "", installments: 1 }));
+    }
+
+    protected onParcelarChange(checked: boolean): void {
+        this.parcelar.set(checked);
+        this.transactionSchema.update(current => ({ ...current, installments: checked ? 2 : 1 }));
     }
 
     protected onAccountChange(value: unknown): void {

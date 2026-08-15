@@ -1,5 +1,5 @@
 import { randomUUIDv7 } from "bun"
-import { numeric, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { integer, numeric, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 import { stTransactionEnum } from "@/modules/transaction/domain/enums/st-transaction.enum"
 import { tpTransactionEnum } from "@/modules/transaction/domain/enums/tp-transaction.enum"
@@ -7,6 +7,7 @@ import { tpTransactionEnum } from "@/modules/transaction/domain/enums/tp-transac
 import { accounts } from "./accounts"
 import { categories } from "./categories"
 import { creditCardInvoices } from "./credit-card-invoices"
+import { installmentGroups } from "./installment-groups"
 import { recurrences } from "./recurrences"
 
 export const transactionTypePgEnum = pgEnum(
@@ -34,6 +35,8 @@ export const transactions = pgTable("transactions", {
     recurrenceId: text("recurrence_id").references(() => recurrences.id),
     transferId: text("transfer_id"),
     invoiceId: text("invoice_id").references(() => creditCardInvoices.id),
+    installmentGroupId: text("installment_group_id").references(() => installmentGroups.id),
+    installmentNumber: integer("installment_number"),
     attachmentUrl: text("attachment_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

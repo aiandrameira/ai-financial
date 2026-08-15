@@ -26,8 +26,13 @@
     </ng-template>
 
     <ng-template aiCellTemplate="description" let-item>
-        <div class="max-w-56 overflow-hidden whitespace-nowrap text-ellipsis">
-            {{ item.description }}
+        <div class="flex items-center gap-x-2">
+            <div class="max-w-56 overflow-hidden whitespace-nowrap text-ellipsis">
+                {{ item.description }}
+            </div>
+            @if (item.installmentNumber && item.installmentsTotal) {
+                <ai-badge variant="default" fill="line" class="shrink-0">{{ item.installmentNumber }}/{{ item.installmentsTotal }}</ai-badge>
+            }
         </div>
     </ng-template>
     

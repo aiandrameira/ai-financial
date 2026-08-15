@@ -12,6 +12,7 @@ export class TransactionAdapter {
             amount: Math.abs(Number(raw.amount)),
             description: raw.description ?? "",
             date: formatDateDayjs(raw.date),
+            installments: 1,
         };
     }
 }

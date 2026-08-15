@@ -23,6 +23,7 @@ import {
     UpdateTransactionUseCase,
 } from "../../app/usecases"
 import { TransactionController } from "../controllers/transaction.controller"
+import { InstallmentGroupDrizzleRepository } from "../repositories/installment-group.drizzle"
 import { RecurrenceDrizzleRepository } from "../repositories/recurrence.drizzle"
 import { TransactionDrizzleRepository } from "../repositories/transaction.drizzle"
 
@@ -33,6 +34,7 @@ function buildController() {
     const recurrenceRepository = new RecurrenceDrizzleRepository()
     const creditCardRepository = new CreditCardDrizzleRepository()
     const creditCardInvoiceRepository = new CreditCardInvoiceDrizzleRepository()
+    const installmentGroupRepository = new InstallmentGroupDrizzleRepository()
 
     return new TransactionController({
         find: new FindTransactionsUseCase(repository),
@@ -44,6 +46,7 @@ function buildController() {
             recurrenceRepository,
             creditCardRepository,
             creditCardInvoiceRepository,
+            installmentGroupRepository,
         ),
         update: new UpdateTransactionUseCase(
             repository,
@@ -52,7 +55,7 @@ function buildController() {
             creditCardRepository,
             creditCardInvoiceRepository,
         ),
-        delete: new DeleteTransactionUseCase(repository),
+        delete: new DeleteTransactionUseCase(repository, installmentGroupRepository),
         createTransfer: new CreateTransferUseCase(repository, accountRepository),
         deleteTransfer: new DeleteTransferUseCase(repository),
         generateDueRecurrences: new GenerateDueRecurrencesUseCase(repository, recurrenceRepository),

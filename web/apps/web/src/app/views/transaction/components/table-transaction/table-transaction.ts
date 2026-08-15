@@ -59,6 +59,15 @@ export class TableTransaction implements OnInit {
             return;
         }
 
+        if (item.installmentGroupId) {
+            this.#alert.confirm({
+                ...removeAlertDialog("esta compra parcelada", "Compra parcelada"),
+                description: `Tem certeza que deseja apagar esta compra? Todas as ${item.installmentsTotal} parcelas vinculadas serão apagadas.`,
+                onConfirm: () => this._remove(item),
+            });
+            return;
+        }
+
         this.#alert.confirm({
             ...removeAlertDialog(item.description ?? "esta transação", "Transação"),
             onConfirm: () => this._remove(item),

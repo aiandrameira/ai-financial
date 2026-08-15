@@ -36,6 +36,8 @@ export class PayCreditCardInvoiceUseCase {
             date: paidAt,
             tags: [],
             recurrenceId: null,
+            installmentGroupId: null,
+            installmentNumber: null,
             attachmentUrl: null,
         })
 

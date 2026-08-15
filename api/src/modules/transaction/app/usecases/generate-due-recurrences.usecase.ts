@@ -32,6 +32,8 @@ export class GenerateDueRecurrencesUseCase {
                 date: occurrenceDate,
                 tags: template.tags,
                 recurrenceId: recurrence.id,
+                installmentGroupId: null,
+                installmentNumber: null,
                 attachmentUrl: null,
             })
             created.push(occurrence)
