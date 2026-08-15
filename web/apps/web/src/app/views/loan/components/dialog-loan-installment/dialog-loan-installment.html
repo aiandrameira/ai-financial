@@ -1,0 +1,33 @@
+<div class="flex flex-col gap-y-4">
+    <div class="flex items-center justify-between">
+        <div>
+            <p class="text-sm text-muted-foreground">Parcela {{ data.installment.number }}/{{ data.loan.installmentsTotal }}</p>
+            <p class="font-title text-2xl font-bold">{{ data.installment.amount | currency }}</p>
+        </div>
+        <ai-badge [variant]="statusVariant[data.installment.status]" fill="line">{{ stLoanInstallmentMap.get(data.installment.status) }}</ai-badge>
+    </div>
+
+    <div class="flex items-center justify-between border-y border-border py-2 text-sm text-muted-foreground">
+        <span>Vencimento: {{ dueDateLabel }}</span>
+        @if (data.installment.paidAt) {
+            <span>Paga em: {{ data.installment.paidAt | date: "dd/MM/yyyy" }}</span>
+        }
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 text-sm">
+        <div class="rounded-lg bg-muted/40 p-3">
+            <p class="text-xs text-muted-foreground">Amortização</p>
+            <p class="font-semibold">{{ data.installment.principalPortion | currency }}</p>
+        </div>
+        <div class="rounded-lg bg-muted/40 p-3">
+            <p class="text-xs text-muted-foreground">Juros</p>
+            <p class="font-semibold">{{ data.installment.interestPortion | currency }}</p>
+        </div>
+    </div>
+
+    @if (data.installment.status !== stLoanInstallmentEnum.PAID) {
+        <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+            <ai-button icon="check-double" [loading]="paying()" (click)="onPay()">Pagar parcela</ai-button>
+        </div>
+    }
+</div>

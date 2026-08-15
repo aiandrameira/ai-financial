@@ -1,0 +1,17 @@
+<ai-table [config]="config()" (rowClick)="rowClick($event)">
+    <ng-template aiCellTemplate="number" let-item>
+        <ai-badge variant="default">{{ item.number }}/{{ config().data.length }}</ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="dueDate" let-item>
+        <ai-badge variant="default">{{ dueDateLabel(item.dueDate) }}</ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="amount" let-item>
+        {{ item.amount | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="status" let-item>
+        <ai-badge [variant]="statusVariant(item.status)" fill="line">{{ stLoanInstallmentMap.get(item.status) }}</ai-badge>
+    </ng-template>
+</ai-table>

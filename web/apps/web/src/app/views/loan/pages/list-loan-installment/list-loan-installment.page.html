@@ -1,0 +1,16 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading
+            icon="file-list"
+            title="Parcelas"
+            [description]="loan() ? 'Parcelas do financiamento ' + loan()!.name + '.' : 'Parcelas do financiamento.'"
+         />
+
+        <ai-button size="sm" variant="default" class="self-start sm:self-auto" (click)="goBack()">
+            <ai-icon icon="arrow-left" />
+            Voltar
+        </ai-button>
+    </div>
+
+    <ai-table-loan-installment [loanId]="id()" (view)="openInstallment($event)" />
+</div>
