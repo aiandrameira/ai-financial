@@ -1,0 +1,16 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading
+            icon="bill"
+            title="Faturas"
+            [description]="creditCard() ? 'Faturas do cartão ' + creditCard()!.name + '.' : 'Faturas do cartão.'"
+        />
+
+        <ai-button size="sm" variant="default" class="self-start sm:self-auto" (click)="goBack()">
+            <ai-icon icon="arrow-left" />
+            Voltar
+        </ai-button>
+    </div>
+
+    <ai-table-credit-card-invoice [creditCardId]="id()" (view)="openInvoice($event)" />
+</div>

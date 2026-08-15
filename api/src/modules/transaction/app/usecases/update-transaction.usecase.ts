@@ -1,5 +1,7 @@
 import type { AccountRepository } from "@/modules/account/domain/repositories"
 import type { CategoryRepository } from "@/modules/category/domain/repositories"
+import type { CreditCardInvoiceRepository } from "@/modules/credit-card-invoice/domain/repositories"
+import type { CreditCardRepository } from "@/modules/credit-card/domain/repositories"
 import { NotFoundError, ValidationError } from "@/http/errors/errors"
 
 import type { UpdateTransactionSchema } from "../schemas"
@@ -12,6 +14,8 @@ export class UpdateTransactionUseCase {
         private repository: TransactionRepository,
         private accountRepository: AccountRepository,
         private categoryRepository: CategoryRepository,
+        private creditCardRepository: CreditCardRepository,
+        private creditCardInvoiceRepository: CreditCardInvoiceRepository,
     ) {}
 
     async execute(userId: string, id: string, body: UpdateTransactionSchema): Promise<void> {
@@ -21,9 +25,31 @@ export class UpdateTransactionUseCase {
             throw new ValidationError("Transfer transactions cannot be edited directly")
         }
 
+        if (body.accountId && body.creditCardId) {
+            throw new ValidationError("Provide exactly one of accountId or creditCardId")
+        }
+
+        let accountId: string | null | undefined
+        let invoiceId: string | null | undefined
+
         if (body.accountId) {
             const account = await this.accountRepository.get(userId, body.accountId)
             if (!account) throw new NotFoundError("Account not found")
+            accountId = account.id
+            invoiceId = null
+        } else if (body.creditCardId) {
+            const creditCard = await this.creditCardRepository.get(userId, body.creditCardId)
+            if (!creditCard) throw new NotFoundError("Credit card not found")
+
+            const invoice = await this.creditCardInvoiceRepository.getOrCreateForDate(
+                userId,
+                creditCard.id,
+                creditCard.closingDay,
+                creditCard.dueDay,
+                body.date ?? new Date(transaction.date),
+            )
+            invoiceId = invoice.id
+            accountId = null
         }
 
         const nextType = body.type ?? transaction.type
@@ -42,7 +68,8 @@ export class UpdateTransactionUseCase {
         }
 
         await this.repository.update(userId, id, {
-            accountId: body.accountId,
+            accountId,
+            invoiceId,
             categoryId: body.categoryId,
             status: body.status,
             amount,

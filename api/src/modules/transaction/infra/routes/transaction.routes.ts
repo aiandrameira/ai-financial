@@ -3,6 +3,8 @@ import { Elysia } from "elysia"
 import { env } from "@/env"
 import { AccountDrizzleRepository } from "@/modules/account/infra/repositories/account.drizzle"
 import { CategoryDrizzleRepository } from "@/modules/category/infra/repositories/category.drizzle"
+import { CreditCardInvoiceDrizzleRepository } from "@/modules/credit-card-invoice/infra/repositories/credit-card-invoice.drizzle"
+import { CreditCardDrizzleRepository } from "@/modules/credit-card/infra/repositories/credit-card.drizzle"
 
 import {
     createTransactionSchema,
@@ -29,12 +31,27 @@ function buildController() {
     const accountRepository = new AccountDrizzleRepository()
     const categoryRepository = new CategoryDrizzleRepository()
     const recurrenceRepository = new RecurrenceDrizzleRepository()
+    const creditCardRepository = new CreditCardDrizzleRepository()
+    const creditCardInvoiceRepository = new CreditCardInvoiceDrizzleRepository()
 
     return new TransactionController({
         find: new FindTransactionsUseCase(repository),
         get: new GetTransactionUseCase(repository),
-        create: new CreateTransactionUseCase(repository, accountRepository, categoryRepository, recurrenceRepository),
-        update: new UpdateTransactionUseCase(repository, accountRepository, categoryRepository),
+        create: new CreateTransactionUseCase(
+            repository,
+            accountRepository,
+            categoryRepository,
+            recurrenceRepository,
+            creditCardRepository,
+            creditCardInvoiceRepository,
+        ),
+        update: new UpdateTransactionUseCase(
+            repository,
+            accountRepository,
+            categoryRepository,
+            creditCardRepository,
+            creditCardInvoiceRepository,
+        ),
         delete: new DeleteTransactionUseCase(repository),
         createTransfer: new CreateTransferUseCase(repository, accountRepository),
         deleteTransfer: new DeleteTransferUseCase(repository),

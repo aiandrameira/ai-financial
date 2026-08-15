@@ -1,6 +1,5 @@
 import type { AiIconType } from "@aiandralves/ai-ui";
 import { AiIcon } from "@aiandralves/ai-ui";
-import { CurrencyPipe } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, input } from "@angular/core";
 import { tpCreditCardNetworkEnum, tpCreditCardNetworkMap } from "@domain/enums";
 
@@ -14,7 +13,7 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
 
 @Component({
     selector: "ai-credit-card-preview",
-    imports: [AiIcon, CurrencyPipe],
+    imports: [AiIcon],
     template: `
         <div [class]="classes()">
             <!-- Fluid Wave SVG Background Overlay -->
@@ -53,10 +52,10 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
                     <div class="flex items-center gap-x-3">
                         <!-- Refined Metallic Chip -->
                         <div
-                            class="relative h-7 w-10 overflow-hidden rounded-md border border-amber-400/50 bg-gradient-to-tr from-amber-300 via-amber-200 to-yellow-400 p-0.5 shadow-inner"
+                            class="relative h-5 w-7 overflow-hidden rounded-xs border border-amber-400/50 bg-gradient-to-tr from-amber-300 via-amber-200 to-yellow-400 p-[1px] shadow-inner"
                         >
                             <div class="h-[1px] w-full bg-amber-700/40"></div>
-                            <div class="my-[1.5px] flex h-full justify-between">
+                            <div class="my-[1px] flex h-full justify-between">
                                 <div class="h-full w-[1px] bg-amber-700/40"></div>
                                 <div class="h-full w-[1px] bg-amber-700/40"></div>
                             </div>
@@ -74,7 +73,7 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
                     <p class="font-credit-card text-sm sm:text-base font-medium tracking-[0.22em] text-white/95 drop-shadow-2xs">•••• •••• •••• 8842</p>
                 </div>
 
-                <!-- Footer: Cardholder & Expiry/Limit & Brand Logo -->
+                <!-- Footer: Cardholder & Expiry & Brand Logo -->
                 <div class="flex items-end justify-between gap-x-2">
                     <div class="flex flex-col gap-y-0.5 min-w-0">
                         <!-- Holder Name -->
@@ -82,11 +81,10 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
                             {{ name() || "NOME DO TITULAR" }}
                         </p>
 
-                        <!-- Fechamento / Vencimento & Limite -->
-                        <div class="font-credit-card text-[9.5px] sm:text-[10.5px] tracking-wider text-white/65 leading-tight">
-                            <p>FECHA DIA {{ closingDay() }} | VENCE DIA {{ dueDay() }}</p>
-                            <p class="font-medium text-white/85">LIMITE {{ limitAmount() | currency }}</p>
-                        </div>
+                        <!-- Fechamento / Vencimento -->
+                        <p class="font-credit-card text-[9.5px] sm:text-[10.5px] tracking-wider text-white/65 leading-tight">
+                            FECHA DIA {{ closingDay() }} | VENCE DIA {{ dueDay() }}
+                        </p>
                     </div>
 
                     <!-- Network Logo -->

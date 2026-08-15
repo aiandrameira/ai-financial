@@ -4,6 +4,7 @@ export type TransactionFilterProps = {
     page?: number;
     size?: number;
     accountId?: string;
+    invoiceId?: string;
     categoryId?: string;
     status?: string;
     type?: string;

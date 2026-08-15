@@ -1,6 +1,7 @@
 import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
+import { Router } from "@angular/router";
 import { TpAccountPipe } from "@core/pipes";
 import { TableImports } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
@@ -18,6 +19,7 @@ export class TableCreditCard implements OnInit {
     #accountFacade = inject(AccountFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+    #router = inject(Router);
 
     readonly accounts = this.#accountFacade.accounts;
 
@@ -27,8 +29,9 @@ export class TableCreditCard implements OnInit {
         { key: "name", label: "Nome" },
         { key: "accountId", label: "Conta" },
         { key: "limitAmount", label: "Limite" },
-        { key: "closingDay", label: "Fechamento" },
-        { key: "dueDay", label: "Vencimento" },
+        { key: "closingDay", label: "Fechamento", cell: (row: CreditCardDto) => `Dia ${row.closingDay}` },
+        { key: "dueDay", label: "Vencimento", cell: (row: CreditCardDto) => `Dia ${row.dueDay}` },
+        { key: "invoices", label: "Faturas" },
         { key: "remove", label: "Arquivar" },
     ]);
 
@@ -48,6 +51,11 @@ export class TableCreditCard implements OnInit {
 
     rowClick(item: CreditCardDto) {
         this.edit.emit(item);
+    }
+
+    onInvoices(event: MouseEvent, item: CreditCardDto) {
+        event.stopPropagation();
+        this.#router.navigate(["/credit-cards", item.id, "invoices"]);
     }
 
     onRemove(event: MouseEvent, item: CreditCardDto) {

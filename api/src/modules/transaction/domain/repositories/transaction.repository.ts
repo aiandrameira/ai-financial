@@ -7,7 +7,8 @@ import type { tpTransactionEnum } from "../enums/tp-transaction.enum"
 import type { tpTransferMethodEnum } from "../enums/tp-transfer-method.enum"
 
 export type CreateTransactionData = {
-    accountId: string
+    accountId: string | null
+    invoiceId: string | null
     categoryId: string | null
     type: Exclude<tpTransactionEnum, tpTransactionEnum.TRANSFER>
     status: stTransactionEnum
@@ -30,7 +31,8 @@ export type CreateTransferData = {
 }
 
 export type UpdateTransactionData = Partial<{
-    accountId: string
+    accountId: string | null
+    invoiceId: string | null
     categoryId: string | null
     status: stTransactionEnum
     amount: string

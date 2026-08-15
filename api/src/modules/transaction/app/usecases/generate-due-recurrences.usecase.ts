@@ -17,12 +17,13 @@ export class GenerateDueRecurrencesUseCase {
 
         for (const recurrence of due) {
             const template = await this.repository.findLatestByRecurrence(userId, recurrence.id)
-            if (!template || template.type === tpTransactionEnum.TRANSFER) continue
+            if (!template || template.type === tpTransactionEnum.TRANSFER || !template.accountId) continue
 
             const occurrenceDate = new Date(recurrence.nextOccurrence)
 
             const occurrence = await this.repository.create(userId, {
                 accountId: template.accountId,
+                invoiceId: null,
                 categoryId: template.categoryId,
                 type: template.type,
                 status: stTransactionEnum.PLANNED,

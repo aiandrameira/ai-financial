@@ -10,12 +10,13 @@
         {{ item.limitAmount | currency }}
     </ng-template>
 
-    <ng-template aiCellTemplate="closingDay" let-item>
-        Dia {{ item.closingDay }}
-    </ng-template>
-
-    <ng-template aiCellTemplate="dueDay" let-item>
-        Dia {{ item.dueDay }}
+    <ng-template aiCellTemplate="invoices" let-item>
+        <ai-button variant="default"
+            fill="line"
+            icon="bill"
+            size="xs"
+            aiTooltip="Visualizar faturas"
+            (click)="onInvoices($event, item)" />
     </ng-template>
 
     <ng-template aiCellTemplate="remove" let-item>

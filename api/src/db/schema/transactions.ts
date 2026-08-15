@@ -6,6 +6,7 @@ import { tpTransactionEnum } from "@/modules/transaction/domain/enums/tp-transac
 
 import { accounts } from "./accounts"
 import { categories } from "./categories"
+import { creditCardInvoices } from "./credit-card-invoices"
 import { recurrences } from "./recurrences"
 
 export const transactionTypePgEnum = pgEnum(
@@ -22,9 +23,7 @@ export const transactions = pgTable("transactions", {
         .primaryKey()
         .$defaultFn(() => randomUUIDv7()),
     userId: text("user_id").notNull(),
-    accountId: text("account_id")
-        .notNull()
-        .references(() => accounts.id),
+    accountId: text("account_id").references(() => accounts.id),
     categoryId: text("category_id").references(() => categories.id),
     type: transactionTypePgEnum("type").notNull(),
     status: transactionStatusPgEnum("status").notNull().default(stTransactionEnum.COMPLETED),
@@ -34,6 +33,7 @@ export const transactions = pgTable("transactions", {
     tags: text("tags").array().notNull().default([]),
     recurrenceId: text("recurrence_id").references(() => recurrences.id),
     transferId: text("transfer_id"),
+    invoiceId: text("invoice_id").references(() => creditCardInvoices.id),
     attachmentUrl: text("attachment_url"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

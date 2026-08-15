@@ -20,25 +20,53 @@
         </div>
 
         <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione a conta"
-                [value]="form().value().accountId"
+            <ai-button-toggle
+                mode="single"
+                variant="outline"
+                class="w-full [&>button]:flex-1"
+                [items]="originItems"
+                [value]="origin()"
                 [disabled]="form().disabled()"
-                (selectionChange)="onAccountChange($event)">
-                @for (account of accounts(); track account.id) {
-                    <ai-select-item [value]="account.id">
-                        @let accountBadge = account.type | tpAccount;
-                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
-                    </ai-select-item>
-                }
-            </ai-select>
+                (changeValue)="onOriginChange($event)" />
 
-            @if (selectedAccount(); as account) {
-                @let accountBadge = account.type | tpAccount;
-                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                    {{ account.name }}
-                </ai-badge>
+            @if (origin() === 'account') {
+                <ai-select
+                    class="w-full [&_button]:h-12"
+                    placeholder="Selecione a conta"
+                    [value]="form().value().accountId"
+                    [disabled]="form().disabled()"
+                    (selectionChange)="onAccountChange($event)">
+                    @for (account of accounts(); track account.id) {
+                        <ai-select-item [value]="account.id">
+                            @let accountBadge = account.type | tpAccount;
+                            <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                        </ai-select-item>
+                    }
+                </ai-select>
+
+                @if (selectedAccount(); as account) {
+                    @let accountBadge = account.type | tpAccount;
+                    <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
+                        {{ account.name }}
+                    </ai-badge>
+                }
+            } @else {
+                <ai-select
+                    class="w-full [&_button]:h-12"
+                    placeholder="Selecione o cartão"
+                    [value]="form().value().creditCardId"
+                    [disabled]="form().disabled()"
+                    (selectionChange)="onCreditCardChange($event)">
+                    @for (creditCard of creditCards(); track creditCard.id) {
+                        <ai-select-item [value]="creditCard.id">{{ creditCard.name }}</ai-select-item>
+                    }
+                </ai-select>
+
+                @if (selectedCreditCard(); as creditCard) {
+                    <ai-badge icon="bank-card" variant="default" fill="line" class="w-max">
+                        {{ creditCard.name }}
+                    </ai-badge>
+                }
             }
         </div>
     </div>

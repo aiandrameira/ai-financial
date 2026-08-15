@@ -1,5 +1,5 @@
-import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
+import type { AiButtonToggleItem, AiMaskConfig } from "@aiandralves/ai-ui";
+import { AiBadge, AiButtonToggle, AiDatePicker, AiInput, AiSelectImports, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
@@ -13,9 +13,16 @@ import { TransactionFacade } from "@infra/facades";
 
 const TRANSACTION_TYPES = Object.values(tpTransactionEnum).filter(type => type !== tpTransactionEnum.TRANSFER);
 
+type TransactionOrigin = "account" | "creditCard";
+
+const ORIGIN_ITEMS: AiButtonToggleItem[] = [
+    { value: "account", label: "Conta", icon: "bank" },
+    { value: "creditCard", label: "Cartão", icon: "bank-card" },
+];
+
 @Component({
     selector: "ai-form-transaction",
-    imports: [FormField, AiInput, AiBadge, AiSelectImports, ButtonForm, BadgeTpTransaction, BadgeCategory, TpAccountPipe, AiDatePicker, AiTextarea],
+    imports: [FormField, AiInput, AiBadge, AiButtonToggle, AiSelectImports, ButtonForm, BadgeTpTransaction, BadgeCategory, TpAccountPipe, AiDatePicker, AiTextarea],
     templateUrl: "./form-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -25,12 +32,16 @@ export class FormTransaction {
 
     readonly transactionTypes = TRANSACTION_TYPES;
     readonly accounts = this.#facade.accounts;
+    readonly creditCards = this.#facade.creditCards;
+    readonly originItems = ORIGIN_ITEMS;
 
     readonly enabled = signal<boolean>(false);
+    readonly origin = signal<TransactionOrigin>("account");
     protected transactionSchema = signal<RequestTransactionDto>(makeRequestTransaction());
 
     readonly form = form(this.transactionSchema, schema => {
-        required(schema.accountId, { message: "Selecione uma conta." });
+        required(schema.accountId, { message: "Selecione uma conta.", when: ({ valueOf }) => !valueOf(schema.creditCardId) });
+        required(schema.creditCardId, { message: "Selecione um cartão.", when: ({ valueOf }) => !valueOf(schema.accountId) });
         validateStandardSchema(schema, requestTransactionSchema);
         disabled(schema, this.enabled);
     });
@@ -44,6 +55,7 @@ export class FormTransaction {
     readonly categoriesForType = computed(() => this.#facade.categories().filter(category => matchesCategoryType(category.type, this.transactionSchema().type)));
     readonly selectedType = computed(() => this.form().value().type);
     readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
+    readonly selectedCreditCard = computed(() => this.creditCards().find(creditCard => creditCard.id === this.form().value().creditCardId) ?? null);
     readonly selectedCategory = computed(() => this.categoriesForType().find(category => category.id === this.form().value().categoryId) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
@@ -62,11 +74,19 @@ export class FormTransaction {
 
             untracked(() => {
                 if (transaction) {
-                    this.transactionSchema.set(TransactionAdapter.toDto(transaction));
+                    const dto = TransactionAdapter.toDto(transaction);
+                    this.transactionSchema.set(dto);
+                    this.origin.set(dto.creditCardId ? "creditCard" : "account");
                     this.enabled.set(true);
                 }
             });
         });
+    }
+
+    protected onOriginChange(value: unknown): void {
+        const origin = (Array.isArray(value) ? value[0] : value) as TransactionOrigin;
+        this.origin.set(origin);
+        this.transactionSchema.update(current => ({ ...current, accountId: "", creditCardId: "" }));
     }
 
     protected onTypeChange(value: unknown): void {
@@ -76,6 +96,10 @@ export class FormTransaction {
 
     protected onAccountChange(value: unknown): void {
         this.transactionSchema.update(current => ({ ...current, accountId: isArrayId(value) }));
+    }
+
+    protected onCreditCardChange(value: unknown): void {
+        this.transactionSchema.update(current => ({ ...current, creditCardId: isArrayId(value) }));
     }
 
     protected onCategoryChange(value: unknown): void {

@@ -7,7 +7,8 @@ export const requestTransactionSchema = z.object({
         .union([z.uuidv7(), z.literal("")])
         .default("")
         .optional(),
-    accountId: z.string().min(1, "Selecione uma conta").default(""),
+    accountId: z.string().default(""),
+    creditCardId: z.string().default(""),
     categoryId: z.string().default(""),
     type: z.enum(tpTransactionEnum).exclude(["TRANSFER"]).default(tpTransactionEnum.EXPENSE),
     amount: z.number().positive("Informe um valor maior que zero").default(0),
@@ -43,7 +44,9 @@ export function makeRequestTransfer(raw: Partial<RequestTransferDto> = {}): Requ
 
 export const transactionSchema = z.object({
     id: z.string(),
-    accountId: z.string(),
+    accountId: z.string().nullable(),
+    invoiceId: z.string().nullable(),
+    creditCardId: z.string().nullable(),
     categoryId: z.string().nullable(),
     type: z.enum(tpTransactionEnum),
     status: z.enum(stTransactionEnum),

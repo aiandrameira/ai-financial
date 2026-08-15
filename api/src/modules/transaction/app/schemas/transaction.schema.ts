@@ -16,7 +16,8 @@ const recurrenceInputSchema = z.object({
 export type RecurrenceInputSchema = z.infer<typeof recurrenceInputSchema>
 
 const baseTransactionSchema = z.object({
-    accountId: z.string().min(1),
+    accountId: z.string().min(1).optional(),
+    creditCardId: z.string().min(1).optional(),
     categoryId: z.string().min(1).optional(),
     type: z.enum(tpTransactionEnum).exclude(["TRANSFER"]),
     status: z.enum(stTransactionEnum).default(stTransactionEnum.COMPLETED),
@@ -51,6 +52,7 @@ export type CreateTransferSchema = z.infer<typeof createTransferSchema>
 
 export const findTransactionsQuerySchema = paginationQuerySchema.extend({
     accountId: z.string().optional(),
+    invoiceId: z.string().optional(),
     categoryId: z.string().optional(),
     status: z.enum(stTransactionEnum).optional(),
     type: z.enum(tpTransactionEnum).optional(),

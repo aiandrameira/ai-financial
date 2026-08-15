@@ -1,3 +1,4 @@
+export * from "./st-invoice.enum";
 export * from "./st-transaction.enum";
 export * from "./tp-account.enum";
 export * from "./tp-credit-card-network.enum";

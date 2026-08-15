@@ -4,7 +4,9 @@ import type { tpTransferMethodEnum } from "../../domain/enums/tp-transfer-method
 
 export type TransactionDto = {
     id: string
-    accountId: string
+    accountId: string | null
+    invoiceId: string | null
+    creditCardId: string | null
     categoryId: string | null
     type: tpTransactionEnum
     status: stTransactionEnum

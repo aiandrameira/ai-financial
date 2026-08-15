@@ -22,12 +22,12 @@ export class TransactionService implements TransactionRepository {
     }
 
     create(body: RequestTransactionDto): Observable<TransactionDto> {
-        const payload = { ...body, categoryId: body.categoryId || undefined };
+        const payload = { ...body, accountId: body.accountId || undefined, creditCardId: body.creditCardId || undefined, categoryId: body.categoryId || undefined };
         return this.#client.post(this.#api, payload).pipe(map(response => mapGet(response)));
     }
 
     update(id: string, body: RequestTransactionDto): Observable<void> {
-        const payload = { ...body, categoryId: body.categoryId || undefined };
+        const payload = { ...body, accountId: body.accountId || undefined, creditCardId: body.creditCardId || undefined, categoryId: body.categoryId || undefined };
         return this.#client.put<void>(`${this.#api}/${id}`, payload);
     }
 

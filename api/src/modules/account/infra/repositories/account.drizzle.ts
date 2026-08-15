@@ -26,7 +26,7 @@ async function computeBalances(accountIds: string[]): Promise<Map<string, Balanc
         .where(inArray(transactions.accountId, accountIds))
         .groupBy(transactions.accountId)
 
-    return new Map(rows.map((row) => [row.accountId, { current: row.current, projected: row.projected }]))
+    return new Map(rows.map((row) => [row.accountId as string, { current: row.current, projected: row.projected }]))
 }
 
 function toDto(row: AccountRow, balances?: Balances): AccountDto {
