@@ -29,6 +29,10 @@ export const appRoutes: Route[] = [
                 path: "budget",
                 loadChildren: () => import("./views/budget/budget.routes").then(m => m.budgetRoutes),
             },
+            {
+                path: "loans",
+                loadChildren: () => import("./views/loan/loan.routes").then(m => m.loanRoutes),
+            },
         ],
     },
 ];
