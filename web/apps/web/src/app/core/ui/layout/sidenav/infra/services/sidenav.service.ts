@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, signal } from "@angular/core";
 
 import { localStorageSignal } from "@core/utils";
 
@@ -11,6 +11,7 @@ export const SIDENAV_COLLAPSED_WIDTH = 64;
 export class SidenavService {
     readonly collapsed = localStorageSignal("sidenav-collapsed", false);
     readonly width = localStorageSignal("sidenav-width", SIDENAV_DEFAULT_WIDTH);
+    readonly mobileOpen = signal(false);
 
     toggle(): void {
         this.collapsed.update(value => !value);
@@ -19,5 +20,13 @@ export class SidenavService {
     resize(width: number): void {
         const clamped = Math.min(SIDENAV_MAX_WIDTH, Math.max(SIDENAV_MIN_WIDTH, width));
         this.width.set(clamped);
+    }
+
+    toggleMobile(): void {
+        this.mobileOpen.update(value => !value);
+    }
+
+    closeMobile(): void {
+        this.mobileOpen.set(false);
     }
 }

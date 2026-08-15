@@ -1,8 +1,13 @@
 <div class="flex h-screen overflow-hidden bg-background text-primary">
+    @if (mobileOpen()) {
+        <button type="button" aria-label="Fechar menu" class="fixed inset-0 z-30 cursor-default bg-black/50 md:hidden" (click)="sidenav.closeMobile()"></button>
+    }
+
     <aside
-        class="relative flex h-full shrink-0 flex-col border-r border-border bg-muted"
+        class="fixed inset-y-0 left-0 z-40 flex h-full w-72 shrink-0 -translate-x-full flex-col border-r border-border bg-muted transition-transform duration-200 md:static md:z-auto md:w-(--sidenav-width) md:translate-x-0"
+        [class.translate-x-0]="mobileOpen()"
         [class.transition-all]="!resizing()"
-        [style.width.px]="collapsed() ? 64 : width()"
+        [style.--sidenav-width.px]="collapsed() ? SIDENAV_COLLAPSED_WIDTH : width()"
     >
         <ai-sidenav-profile [user]="user()" [userMenuItems]="userMenuItems()" [collapsed]="collapsed()" (userMenuAction)="onUserMenuAction($event)" />
 
@@ -22,6 +27,7 @@
                                 [aiTooltip]="collapsed() ? item.label : ''"
                                 [class.justify-center]="collapsed()"
                                 class="flex items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                                (click)="sidenav.closeMobile()"
                             >
                                 <ai-icon [icon]="item.icon" size="sm" />
                                 @if (!collapsed()) {
@@ -58,12 +64,20 @@
         </div>
 
         @if (!collapsed()) {
-            <div class="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-primary/30" (mousedown)="onResizeStart($event)"></div>
+            <div
+                class="absolute top-0 right-0 hidden h-full w-1 cursor-col-resize hover:bg-primary/30 md:block"
+                aiResizeHandle
+                [(width)]="width"
+                [min]="SIDENAV_MIN_WIDTH"
+                [max]="SIDENAV_MAX_WIDTH"
+                (resizeStart)="resizing.set(true)"
+                (resizeEnd)="resizing.set(false)"
+            ></div>
         }
 
         <button
             type="button"
-            class="absolute top-1/2 right-0 flex h-10 w-5 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm hover:bg-border hover:text-foreground"
+            class="absolute top-1/2 right-0 hidden h-10 w-5 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground shadow-sm hover:bg-border hover:text-foreground md:flex"
             (click)="toggleCollapsed()"
         >
             <ai-icon [icon]="collapsed() ? 'arrow-right-s' : 'arrow-left-s'" size="sm" />
