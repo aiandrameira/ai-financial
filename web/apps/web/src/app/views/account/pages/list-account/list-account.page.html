@@ -1,11 +1,11 @@
 <div class="main">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <ai-heading
             icon="wallet"
             title="Contas"
             description="Contas correntes, poupança e carteira."
          />
-        <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
             Cadastrar conta
         </ai-button>
     </div>

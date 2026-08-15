@@ -1,11 +1,11 @@
 <div class="main">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <ai-heading
             icon="exchange"
             title="Transações"
             description="Despesas e receitas lançadas nas suas contas."
          />
-        <div class="flex items-center gap-x-2">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
             <ai-button size="sm" variant="outline" icon="exchange" (click)="openTransfer()">
                 Nova transferência
             </ai-button>

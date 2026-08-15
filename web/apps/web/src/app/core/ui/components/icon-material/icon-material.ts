@@ -10,7 +10,16 @@ const SIZE_CLASS: Record<"xs" | "sm" | "default" | "lg" | "xl", string> = {
 
 @Component({
     selector: "ai-icon-material, [ai-icon-material]",
-    template: ` <span class="flex shrink-0 items-center justify-center select-none overflow-hidden" [class]="classes()">{{ icon() }}</span> `,
+    template: "",
+    host: {
+        "[class]": "classes()",
+        "[attr.data-icon]": "icon()",
+    },
+    styles: `
+        :host::before {
+            content: attr(data-icon);
+        }
+    `,
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class IconMaterial {
@@ -18,5 +27,5 @@ export class IconMaterial {
     readonly size = input<"xs" | "sm" | "default" | "lg" | "xl">("default");
     readonly type = input<"fill" | "line">("line");
 
-    protected readonly classes = computed(() => `font-icon-${this.type()} ${SIZE_CLASS[this.size()]}`);
+    protected readonly classes = computed(() => `flex shrink-0 items-center justify-center select-none overflow-hidden font-icon-${this.type()} ${SIZE_CLASS[this.size()]}`);
 }
