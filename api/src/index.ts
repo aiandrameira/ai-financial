@@ -7,6 +7,7 @@ import { ApiResponse } from "./http/api/response"
 import { uploadRoutes } from "./http/uploads/uploads.routes"
 import { accountRoutes } from "./modules/account/infra/routes/account.routes"
 import { categoryRoutes } from "./modules/category/infra/routes/category.routes"
+import { creditCardRoutes } from "./modules/credit-card/infra/routes/credit-card.routes"
 import { transactionRoutes } from "./modules/transaction/infra/routes/transaction.routes"
 
 const start = async () => {
@@ -22,6 +23,7 @@ const start = async () => {
         .use(uploadRoutes)
         .use(accountRoutes)
         .use(categoryRoutes)
+        .use(creditCardRoutes)
         .use(transactionRoutes)
         .listen(env.PORT)
 

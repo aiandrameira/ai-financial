@@ -1,0 +1,14 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading
+            icon="bank-card"
+            title="Cartões"
+            description="Cartões de crédito e seus limites."
+         />
+        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
+            Cadastrar cartão
+        </ai-button>
+    </div>
+
+    <ai-table-credit-card (edit)="openEdit($event)" />
+</div>

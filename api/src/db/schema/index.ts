@@ -1,5 +1,6 @@
 export * from "./accounts"
 export * from "./categories"
+export * from "./credit-cards"
 export * from "./recurrences"
 export * from "./transactions"
 export * from "./transfers"

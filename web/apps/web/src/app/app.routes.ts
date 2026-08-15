@@ -21,6 +21,10 @@ export const appRoutes: Route[] = [
                 path: "categories",
                 loadChildren: () => import("./views/category/category.routes").then(m => m.categoryRoutes),
             },
+            {
+                path: "credit-cards",
+                loadChildren: () => import("./views/credit-card/credit-card.routes").then(m => m.creditCardRoutes),
+            },
         ],
     },
 ];
