@@ -1,27 +1,15 @@
-import type { AiIconType, AiMaskConfig } from "@aiandralves/ai-ui";
+import type { AiMaskConfig } from "@aiandralves/ai-ui";
 import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { TpAccountPipe } from "@core/pipes";
 import { ButtonForm } from "@core/ui";
-import { tpLoanEnum, tpLoanMap } from "@domain/enums";
-import { LoanDto, makeRequestLoan, RequestLoanDto, requestLoanSchema } from "@domain/schemas";
+import { LOAN_TYPES } from "@domain/constants";
+import { tpLoanEnum } from "@domain/enums";
+import { AccountDto, LoanDto, makeRequestLoan, RequestLoanDto, requestLoanSchema } from "@domain/schemas";
 import { LoanAdapter } from "@infra/adapters";
-import { AccountFacade } from "@infra/facades";
-
-const LOAN_TYPE_ICONS: Record<tpLoanEnum, AiIconType> = {
-    [tpLoanEnum.REAL_ESTATE]: "home",
-    [tpLoanEnum.VEHICLE]: "car",
-    [tpLoanEnum.PERSONAL]: "user",
-    [tpLoanEnum.CONSORTIUM]: "group-2",
-};
-
-const LOAN_TYPES: { value: tpLoanEnum; label: string; icon: AiIconType }[] = Array.from(tpLoanMap, ([value, label]) => ({
-    value,
-    label,
-    icon: LOAN_TYPE_ICONS[value],
-}));
+import { AccountService } from "@infra/services";
 
 @Component({
     selector: "ai-form-loan",
@@ -31,9 +19,10 @@ const LOAN_TYPES: { value: tpLoanEnum; label: string; icon: AiIconType }[] = Arr
 })
 export class FormLoan {
     #toast = inject(AiToastService);
-    #accountFacade = inject(AccountFacade);
+    #accountService = inject(AccountService);
 
-    readonly accounts = this.#accountFacade.accounts;
+    #accounts = signal<AccountDto[]>([]);
+    readonly accounts = this.#accounts.asReadonly();
     readonly loanTypes = LOAN_TYPES;
 
     readonly loan = input<LoanDto | null>(null);
@@ -68,7 +57,7 @@ export class FormLoan {
     };
 
     constructor() {
-        this.#accountFacade.load();
+        this.#accountService.find().subscribe(accounts => this.#accounts.set(accounts));
 
         effect(() => {
             const loan = this.loan();
@@ -94,28 +83,23 @@ export class FormLoan {
         this.loanSchema.update(current => ({ ...current, startDate: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestLoanDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestLoanDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

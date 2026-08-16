@@ -37,27 +37,22 @@ export class FormGoalContribution {
         this.contributionSchema.update(current => ({ ...current, date: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestGoalContributionDto;
-                this.save.emit(payload);
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestGoalContributionDto;
+            this.save.emit(payload);
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

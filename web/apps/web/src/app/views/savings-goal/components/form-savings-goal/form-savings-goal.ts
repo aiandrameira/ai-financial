@@ -1,22 +1,14 @@
-import type { AiIconType, AiMaskConfig } from "@aiandralves/ai-ui";
+import type { AiMaskConfig } from "@aiandralves/ai-ui";
 import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { TpAccountPipe } from "@core/pipes";
 import { ButtonForm } from "@core/ui";
-import { makeRequestSavingsGoal, RequestSavingsGoalDto, requestSavingsGoalSchema, SavingsGoalDto } from "@domain/schemas";
+import { SAVINGS_GOAL_ICONS } from "@domain/constants";
+import { AccountDto, makeRequestSavingsGoal, RequestSavingsGoalDto, requestSavingsGoalSchema, SavingsGoalDto } from "@domain/schemas";
 import { SavingsGoalAdapter } from "@infra/adapters";
-import { AccountFacade } from "@infra/facades";
-
-const GOAL_ICONS: { value: string; label: string; icon: AiIconType }[] = [
-    { value: "shield-check", label: "Reserva de emergência", icon: "shield-check" },
-    { value: "flight-takeoff", label: "Viagem", icon: "flight-takeoff" },
-    { value: "home", label: "Entrada de imóvel", icon: "home" },
-    { value: "car-washing", label: "Veículo", icon: "car-washing" },
-    { value: "graduation-cap", label: "Educação", icon: "graduation-cap" },
-    { value: "box-3", label: "Outro", icon: "box-3" },
-];
+import { AccountService } from "@infra/services";
 
 @Component({
     selector: "ai-form-savings-goal",
@@ -26,10 +18,11 @@ const GOAL_ICONS: { value: string; label: string; icon: AiIconType }[] = [
 })
 export class FormSavingsGoal {
     #toast = inject(AiToastService);
-    #accountFacade = inject(AccountFacade);
+    #accountService = inject(AccountService);
 
-    readonly accounts = this.#accountFacade.accounts;
-    readonly goalIcons = GOAL_ICONS;
+    #accounts = signal<AccountDto[]>([]);
+    readonly accounts = this.#accounts.asReadonly();
+    readonly goalIcons = SAVINGS_GOAL_ICONS;
 
     readonly goal = input<SavingsGoalDto | null>(null);
     readonly id = computed(() => this.goal()?.id ?? "");
@@ -59,7 +52,7 @@ export class FormSavingsGoal {
     };
 
     constructor() {
-        this.#accountFacade.load();
+        this.#accountService.find().subscribe(accounts => this.#accounts.set(accounts));
 
         effect(() => {
             const goal = this.goal();
@@ -85,28 +78,23 @@ export class FormSavingsGoal {
         this.goalSchema.update(current => ({ ...current, targetDate: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestSavingsGoalDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestSavingsGoalDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

@@ -7,7 +7,7 @@ import { BadgeCategory, ButtonForm } from "@core/ui";
 import { tpCategoryEnum } from "@domain/enums";
 import { BudgetDto, makeRequestBudget, RequestBudgetDto, requestBudgetSchema } from "@domain/schemas";
 import { BudgetAdapter } from "@infra/adapters";
-import { BudgetFacade, CategoryFacade } from "@infra/facades";
+import { BudgetFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-form-budget",
@@ -17,8 +17,7 @@ import { BudgetFacade, CategoryFacade } from "@infra/facades";
 })
 export class FormBudget {
     #toast = inject(AiToastService);
-    #categoryFacade = inject(CategoryFacade);
-    #budgetFacade = inject(BudgetFacade);
+    #facade = inject(BudgetFacade);
 
     readonly referenceMonth = input.required<string>();
     readonly budget = input<BudgetDto | null>(null);
@@ -38,14 +37,14 @@ export class FormBudget {
     readonly id = computed(() => this.budget()?.id ?? "");
 
     readonly availableCategories = computed(() => {
-        const budgetedCategoryIds = new Set(this.#budgetFacade.budgets().map(budget => budget.categoryId));
-        return this.#categoryFacade
+        const budgetedCategoryIds = new Set(this.#facade.budgets().map(budget => budget.categoryId));
+        return this.#facade
             .categories()
             .filter(category => category.type === tpCategoryEnum.EXPENSE)
             .filter(category => !budgetedCategoryIds.has(category.id) || category.id === this.budgetSchema().categoryId);
     });
 
-    readonly selectedCategory = computed(() => this.#categoryFacade.categories().find(category => category.id === this.form().value().categoryId) ?? null);
+    readonly selectedCategory = computed(() => this.#facade.categories().find(category => category.id === this.form().value().categoryId) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
@@ -56,13 +55,12 @@ export class FormBudget {
     };
 
     constructor() {
-        this.#categoryFacade.load();
-
         effect(() => {
             const budget = this.budget();
             const referenceMonth = this.referenceMonth();
 
             untracked(() => {
+                this.#facade.load(referenceMonth);
                 if (budget) {
                     this.budgetSchema.set(BudgetAdapter.toDto(budget));
                     this.enabled.set(true);
@@ -77,28 +75,23 @@ export class FormBudget {
         this.budgetSchema.update(current => ({ ...current, categoryId: isArrayId(value) }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestBudgetDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestBudgetDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

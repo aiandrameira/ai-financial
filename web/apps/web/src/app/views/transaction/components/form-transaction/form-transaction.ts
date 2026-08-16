@@ -1,4 +1,4 @@
-import type { AiButtonToggleItem, AiMaskConfig } from "@aiandralves/ai-ui";
+import type { AiMaskConfig } from "@aiandralves/ai-ui";
 import { AiBadge, AiButtonToggle, AiDatePicker, AiInput, AiSelectImports, AiSwitch, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
@@ -6,19 +6,13 @@ import { isArrayId } from "@core/helpers";
 import { TpAccountPipe } from "@core/pipes";
 import { BadgeCategory, BadgeTpTransaction, ButtonForm } from "@core/ui";
 import { matchesCategoryType } from "@core/utils";
+import { TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPES } from "@domain/constants";
 import { tpTransactionEnum } from "@domain/enums";
 import { makeRequestTransaction, RequestTransactionDto, requestTransactionSchema, TransactionDto } from "@domain/schemas";
 import { TransactionAdapter } from "@infra/adapters";
 import { TransactionFacade } from "@infra/facades";
 
-const TRANSACTION_TYPES = Object.values(tpTransactionEnum).filter(type => type !== tpTransactionEnum.TRANSFER);
-
 type TransactionOrigin = "account" | "creditCard";
-
-const ORIGIN_ITEMS: AiButtonToggleItem[] = [
-    { value: "account", label: "Conta", icon: "bank" },
-    { value: "creditCard", label: "Cartão", icon: "bank-card" },
-];
 
 @Component({
     selector: "ai-form-transaction",
@@ -33,7 +27,7 @@ export class FormTransaction {
     readonly transactionTypes = TRANSACTION_TYPES;
     readonly accounts = this.#facade.accounts;
     readonly creditCards = this.#facade.creditCards;
-    readonly originItems = ORIGIN_ITEMS;
+    readonly originItems = TRANSACTION_ORIGIN_ITEMS;
 
     readonly enabled = signal<boolean>(false);
     readonly origin = signal<TransactionOrigin>("account");
@@ -119,28 +113,23 @@ export class FormTransaction {
         this.transactionSchema.update(current => ({ ...current, date: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestTransactionDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestTransactionDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

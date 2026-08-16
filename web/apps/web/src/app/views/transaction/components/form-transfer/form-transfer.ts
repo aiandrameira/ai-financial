@@ -4,15 +4,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, output, signal } 
 import { form, FormField, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { TpAccountPipe } from "@core/pipes";
+import { TRANSFER_METHOD_ICONS, TRANSFER_METHODS } from "@domain/constants";
 import { tpTransferMethodEnum, tpTransferMethodMap } from "@domain/enums";
 import { makeRequestTransfer, RequestTransferDto, requestTransferSchema } from "@domain/schemas";
 import { TransactionFacade } from "@infra/facades";
-
-const TRANSFER_METHODS = Object.values(tpTransferMethodEnum);
-const TRANSFER_METHOD_ICONS: Record<tpTransferMethodEnum, "exchange" | "qr-code"> = {
-    [tpTransferMethodEnum.TRANSFER]: "exchange",
-    [tpTransferMethodEnum.PIX]: "qr-code",
-};
 
 @Component({
     selector: "ai-form-transfer",
@@ -69,26 +64,21 @@ export class FormTransfer {
         this.transferSchema.update(current => ({ ...current, method }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                this.save.emit(this.form().value() as RequestTransferDto);
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            this.save.emit(this.form().value() as RequestTransferDto);
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

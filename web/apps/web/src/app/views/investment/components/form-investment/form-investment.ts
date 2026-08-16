@@ -1,27 +1,12 @@
-import type { AiIconType } from "@aiandralves/ai-ui";
 import { AiBadge, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { ButtonForm } from "@core/ui";
-import { tpInvestmentEnum, tpInvestmentMap } from "@domain/enums";
+import { INVESTMENT_TYPES } from "@domain/constants";
+import { tpInvestmentEnum } from "@domain/enums";
 import { InvestmentAssetDto, makeRequestInvestmentAsset, RequestInvestmentAssetDto, requestInvestmentAssetSchema } from "@domain/schemas";
 import { InvestmentAdapter } from "@infra/adapters";
-
-const INVESTMENT_TYPE_ICONS: Record<tpInvestmentEnum, AiIconType> = {
-    [tpInvestmentEnum.FIXED_INCOME]: "shield-check",
-    [tpInvestmentEnum.STOCK]: "line-chart",
-    [tpInvestmentEnum.REIT]: "building-4",
-    [tpInvestmentEnum.TREASURY]: "treasure-map",
-    [tpInvestmentEnum.CRYPTO]: "bit-coin",
-    [tpInvestmentEnum.FUND]: "pie-chart",
-};
-
-const INVESTMENT_TYPES: { value: tpInvestmentEnum; label: string; icon: AiIconType }[] = Array.from(tpInvestmentMap, ([value, label]) => ({
-    value,
-    label,
-    icon: INVESTMENT_TYPE_ICONS[value],
-}));
 
 @Component({
     selector: "ai-form-investment",
@@ -69,28 +54,23 @@ export class FormInvestment {
         this.investmentSchema.update(current => ({ ...current, type: isArrayId(value) as tpInvestmentEnum }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestInvestmentAssetDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestInvestmentAssetDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

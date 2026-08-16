@@ -3,11 +3,10 @@ import { AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { BadgeTpAccount, ButtonForm } from "@core/ui";
+import { ACCOUNT_TYPES } from "@domain/constants";
 import { tpAccountEnum } from "@domain/enums";
 import { AccountDto, makeRequestAccount, RequestAccountDto, requestAccountSchema } from "@domain/schemas";
 import { AccountAdapter } from "@infra/adapters";
-
-const ACCOUNT_TYPES = Object.values(tpAccountEnum);
 
 @Component({
     selector: "ai-form-account",
@@ -62,28 +61,23 @@ export class FormAccount {
         this.accountSchema.update(current => ({ ...current, type }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestAccountDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestAccountDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

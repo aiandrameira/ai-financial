@@ -1,48 +1,14 @@
-import type { AiIconType } from "@aiandralves/ai-ui";
 import { AiBadge, AiIcon, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { BadgeCategory, BadgeTpCategory, ButtonForm } from "@core/ui";
+import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_TYPES } from "@domain/constants";
 import { tpCategoryEnum } from "@domain/enums";
 import { CategoryDto, makeRequestCategory, RequestCategoryDto, requestCategorySchema } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
 import { CategoryAdapter } from "@infra/adapters";
-import { CategoryFacade } from "@infra/facades";
-
-const CATEGORY_TYPES = Object.values(tpCategoryEnum);
-
-const CATEGORY_ICONS: AiIconType[] = [
-    "restaurant",
-    "shopping-cart-2",
-    "car",
-    "home",
-    "heart-pulse",
-    "graduation-cap",
-    "gift",
-    "briefcase",
-    "plane",
-    "wallet",
-    "movie-2",
-    "music",
-    "store",
-    "bank",
-    "receipt",
-    "umbrella",
-    "beer",
-    "shapes",
-];
-
-const CATEGORY_COLORS: { value: BadgeVariant; label: string }[] = [
-    { value: "default", label: "Cinza" },
-    { value: "primary", label: "Azul" },
-    { value: "accent", label: "Roxo" },
-    { value: "outline", label: "Contorno" },
-    { value: "destructive", label: "Vermelho" },
-    { value: "info", label: "Ciano" },
-    { value: "success", label: "Verde" },
-    { value: "warning", label: "Amarelo" },
-];
+import { CategoryService } from "@infra/services";
 
 @Component({
     selector: "ai-form-category",
@@ -52,7 +18,9 @@ const CATEGORY_COLORS: { value: BadgeVariant; label: string }[] = [
 })
 export class FormCategory {
     #toast = inject(AiToastService);
-    #facade = inject(CategoryFacade);
+    #service = inject(CategoryService);
+
+    #categories = signal<CategoryDto[]>([]);
 
     readonly categoryTypes = CATEGORY_TYPES;
     readonly categoryIcons = CATEGORY_ICONS;
@@ -73,7 +41,7 @@ export class FormCategory {
     readonly category = input<CategoryDto | null>(null);
     readonly id = computed(() => this.category()?.id ?? "");
 
-    readonly parentOptions = computed(() => this.#facade.categories().filter(item => item.type === this.categorySchema().type && item.id !== this.id()));
+    readonly parentOptions = computed(() => this.#categories().filter(item => item.type === this.categorySchema().type && item.id !== this.id()));
 
     readonly selectedType = computed(() => this.form().value().type);
     readonly selectedIcon = computed(() => this.form().value().icon);
@@ -92,7 +60,7 @@ export class FormCategory {
     }));
 
     constructor() {
-        this.#facade.load();
+        this.#service.find().subscribe(categories => this.#categories.set(categories));
 
         effect(() => {
             const category = this.category();
@@ -123,28 +91,23 @@ export class FormCategory {
         this.categorySchema.update(current => ({ ...current, parentId: isArrayId(value) }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestCategoryDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestCategoryDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

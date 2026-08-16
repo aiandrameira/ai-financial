@@ -1,24 +1,13 @@
-import type { AiIconType, AiMaskConfig } from "@aiandralves/ai-ui";
+import type { AiMaskConfig } from "@aiandralves/ai-ui";
 import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { ButtonForm } from "@core/ui";
-import { tpAssetEnum, tpAssetMap } from "@domain/enums";
+import { ASSET_TYPES } from "@domain/constants";
+import { tpAssetEnum } from "@domain/enums";
 import { AssetDto, makeRequestAsset, RequestAssetDto, requestAssetSchema } from "@domain/schemas";
 import { AssetAdapter } from "@infra/adapters";
-
-const ASSET_TYPE_ICONS: Record<tpAssetEnum, AiIconType> = {
-    [tpAssetEnum.REAL_ESTATE]: "home",
-    [tpAssetEnum.VEHICLE]: "car-washing",
-    [tpAssetEnum.OTHER]: "box-3",
-};
-
-const ASSET_TYPES: { value: tpAssetEnum; label: string; icon: AiIconType }[] = Array.from(tpAssetMap, ([value, label]) => ({
-    value,
-    label,
-    icon: ASSET_TYPE_ICONS[value],
-}));
 
 @Component({
     selector: "ai-form-asset",
@@ -78,28 +67,23 @@ export class FormAsset {
         this.assetSchema.update(current => ({ ...current, acquiredAt: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestAssetDto;
-                const id = this.id();
-                this.save.emit({ ...payload, ...(id ? { id } : {}) });
-            });
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestAssetDto;
+            const id = this.id();
+            this.save.emit({ ...payload, ...(id ? { id } : {}) });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao submeter formulário:", error);
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }
