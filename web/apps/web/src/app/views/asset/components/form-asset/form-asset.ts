@@ -1,9 +1,9 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { ButtonForm } from "@core/ui";
+import { BadgeTpAsset, ButtonForm } from "@core/ui";
 import { ASSET_TYPES } from "@domain/constants";
 import { tpAssetEnum } from "@domain/enums";
 import { AssetDto, makeRequestAsset, RequestAssetDto, requestAssetSchema } from "@domain/schemas";
@@ -11,7 +11,7 @@ import { AssetAdapter } from "@infra/adapters";
 
 @Component({
     selector: "ai-form-asset",
-    imports: [FormField, AiInput, AiBadge, AiSelectImports, ButtonForm, AiDatePicker],
+    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpAsset, AiDatePicker],
     templateUrl: "./form-asset.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,8 +35,6 @@ export class FormAsset {
 
     readonly save = output<RequestAssetDto>();
     readonly loading = signal<boolean>(false);
-
-    readonly selectedType = computed(() => this.assetTypes.find(type => type.value === this.form().value().type) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
