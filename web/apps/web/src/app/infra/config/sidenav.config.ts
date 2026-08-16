@@ -11,6 +11,8 @@ export const SIDENAV_MODULES: SidenavGroup[] = [
             { icon: "pie-chart", label: "Orçamento", path: "/budget" },
             { icon: "file-list", label: "Financiamentos", path: "/loans" },
             { icon: "line-chart", label: "Investimentos", path: "/investments" },
+            { icon: "triangular-flag", label: "Metas", path: "/goals" },
+            { icon: "home", label: "Bens", path: "/assets" },
         ],
     },
 ];
