@@ -45,46 +45,6 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione o ícone"
-                [value]="form().value().icon"
-                [disabled]="form().disabled()"
-                (selectionChange)="onIconChange($event)">
-                @for (icon of categoryIcons; track icon) {
-                    <ai-select-item [value]="icon">
-                        <span class="flex items-center gap-x-2">
-                            <ai-icon [icon]="icon" size="sm" />
-                            {{ icon }}
-                        </span>
-                    </ai-select-item>
-                }
-            </ai-select>
-        </div>
-
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione a cor"
-                [value]="form().value().color"
-                [disabled]="form().disabled()"
-                (selectionChange)="onColorChange($event)">
-                @for (color of categoryColors; track color.value) {
-                    <ai-select-item [value]="color.value">
-                        <ai-badge [variant]="color.value" fill="line">{{ color.label }}</ai-badge>
-                    </ai-select-item>
-                }
-            </ai-select>
-        </div>
-    </div>
-
-    <div class="flex flex-col gap-y-2">
-        <span class="text-xs text-muted-foreground">Pré-visualização</span>
-        <ai-badge-category [category]="previewCategory()" class="w-max" />
-    </div>
-
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">
         @let isNew = !id();
         @let isDisabled = form().disabled();

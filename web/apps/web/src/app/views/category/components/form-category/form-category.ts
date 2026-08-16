@@ -1,18 +1,17 @@
-import { AiBadge, AiIcon, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { BadgeCategory, BadgeTpCategory, ButtonForm } from "@core/ui";
-import { CATEGORY_COLORS, CATEGORY_ICONS, CATEGORY_TYPES } from "@domain/constants";
+import { CATEGORY_TYPES } from "@domain/constants";
 import { tpCategoryEnum } from "@domain/enums";
 import { CategoryDto, makeRequestCategory, RequestCategoryDto, requestCategorySchema } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { CategoryAdapter } from "@infra/adapters";
 import { CategoryService } from "@infra/services";
 
 @Component({
     selector: "ai-form-category",
-    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpCategory, BadgeCategory, AiIcon, AiBadge],
+    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpCategory, BadgeCategory],
     templateUrl: "./form-category.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,8 +22,6 @@ export class FormCategory {
     #categories = signal<CategoryDto[]>([]);
 
     readonly categoryTypes = CATEGORY_TYPES;
-    readonly categoryIcons = CATEGORY_ICONS;
-    readonly categoryColors = CATEGORY_COLORS;
 
     readonly enabled = signal<boolean>(false);
     protected categorySchema = signal<RequestCategoryDto>(makeRequestCategory());
@@ -44,20 +41,7 @@ export class FormCategory {
     readonly parentOptions = computed(() => this.#categories().filter(item => item.type === this.categorySchema().type && item.id !== this.id()));
 
     readonly selectedType = computed(() => this.form().value().type);
-    readonly selectedIcon = computed(() => this.form().value().icon);
-    readonly selectedColor = computed(() => this.form().value().color as BadgeVariant);
     readonly selectedParent = computed(() => this.parentOptions().find(item => item.id === this.form().value().parentId) ?? null);
-
-    readonly previewCategory = computed<CategoryDto>(() => ({
-        id: "",
-        name: this.categorySchema().name || "Pré-visualização",
-        type: this.categorySchema().type,
-        parentId: null,
-        icon: this.categorySchema().icon || null,
-        color: this.categorySchema().color || null,
-        createdAt: "",
-        updatedAt: "",
-    }));
 
     constructor() {
         this.#service.find().subscribe(categories => this.#categories.set(categories));
@@ -77,14 +61,6 @@ export class FormCategory {
     protected onTypeChange(value: unknown): void {
         const type = (Array.isArray(value) ? value[0] : value) as tpCategoryEnum;
         this.categorySchema.update(current => ({ ...current, type, parentId: "" }));
-    }
-
-    protected onIconChange(value: unknown): void {
-        this.categorySchema.update(current => ({ ...current, icon: isArrayId(value) }));
-    }
-
-    protected onColorChange(value: unknown): void {
-        this.categorySchema.update(current => ({ ...current, color: isArrayId(value) }));
     }
 
     protected onParentChange(value: unknown): void {
