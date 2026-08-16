@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/cor
 import { form, FormField, submit, validateStandardSchema } from "@angular/forms/signals";
 import { ButtonForm } from "@core/ui";
 import { makeRequestInvestmentPrice, RequestInvestmentPriceDto, requestInvestmentPriceSchema } from "@domain/schemas";
-import { InvestmentFacade, InvestmentPriceFacade } from "@infra/facades";
+import { InvestmentPriceService } from "@infra/services";
 
 @Component({
     selector: "ai-dialog-investment-price",
@@ -14,8 +14,7 @@ import { InvestmentFacade, InvestmentPriceFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogInvestmentPrice {
-    #facade = inject(InvestmentPriceFacade);
-    #investmentFacade = inject(InvestmentFacade);
+    #priceService = inject(InvestmentPriceService);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogInvestmentPrice>);
 
@@ -41,32 +40,33 @@ export class DialogInvestmentPrice {
         this.priceSchema.update(current => ({ ...current, referenceDate: value }));
     }
 
-    async onSave() {
+    onSave(): void {
         this.loading.set(true);
         let submitted = false;
 
-        try {
-            await submit(this.form, async () => {
-                submitted = true;
-                const payload = this.form().value() as RequestInvestmentPriceDto;
+        submit(this.form, async () => {
+            submitted = true;
+            const payload = this.form().value() as RequestInvestmentPriceDto;
 
-                await this.#facade.create(this.data.investmentId, payload);
-                await this.#investmentFacade.load();
-                this.#toast.success({ message: "Preço atualizado com sucesso." });
-                this.#dialogRef.close();
+            this.#priceService.create(this.data.investmentId, payload).subscribe({
+                next: () => {
+                    this.#toast.success({ message: "Preço atualizado com sucesso." });
+                    this.#dialogRef.close();
+                },
+                error: (error: unknown) => {
+                    const message =
+                        error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível atualizar o preço.") : "Não foi possível atualizar o preço.";
+                    this.#toast.destructive({ message: "Erro ao atualizar preço", description: message });
+                },
             });
+        });
 
-            if (!submitted) {
-                this.#toast.warning({
-                    message: "Campos obrigatórios",
-                    description: "Por favor, preencha todos os campos corretamente.",
-                });
-            }
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível atualizar o preço.") : "Não foi possível atualizar o preço.";
-            this.#toast.destructive({ message: "Erro ao atualizar preço", description: message });
-        } finally {
-            this.loading.set(false);
+        if (!submitted) {
+            this.#toast.warning({
+                message: "Campos obrigatórios",
+                description: "Por favor, preencha todos os campos corretamente.",
+            });
         }
+        this.loading.set(false);
     }
 }

@@ -2,20 +2,13 @@ import { AI_DIALOG_DATA, AiBadge, AiButton, AiDialogRef, AiIcon, AiToastService 
 import { CurrencyPipe, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { finalize } from "rxjs";
 
 import { formatMonthYearDayjs, formatUtcDateDayjs } from "@core/helpers";
+import { INVOICE_STATUS_VARIANT } from "@domain/constants";
 import { stInvoiceEnum, stInvoiceMap } from "@domain/enums";
-import { CreditCardInvoiceDto, TransactionDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
+import { CreditCardInvoiceDto } from "@domain/schemas";
 import { CreditCardInvoiceFacade } from "@infra/facades";
-import { TransactionService } from "@infra/services";
-
-const STATUS_VARIANT: Record<stInvoiceEnum, BadgeVariant> = {
-    [stInvoiceEnum.OPEN]: "info",
-    [stInvoiceEnum.CLOSED]: "warning",
-    [stInvoiceEnum.PAID]: "success",
-};
 
 @Component({
     selector: "ai-dialog-credit-card-invoice",
@@ -25,21 +18,20 @@ const STATUS_VARIANT: Record<stInvoiceEnum, BadgeVariant> = {
 })
 export class DialogCreditCardInvoice implements OnInit {
     #facade = inject(CreditCardInvoiceFacade);
-    #transactionService = inject(TransactionService);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogCreditCardInvoice>);
 
     protected readonly data = inject<{ creditCardId: string; invoice: CreditCardInvoiceDto }>(AI_DIALOG_DATA as never);
 
-    protected readonly statusVariant = STATUS_VARIANT;
+    protected readonly statusVariant = INVOICE_STATUS_VARIANT;
     protected readonly stInvoiceMap = stInvoiceMap;
     protected readonly stInvoiceEnum = stInvoiceEnum;
     protected readonly referenceMonthLabel = computed(() => formatMonthYearDayjs(this.data.invoice.referenceMonth));
     protected readonly closingDateLabel = computed(() => formatUtcDateDayjs(this.data.invoice.closingDate));
     protected readonly dueDateLabel = computed(() => formatUtcDateDayjs(this.data.invoice.dueDate));
 
-    readonly transactions = signal<TransactionDto[]>([]);
-    readonly loading = signal(false);
+    readonly transactions = this.#facade.invoiceTransactions;
+    readonly loading = this.#facade.loadingTransactions;
     readonly paying = signal(false);
 
     protected abs(val: number | string | null | undefined): number {
@@ -49,31 +41,23 @@ export class DialogCreditCardInvoice implements OnInit {
     }
 
     ngOnInit(): void {
-        this._loadTransactions();
+        this.#facade.loadInvoiceTransactions(this.data.invoice.id);
     }
 
-    protected async onPay(): Promise<void> {
+    protected onPay(): void {
         this.paying.set(true);
-
-        try {
-            await this.#facade.pay(this.data.creditCardId, this.data.invoice.id);
-            this.#toast.success({ message: "Fatura paga com sucesso." });
-            this.#dialogRef.close();
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível pagar a fatura.") : "Não foi possível pagar a fatura.";
-            this.#toast.destructive({ message: "Erro ao pagar fatura", description: message });
-        } finally {
-            this.paying.set(false);
-        }
-    }
-
-    private async _loadTransactions(): Promise<void> {
-        this.loading.set(true);
-        try {
-            const transactions = await firstValueFrom(this.#transactionService.find({ invoiceId: this.data.invoice.id }));
-            this.transactions.set(transactions);
-        } finally {
-            this.loading.set(false);
-        }
+        this.#facade
+            .payInvoice(this.data.creditCardId, this.data.invoice.id)
+            .pipe(finalize(() => this.paying.set(false)))
+            .subscribe({
+                next: () => {
+                    this.#toast.success({ message: "Fatura paga com sucesso." });
+                    this.#dialogRef.close();
+                },
+                error: error => {
+                    const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível pagar a fatura.") : "Não foi possível pagar a fatura.";
+                    this.#toast.destructive({ message: "Erro ao pagar fatura", description: message });
+                },
+            });
     }
 }

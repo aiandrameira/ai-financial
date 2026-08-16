@@ -1,4 +1,5 @@
 import { AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RequestTransferDto } from "@domain/schemas";
 import { TransactionFacade } from "@infra/facades";
@@ -16,9 +17,19 @@ export class DialogTransfer {
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogTransfer>);
 
-    protected async onSave(payload: RequestTransferDto): Promise<void> {
-        await this.#facade.createTransfer(payload);
-        this.#toast.success({ message: "Transferência realizada com sucesso." });
-        this.#dialogRef.close();
+    protected onSave(payload: RequestTransferDto): void {
+        this.#facade.createTransfer(payload).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Transferência realizada com sucesso." });
+                this.#dialogRef.close();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse
+                        ? (error.error?.meta?.message ?? "Não foi possível realizar a transferência.")
+                        : "Não foi possível realizar a transferência.";
+                this.#toast.destructive({ message: "Erro ao realizar transferência", description: message });
+            },
+        });
     }
 }

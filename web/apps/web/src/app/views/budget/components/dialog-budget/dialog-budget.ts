@@ -1,4 +1,5 @@
 import { AI_DIALOG_DATA, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { BudgetDto, RequestBudgetDto } from "@domain/schemas";
 import { BudgetFacade } from "@infra/facades";
@@ -18,11 +19,19 @@ export class DialogBudget {
 
     protected readonly data = inject<{ referenceMonth: string; budget: BudgetDto | null }>(AI_DIALOG_DATA as never);
 
-    protected async onSave(payload: RequestBudgetDto): Promise<void> {
+    protected onSave(payload: RequestBudgetDto): void {
         const isNew = !payload.id;
 
-        await this.#facade.save(payload);
-        this.#toast.success({ message: isNew ? "Orçamento cadastrado com sucesso." : "Orçamento atualizado com sucesso." });
-        this.#dialogRef.close();
+        this.#facade.save(payload).subscribe({
+            next: () => {
+                this.#toast.success({ message: isNew ? "Orçamento cadastrado com sucesso." : "Orçamento atualizado com sucesso." });
+                this.#dialogRef.close();
+            },
+            error: (error: unknown) => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível salvar o orçamento.") : "Não foi possível salvar o orçamento.";
+                this.#toast.destructive({ message: "Erro ao salvar orçamento", description: message });
+            },
+        });
     }
 }

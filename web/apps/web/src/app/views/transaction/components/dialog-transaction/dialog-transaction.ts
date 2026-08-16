@@ -1,4 +1,5 @@
 import { AI_DIALOG_DATA, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RequestTransactionDto, TransactionDto } from "@domain/schemas";
 import { TransactionFacade } from "@infra/facades";
@@ -18,11 +19,19 @@ export class DialogTransaction {
 
     protected readonly data = inject<{ transaction: TransactionDto | null }>(AI_DIALOG_DATA as never);
 
-    protected async onSave(payload: RequestTransactionDto): Promise<void> {
+    protected onSave(payload: RequestTransactionDto): void {
         const isNew = !payload.id;
 
-        await this.#facade.save(payload);
-        this.#toast.success({ message: isNew ? "Transação lançada com sucesso." : "Transação atualizada com sucesso." });
-        this.#dialogRef.close();
+        this.#facade.save(payload).subscribe({
+            next: () => {
+                this.#toast.success({ message: isNew ? "Transação lançada com sucesso." : "Transação atualizada com sucesso." });
+                this.#dialogRef.close();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível salvar a transação.") : "Não foi possível salvar a transação.";
+                this.#toast.destructive({ message: "Erro ao salvar transação", description: message });
+            },
+        });
     }
 }

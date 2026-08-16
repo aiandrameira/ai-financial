@@ -1,7 +1,9 @@
 import { AI_DIALOG_DATA, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { RequestSavingsGoalDto, SavingsGoalDto } from "@domain/schemas";
-import { SavingsGoalFacade } from "@infra/facades";
+import { SavingsGoalService } from "@infra/services";
+import { Observable } from "rxjs";
 
 import { FormSavingsGoal } from "../form-savings-goal/form-savings-goal";
 
@@ -12,17 +14,25 @@ import { FormSavingsGoal } from "../form-savings-goal/form-savings-goal";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogSavingsGoal {
-    #facade = inject(SavingsGoalFacade);
+    #service = inject(SavingsGoalService);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogSavingsGoal>);
 
     protected readonly data = inject<{ goal: SavingsGoalDto | null }>(AI_DIALOG_DATA as never);
 
-    protected async onSave(payload: RequestSavingsGoalDto): Promise<void> {
+    protected onSave(payload: RequestSavingsGoalDto): void {
         const isNew = !payload.id;
+        const request$: Observable<unknown> = payload.id ? this.#service.update(payload.id, payload) : this.#service.create(payload);
 
-        await this.#facade.save(payload);
-        this.#toast.success({ message: isNew ? "Meta cadastrada com sucesso." : "Meta atualizada com sucesso." });
-        this.#dialogRef.close();
+        request$.subscribe({
+            next: () => {
+                this.#toast.success({ message: isNew ? "Meta cadastrada com sucesso." : "Meta atualizada com sucesso." });
+                this.#dialogRef.close();
+            },
+            error: (error: unknown) => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível salvar a meta.") : "Não foi possível salvar a meta.";
+                this.#toast.destructive({ message: "Erro ao salvar meta", description: message });
+            },
+        });
     }
 }
