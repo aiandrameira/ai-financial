@@ -1,0 +1,116 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading
+            icon="line-chart"
+            title="Movimentações"
+            [description]="asset() ? 'Movimentações do ativo ' + asset()!.name + '.' : 'Movimentações do ativo.'"
+        />
+
+        <div class="flex flex-wrap gap-2 self-start sm:self-auto">
+            <ai-button size="sm" variant="accent" icon="hand-coin" (click)="openPrice()">Atualizar preço</ai-button>
+            <ai-button size="sm" icon="add-circle" (click)="openMovement()">Registrar movimentação</ai-button>
+            <ai-button size="sm" variant="default" (click)="goBack()">
+                <ai-icon icon="arrow-left" />
+                Voltar
+            </ai-button>
+        </div>
+    </div>
+
+    @if (asset(); as asset) {
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <!-- Quantidade Card -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                <div class="flex items-center justify-between gap-x-2">
+                    <span class="text-xs font-semibold text-muted-foreground truncate">Quantidade</span>
+                    <div class="h-8 w-8 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                        <ai-icon icon="box-3" size="sm" />
+                    </div>
+                </div>
+                <div class="mt-2.5">
+                    <span class="font-title text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap block">
+                        {{ asset.quantity }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Preço Médio Card -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                <div class="flex items-center justify-between gap-x-2">
+                    <span class="text-xs font-semibold text-muted-foreground truncate">Preço médio</span>
+                    <div class="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <ai-icon icon="price-tag-3" size="sm" />
+                    </div>
+                </div>
+                <div class="mt-2.5">
+                    <span class="font-title text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap block">
+                        {{ asset.averagePrice | currency }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Valor Investido Card -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                <div class="flex items-center justify-between gap-x-2">
+                    <span class="text-xs font-semibold text-muted-foreground truncate">Valor investido</span>
+                    <div class="h-8 w-8 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                        <ai-icon icon="money-dollar-circle" size="sm" />
+                    </div>
+                </div>
+                <div class="mt-2.5">
+                    <span class="font-title text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap block">
+                        {{ asset.investedAmount | currency }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Valor Atual Card -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
+                <div class="flex items-center justify-between gap-x-2">
+                    <span class="text-xs font-semibold text-muted-foreground truncate">Valor atual</span>
+                    <div class="h-8 w-8 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                        <ai-icon icon="bar-chart-2" size="sm" />
+                    </div>
+                </div>
+                <div class="mt-2.5">
+                    <span class="font-title text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap block">
+                        {{ asset.currentValue | currency }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Resultado Card -->
+            <div class="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between col-span-2 sm:col-span-1">
+                <div class="flex items-center justify-between gap-x-2">
+                    <span class="text-xs font-semibold text-muted-foreground truncate">Resultado</span>
+                    <div
+                        [class]="
+                            'h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ' +
+                            (asset.profitLoss >= 0
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400')
+                        ">
+                        <ai-icon [icon]="asset.profitLoss >= 0 ? 'arrow-right-up' : 'arrow-right-down'" size="sm" />
+                    </div>
+                </div>
+                <div class="mt-2.5 flex items-baseline gap-x-1.5 flex-wrap">
+                    <span class="font-title text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
+                        {{ asset.profitLoss | currency }}
+                    </span>
+                    @if (asset.profitLossPercent !== undefined && asset.profitLossPercent !== null) {
+                        <span
+                            [class]="
+                                'text-xs font-semibold whitespace-nowrap ' +
+                                (asset.profitLoss >= 0
+                                    ? 'text-emerald-600 dark:text-emerald-400'
+                                    : 'text-rose-600 dark:text-rose-400')
+                            ">
+                            ({{ asset.profitLossPercent >= 0 ? '+' : '' }}{{ asset.profitLossPercent }}%)
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <ai-table-investment-movement [investmentId]="id()" />
+</div>
