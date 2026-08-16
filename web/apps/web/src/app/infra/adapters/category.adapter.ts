@@ -7,8 +7,6 @@ export class CategoryAdapter {
             name: raw.name,
             type: raw.type,
             parentId: raw.parentId ?? "",
-            icon: raw.icon ?? "",
-            color: raw.color ?? "",
         };
     }
 }

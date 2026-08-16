@@ -13,8 +13,6 @@ export const requestCategorySchema = z.object({
         .union([z.uuidv7(), z.literal("")])
         .default("")
         .optional(),
-    icon: z.string().default(""),
-    color: z.string().default(""),
 });
 
 export type RequestCategoryDto = z.infer<typeof requestCategorySchema>;
@@ -28,8 +26,6 @@ export const categorySchema = z.object({
     name: z.string(),
     type: z.enum(tpCategoryEnum),
     parentId: z.string().nullable(),
-    icon: z.string().nullable(),
-    color: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
 });
