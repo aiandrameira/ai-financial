@@ -1,10 +1,9 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlert, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { TpAccountPipe } from "@core/pipes";
-import { ButtonForm } from "@core/ui";
+import { BadgeTpAccount, BadgeTpLoan, ButtonForm } from "@core/ui";
 import { LOAN_TYPES } from "@domain/constants";
 import { tpLoanEnum } from "@domain/enums";
 import { AccountDto, LoanDto, makeRequestLoan, RequestLoanDto, requestLoanSchema } from "@domain/schemas";
@@ -13,7 +12,7 @@ import { AccountService } from "@infra/services";
 
 @Component({
     selector: "ai-form-loan",
-    imports: [FormField, AiInput, AiBadge, AiSelectImports, ButtonForm, TpAccountPipe, AiDatePicker],
+    imports: [FormField, AiInput, AiAlert, AiSelectImports, ButtonForm, BadgeTpLoan, BadgeTpAccount, AiDatePicker],
     templateUrl: "./form-loan.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -46,7 +45,6 @@ export class FormLoan {
     readonly loading = signal<boolean>(false);
 
     readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
-    readonly selectedType = computed(() => this.loanTypes.find(type => type.value === this.form().value().type) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,

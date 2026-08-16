@@ -2,14 +2,14 @@ import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } fr
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { BadgeAccount, TableImports } from "@core/ui";
+import { BadgeTpAccount, TableImports } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { CreditCardDto } from "@domain/schemas";
 import { CreditCardFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-credit-card",
-    imports: [TableImports, BadgeAccount],
+    imports: [TableImports, BadgeTpAccount],
     templateUrl: "./table-credit-card.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,8 +1,8 @@
-import { AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
-import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
+import { disabled, form, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { BadgeCategory, BadgeTpCategory, ButtonForm } from "@core/ui";
+import { BadgeCategory, BadgeTpCategory, FormImports } from "@core/ui";
 import { CATEGORY_TYPES } from "@domain/constants";
 import { tpCategoryEnum } from "@domain/enums";
 import { CategoryDto, makeRequestCategory, RequestCategoryDto, requestCategorySchema } from "@domain/schemas";
@@ -11,7 +11,7 @@ import { CategoryService } from "@infra/services";
 
 @Component({
     selector: "ai-form-category",
-    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpCategory, BadgeCategory],
+    imports: [FormImports, BadgeTpCategory, BadgeCategory],
     templateUrl: "./form-category.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

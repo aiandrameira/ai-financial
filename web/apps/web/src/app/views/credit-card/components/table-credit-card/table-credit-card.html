@@ -1,7 +1,7 @@
 <ai-table [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="accountId" let-item>
         @if (account(item.accountId); as account) {
-            <ai-badge-account [account]="account" />
+            <ai-badge-tp-account [account]="account" />
         } @else {
             <ai-badge variant="default" />
         }

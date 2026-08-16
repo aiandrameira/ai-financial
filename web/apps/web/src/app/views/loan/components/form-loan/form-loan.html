@@ -1,5 +1,15 @@
 <div class="flex flex-col gap-y-4">
-    <ai-input class="w-full" label="Nome" [maxlength]="120" [formField]="form.name" />
+    @if (!isNew()) {
+        <ai-alert
+            variant="warning"
+            title="Atenção"
+            description="Valor, taxa, parcelas e data de início não podem ser alterados após a criação, pois o cronograma de amortização já foi gerado." />
+    }
+
+    <ai-input class="w-full" 
+        label="Nome" 
+        [maxlength]="120" 
+        [formField]="form.name" />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
         <div class="flex flex-col gap-y-2">
@@ -9,15 +19,15 @@
                 [value]="form().value().type"
                 [disabled]="form().disabled()"
                 (selectionChange)="onTypeChange($event)">
-                @for (type of loanTypes; track type.value) {
-                    <ai-select-item [value]="type.value">
-                        <ai-badge [icon]="type.icon" variant="default" fill="line">{{ type.label }}</ai-badge>
+                @for (type of loanTypes; track type) {
+                    <ai-select-item [value]="type">
+                        <ai-badge-tp-loan [type]="type" />
                     </ai-select-item>
                 }
             </ai-select>
 
-            @if (selectedType(); as type) {
-                <ai-badge [icon]="type.icon" variant="default" fill="line" class="w-max">{{ type.label }}</ai-badge>
+            @if (form().value().type; as type) {
+                <ai-badge-tp-loan [type]="type" class="w-max" />
             }
         </div>
 
@@ -30,28 +40,32 @@
                 (selectionChange)="onAccountChange($event)">
                 @for (account of accounts(); track account.id) {
                     <ai-select-item [value]="account.id">
-                        @let accountBadge = account.type | tpAccount;
-                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                        <ai-badge-tp-account [account]="account" />
                     </ai-select-item>
                 }
             </ai-select>
 
             @if (selectedAccount(); as account) {
-                @let accountBadge = account.type | tpAccount;
-                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                    {{ account.name }}
-                </ai-badge>
+                <ai-badge-tp-account [account]="account" class="w-max" />
             }
         </div>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
-        <ai-input class="w-full" label="Valor financiado" [maskConfig]="vlMaskConfig" [formField]="form.principalAmount" />
-        <ai-input class="w-full" label="Taxa de juros (% a.m.)" [formField]="form.interestRate" />
+        <ai-input class="w-full" 
+            label="Valor financiado" 
+            [maskConfig]="vlMaskConfig" 
+            [formField]="form.principalAmount" />
+        <ai-input class="w-full" 
+            label="Taxa de juros (% a.m.)" 
+            [formField]="form.interestRate" />
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
-        <ai-input class="w-full" type="number" label="Número de parcelas" [formField]="form.installmentsTotal" />
+        <ai-input class="w-full" 
+            normalize="numeric" 
+            label="Número de parcelas" 
+            [formField]="form.installmentsTotal" />
 
         <ai-date-picker
             class="w-full"
@@ -61,12 +75,6 @@
             [disabled]="form().disabled() || !isNew()"
             (valueChange)="onDateChange($event)" />
     </div>
-
-    @if (!isNew()) {
-        <p class="text-xs text-muted-foreground -mt-2">
-            Valor, taxa, parcelas e data de início não podem ser alterados após a criação, pois o cronograma de amortização já foi gerado.
-        </p>
-    }
 
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">
         @let isDisabled = form().disabled();
