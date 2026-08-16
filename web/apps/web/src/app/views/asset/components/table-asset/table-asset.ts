@@ -6,7 +6,7 @@ import { removeAlertDialog } from "@core/utils";
 import { tpAssetMap } from "@domain/enums";
 import { AssetDto } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
-import { AssetFacade } from "@infra/facades";
+import { AssetService } from "@infra/services";
 
 @Component({
     selector: "ai-table-asset",
@@ -15,9 +15,11 @@ import { AssetFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableAsset implements OnInit {
-    #facade = inject(AssetFacade);
+    #service = inject(AssetService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+
+    #assets = signal<AssetDto[]>([]);
 
     protected readonly tpAssetMap = tpAssetMap;
 
@@ -40,11 +42,15 @@ export class TableAsset implements OnInit {
 
     readonly config = computed<AiTableConfig<AssetDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.assets(),
+        data: this.#assets(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(assets => this.#assets.set(assets));
     }
 
     rowClick(item: AssetDto) {
@@ -60,13 +66,16 @@ export class TableAsset implements OnInit {
         });
     }
 
-    private async _remove(item: AssetDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Bem apagado com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o bem.") : "Não foi possível apagar o bem.";
-            this.#toast.destructive({ message: "Erro ao apagar bem", description: message });
-        }
+    private _remove(item: AssetDto): void {
+        this.#service.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Bem apagado com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o bem.") : "Não foi possível apagar o bem.";
+                this.#toast.destructive({ message: "Erro ao apagar bem", description: message });
+            },
+        });
     }
 }

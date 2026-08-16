@@ -7,7 +7,7 @@ import { TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMovementMap } from "@domain/enums";
 import { InvestmentMovementDto } from "@domain/schemas";
-import { InvestmentFacade, InvestmentMovementFacade } from "@infra/facades";
+import { InvestmentMovementService } from "@infra/services";
 
 @Component({
     selector: "ai-table-investment-movement",
@@ -16,10 +16,11 @@ import { InvestmentFacade, InvestmentMovementFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableInvestmentMovement {
-    #facade = inject(InvestmentMovementFacade);
-    #investmentFacade = inject(InvestmentFacade);
+    #service = inject(InvestmentMovementService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+
+    #movements = signal<InvestmentMovementDto[]>([]);
 
     readonly investmentId = input.required<string>();
 
@@ -36,14 +37,20 @@ export class TableInvestmentMovement {
 
     readonly config = computed<AiTableConfig<InvestmentMovementDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.movements(),
+        data: this.#movements(),
     }));
 
     constructor() {
         effect(() => {
             const investmentId = this.investmentId();
-            this.#facade.load(investmentId);
+            if (investmentId) {
+                this.load();
+            }
         });
+    }
+
+    load(): void {
+        this.#service.find(this.investmentId()).subscribe(movements => this.#movements.set(movements));
     }
 
     protected dateLabel(date: string): string {
@@ -57,15 +64,17 @@ export class TableInvestmentMovement {
         });
     }
 
-    private async _remove(item: InvestmentMovementDto): Promise<void> {
-        try {
-            await this.#facade.delete(this.investmentId(), item.id);
-            await this.#investmentFacade.load();
-            this.#toast.success({ message: "Movimentação apagada com sucesso." });
-        } catch (error) {
-            const message =
-                error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a movimentação.") : "Não foi possível apagar a movimentação.";
-            this.#toast.destructive({ message: "Erro ao apagar movimentação", description: message });
-        }
+    private _remove(item: InvestmentMovementDto): void {
+        this.#service.delete(this.investmentId(), item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Movimentação apagada com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a movimentação.") : "Não foi possível apagar a movimentação.";
+                this.#toast.destructive({ message: "Erro ao apagar movimentação", description: message });
+            },
+        });
     }
 }

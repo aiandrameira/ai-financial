@@ -2,16 +2,11 @@ import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { formatUtcDateDayjs } from "@core/helpers";
 import { TableImports } from "@core/ui";
+import { LOAN_INSTALLMENT_STATUS_VARIANT } from "@domain/constants";
 import { stLoanInstallmentEnum, stLoanInstallmentMap } from "@domain/enums";
 import { LoanInstallmentDto } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
-import { LoanInstallmentFacade } from "@infra/facades";
-
-const STATUS_VARIANT: Record<stLoanInstallmentEnum, BadgeVariant> = {
-    [stLoanInstallmentEnum.PENDING]: "info",
-    [stLoanInstallmentEnum.PAID]: "success",
-    [stLoanInstallmentEnum.LATE]: "destructive",
-};
+import { LoanInstallmentService } from "@infra/services";
 
 @Component({
     selector: "ai-table-loan-installment",
@@ -20,7 +15,9 @@ const STATUS_VARIANT: Record<stLoanInstallmentEnum, BadgeVariant> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableLoanInstallment {
-    #facade = inject(LoanInstallmentFacade);
+    #service = inject(LoanInstallmentService);
+
+    #installments = signal<LoanInstallmentDto[]>([]);
 
     readonly loanId = input.required<string>();
     readonly view = output<LoanInstallmentDto>();
@@ -36,13 +33,15 @@ export class TableLoanInstallment {
 
     readonly config = computed<AiTableConfig<LoanInstallmentDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.installments(),
+        data: this.#installments(),
     }));
 
     constructor() {
         effect(() => {
             const loanId = this.loanId();
-            this.#facade.load(loanId);
+            if (loanId) {
+                this.#service.find(loanId).subscribe(installments => this.#installments.set(installments));
+            }
         });
     }
 
@@ -55,6 +54,6 @@ export class TableLoanInstallment {
     }
 
     protected statusVariant(status: stLoanInstallmentEnum): BadgeVariant {
-        return STATUS_VARIANT[status];
+        return LOAN_INSTALLMENT_STATUS_VARIANT[status];
     }
 }

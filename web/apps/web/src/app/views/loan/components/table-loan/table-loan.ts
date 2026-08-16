@@ -6,7 +6,7 @@ import { TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpLoanMap } from "@domain/enums";
 import { LoanDto } from "@domain/schemas";
-import { LoanFacade } from "@infra/facades";
+import { LoanService } from "@infra/services";
 
 @Component({
     selector: "ai-table-loan",
@@ -15,10 +15,12 @@ import { LoanFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableLoan implements OnInit {
-    #facade = inject(LoanFacade);
+    #service = inject(LoanService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
+
+    #loans = signal<LoanDto[]>([]);
 
     protected readonly tpLoanMap = tpLoanMap;
 
@@ -36,11 +38,15 @@ export class TableLoan implements OnInit {
 
     readonly config = computed<AiTableConfig<LoanDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.loans(),
+        data: this.#loans(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(loans => this.#loans.set(loans));
     }
 
     rowClick(item: LoanDto) {
@@ -62,14 +68,17 @@ export class TableLoan implements OnInit {
         });
     }
 
-    private async _remove(item: LoanDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Financiamento apagado com sucesso." });
-        } catch (error) {
-            const message =
-                error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o financiamento.") : "Não foi possível apagar o financiamento.";
-            this.#toast.destructive({ message: "Erro ao apagar financiamento", description: message });
-        }
+    private _remove(item: LoanDto): void {
+        this.#service.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Financiamento apagado com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o financiamento.") : "Não foi possível apagar o financiamento.";
+                this.#toast.destructive({ message: "Erro ao apagar financiamento", description: message });
+            },
+        });
     }
 }

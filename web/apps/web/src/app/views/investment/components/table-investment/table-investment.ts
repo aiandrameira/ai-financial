@@ -8,7 +8,7 @@ import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMap } from "@domain/enums";
 import { InvestmentAssetDto } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
-import { InvestmentFacade } from "@infra/facades";
+import { InvestmentService } from "@infra/services";
 
 @Component({
     selector: "ai-table-investment",
@@ -17,10 +17,12 @@ import { InvestmentFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableInvestment implements OnInit {
-    #facade = inject(InvestmentFacade);
+    #service = inject(InvestmentService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
+
+    #assets = signal<InvestmentAssetDto[]>([]);
 
     protected readonly tpInvestmentMap = tpInvestmentMap;
 
@@ -46,11 +48,15 @@ export class TableInvestment implements OnInit {
 
     readonly config = computed<AiTableConfig<InvestmentAssetDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.assets(),
+        data: this.#assets(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(assets => this.#assets.set(assets));
     }
 
     rowClick(item: InvestmentAssetDto) {
@@ -72,14 +78,17 @@ export class TableInvestment implements OnInit {
         });
     }
 
-    private async _remove(item: InvestmentAssetDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Investimento apagado com sucesso." });
-        } catch (error) {
-            const message =
-                error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o investimento.") : "Não foi possível apagar o investimento.";
-            this.#toast.destructive({ message: "Erro ao apagar investimento", description: message });
-        }
+    private _remove(item: InvestmentAssetDto): void {
+        this.#service.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Investimento apagado com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o investimento.") : "Não foi possível apagar o investimento.";
+                this.#toast.destructive({ message: "Erro ao apagar investimento", description: message });
+            },
+        });
     }
 }

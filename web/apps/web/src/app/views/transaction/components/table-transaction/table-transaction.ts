@@ -74,24 +74,29 @@ export class TableTransaction implements OnInit {
         });
     }
 
-    private async _remove(item: TransactionDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Transação apagada com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a transação.") : "Não foi possível apagar a transação.";
-            this.#toast.destructive({ message: "Erro ao apagar transação", description: message });
-        }
+    private _remove(item: TransactionDto): void {
+        this.#facade.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Transação apagada com sucesso." });
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a transação.") : "Não foi possível apagar a transação.";
+                this.#toast.destructive({ message: "Erro ao apagar transação", description: message });
+            },
+        });
     }
 
-    private async _removeTransfer(transferId: string): Promise<void> {
-        try {
-            await this.#facade.deleteTransfer(transferId);
-            this.#toast.success({ message: "Transferência apagada com sucesso." });
-        } catch (error) {
-            const message =
-                error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a transferência.") : "Não foi possível apagar a transferência.";
-            this.#toast.destructive({ message: "Erro ao apagar transferência", description: message });
-        }
+    private _removeTransfer(transferId: string): void {
+        this.#facade.deleteTransfer(transferId).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Transferência apagada com sucesso." });
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a transferência.") : "Não foi possível apagar a transferência.";
+                this.#toast.destructive({ message: "Erro ao apagar transferência", description: message });
+            },
+        });
     }
 }

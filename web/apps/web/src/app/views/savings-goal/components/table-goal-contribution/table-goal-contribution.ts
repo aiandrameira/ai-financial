@@ -5,7 +5,7 @@ import { formatUtcDateDayjs } from "@core/helpers";
 import { TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { GoalContributionDto } from "@domain/schemas";
-import { GoalContributionFacade, SavingsGoalFacade } from "@infra/facades";
+import { GoalContributionService } from "@infra/services";
 
 @Component({
     selector: "ai-table-goal-contribution",
@@ -14,10 +14,11 @@ import { GoalContributionFacade, SavingsGoalFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableGoalContribution {
-    #facade = inject(GoalContributionFacade);
-    #goalFacade = inject(SavingsGoalFacade);
+    #service = inject(GoalContributionService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+
+    #contributions = signal<GoalContributionDto[]>([]);
 
     readonly goalId = input.required<string>();
 
@@ -29,14 +30,20 @@ export class TableGoalContribution {
 
     readonly config = computed<AiTableConfig<GoalContributionDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.contributions(),
+        data: this.#contributions(),
     }));
 
     constructor() {
         effect(() => {
             const goalId = this.goalId();
-            this.#facade.load(goalId);
+            if (goalId) {
+                this.load();
+            }
         });
+    }
+
+    load(): void {
+        this.#service.find(this.goalId()).subscribe(contributions => this.#contributions.set(contributions));
     }
 
     protected dateLabel(date: string): string {
@@ -50,14 +57,16 @@ export class TableGoalContribution {
         });
     }
 
-    private async _remove(item: GoalContributionDto): Promise<void> {
-        try {
-            await this.#facade.delete(this.goalId(), item.id);
-            await this.#goalFacade.load();
-            this.#toast.success({ message: "Aporte apagado com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o aporte.") : "Não foi possível apagar o aporte.";
-            this.#toast.destructive({ message: "Erro ao apagar aporte", description: message });
-        }
+    private _remove(item: GoalContributionDto): void {
+        this.#service.delete(this.goalId(), item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Aporte apagado com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o aporte.") : "Não foi possível apagar o aporte.";
+                this.#toast.destructive({ message: "Erro ao apagar aporte", description: message });
+            },
+        });
     }
 }

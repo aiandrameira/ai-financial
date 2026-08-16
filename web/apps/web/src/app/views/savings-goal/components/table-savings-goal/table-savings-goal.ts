@@ -7,7 +7,7 @@ import { formatUtcDateDayjs } from "@core/helpers";
 import { TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { SavingsGoalDto } from "@domain/schemas";
-import { SavingsGoalFacade } from "@infra/facades";
+import { SavingsGoalService } from "@infra/services";
 
 @Component({
     selector: "ai-table-savings-goal",
@@ -16,10 +16,12 @@ import { SavingsGoalFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableSavingsGoal implements OnInit {
-    #facade = inject(SavingsGoalFacade);
+    #service = inject(SavingsGoalService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
+
+    #goals = signal<SavingsGoalDto[]>([]);
 
     readonly edit = output<SavingsGoalDto>();
 
@@ -42,11 +44,15 @@ export class TableSavingsGoal implements OnInit {
 
     readonly config = computed<AiTableConfig<SavingsGoalDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.goals(),
+        data: this.#goals(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(goals => this.#goals.set(goals));
     }
 
     rowClick(item: SavingsGoalDto) {
@@ -68,13 +74,16 @@ export class TableSavingsGoal implements OnInit {
         });
     }
 
-    private async _remove(item: SavingsGoalDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Meta apagada com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a meta.") : "Não foi possível apagar a meta.";
-            this.#toast.destructive({ message: "Erro ao apagar meta", description: message });
-        }
+    private _remove(item: SavingsGoalDto): void {
+        this.#service.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Meta apagada com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a meta.") : "Não foi possível apagar a meta.";
+                this.#toast.destructive({ message: "Erro ao apagar meta", description: message });
+            },
+        });
     }
 }

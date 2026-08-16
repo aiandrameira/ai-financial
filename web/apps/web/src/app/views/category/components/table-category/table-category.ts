@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, s
 import { BadgeCategory, BadgeTpCategory, TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { CategoryDto } from "@domain/schemas";
-import { CategoryFacade } from "@infra/facades";
+import { CategoryService } from "@infra/services";
 
 @Component({
     selector: "ai-table-category",
@@ -13,9 +13,11 @@ import { CategoryFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableCategory implements OnInit {
-    #facade = inject(CategoryFacade);
+    #service = inject(CategoryService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+
+    #categories = signal<CategoryDto[]>([]);
 
     readonly edit = output<CategoryDto>();
 
@@ -27,11 +29,15 @@ export class TableCategory implements OnInit {
 
     readonly config = computed<AiTableConfig<CategoryDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.categories(),
+        data: this.#categories(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(categories => this.#categories.set(categories));
     }
 
     rowClick(item: CategoryDto) {
@@ -47,13 +53,17 @@ export class TableCategory implements OnInit {
         });
     }
 
-    private async _remove(item: CategoryDto): Promise<void> {
-        try {
-            await this.#facade.delete(item.id);
-            this.#toast.success({ message: "Categoria apagada com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a categoria.") : "Não foi possível apagar a categoria.";
-            this.#toast.destructive({ message: "Erro ao apagar categoria", description: message });
-        }
+    private _remove(item: CategoryDto): void {
+        this.#service.delete(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Categoria apagada com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar a categoria.") : "Não foi possível apagar a categoria.";
+                this.#toast.destructive({ message: "Erro ao apagar categoria", description: message });
+            },
+        });
     }
 }

@@ -2,16 +2,11 @@ import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { formatMonthYearDayjs, formatUtcDateDayjs } from "@core/helpers";
 import { IconMaterial, TableImports } from "@core/ui";
+import { INVOICE_STATUS_VARIANT } from "@domain/constants";
 import { stInvoiceEnum, stInvoiceMap } from "@domain/enums";
 import { CreditCardInvoiceDto } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
-import { CreditCardInvoiceFacade } from "@infra/facades";
-
-const STATUS_VARIANT: Record<stInvoiceEnum, BadgeVariant> = {
-    [stInvoiceEnum.OPEN]: "info",
-    [stInvoiceEnum.CLOSED]: "warning",
-    [stInvoiceEnum.PAID]: "success",
-};
+import { CreditCardInvoiceService } from "@infra/services";
 
 @Component({
     selector: "ai-table-credit-card-invoice",
@@ -20,7 +15,9 @@ const STATUS_VARIANT: Record<stInvoiceEnum, BadgeVariant> = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableCreditCardInvoice {
-    #facade = inject(CreditCardInvoiceFacade);
+    #service = inject(CreditCardInvoiceService);
+
+    #invoices = signal<CreditCardInvoiceDto[]>([]);
 
     readonly creditCardId = input.required<string>();
     readonly view = output<CreditCardInvoiceDto>();
@@ -44,13 +41,15 @@ export class TableCreditCardInvoice {
 
     readonly config = computed<AiTableConfig<CreditCardInvoiceDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.invoices(),
+        data: this.#invoices(),
     }));
 
     constructor() {
         effect(() => {
             const creditCardId = this.creditCardId();
-            this.#facade.load(creditCardId);
+            if (creditCardId) {
+                this.#service.find(creditCardId).subscribe(invoices => this.#invoices.set(invoices));
+            }
         });
     }
 
@@ -67,6 +66,6 @@ export class TableCreditCardInvoice {
     }
 
     protected statusVariant(status: stInvoiceEnum): BadgeVariant {
-        return STATUS_VARIANT[status];
+        return INVOICE_STATUS_VARIANT[status];
     }
 }

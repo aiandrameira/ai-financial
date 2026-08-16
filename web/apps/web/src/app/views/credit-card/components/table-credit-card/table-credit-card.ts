@@ -6,7 +6,7 @@ import { TpAccountPipe } from "@core/pipes";
 import { TableImports } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { CreditCardDto } from "@domain/schemas";
-import { AccountFacade, CreditCardFacade } from "@infra/facades";
+import { CreditCardFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-credit-card",
@@ -16,12 +16,11 @@ import { AccountFacade, CreditCardFacade } from "@infra/facades";
 })
 export class TableCreditCard implements OnInit {
     #facade = inject(CreditCardFacade);
-    #accountFacade = inject(AccountFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
 
-    readonly accounts = this.#accountFacade.accounts;
+    readonly accounts = this.#facade.accounts;
 
     readonly edit = output<CreditCardDto>();
 
@@ -45,8 +44,11 @@ export class TableCreditCard implements OnInit {
     }
 
     ngOnInit() {
+        this.load();
+    }
+
+    load(): void {
         this.#facade.load();
-        this.#accountFacade.load();
     }
 
     rowClick(item: CreditCardDto) {
@@ -67,13 +69,15 @@ export class TableCreditCard implements OnInit {
         });
     }
 
-    private async _archive(item: CreditCardDto): Promise<void> {
-        try {
-            await this.#facade.archive(item.id);
-            this.#toast.success({ message: "Cartão arquivado com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível arquivar o cartão.") : "Não foi possível arquivar o cartão.";
-            this.#toast.destructive({ message: "Erro ao arquivar cartão", description: message });
-        }
+    private _archive(item: CreditCardDto): void {
+        this.#facade.archive(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Cartão arquivado com sucesso." });
+            },
+            error: error => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível arquivar o cartão.") : "Não foi possível arquivar o cartão.";
+                this.#toast.destructive({ message: "Erro ao arquivar cartão", description: message });
+            },
+        });
     }
 }

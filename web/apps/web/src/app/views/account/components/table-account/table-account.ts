@@ -5,7 +5,7 @@ import { BadgeTpAccount, IconMaterial, TableImports } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { AccountDto } from "@domain/schemas";
 import { BadgeVariant } from "@domain/types";
-import { AccountFacade } from "@infra/facades";
+import { AccountService } from "@infra/services";
 
 @Component({
     selector: "ai-table-account",
@@ -14,9 +14,11 @@ import { AccountFacade } from "@infra/facades";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableAccount implements OnInit {
-    #facade = inject(AccountFacade);
+    #service = inject(AccountService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
+
+    #accounts = signal<AccountDto[]>([]);
 
     readonly edit = output<AccountDto>();
 
@@ -39,11 +41,15 @@ export class TableAccount implements OnInit {
 
     readonly config = computed<AiTableConfig<AccountDto>>(() => ({
         columns: this.columns(),
-        data: this.#facade.accounts(),
+        data: this.#accounts(),
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.load();
+    }
+
+    load(): void {
+        this.#service.find().subscribe(accounts => this.#accounts.set(accounts));
     }
 
     rowClick(item: AccountDto) {
@@ -59,15 +65,18 @@ export class TableAccount implements OnInit {
         });
     }
 
-    private async _archive(item: AccountDto): Promise<void> {
+    private _archive(item: AccountDto): void {
         if (!item.id) return;
 
-        try {
-            await this.#facade.archive(item.id);
-            this.#toast.success({ message: "Conta arquivada com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível arquivar a conta.") : "Não foi possível arquivar a conta.";
-            this.#toast.destructive({ message: "Erro ao arquivar conta", description: message });
-        }
+        this.#service.archive(item.id).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Conta arquivada com sucesso." });
+                this.load();
+            },
+            error: error => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível arquivar a conta.") : "Não foi possível arquivar a conta.";
+                this.#toast.destructive({ message: "Erro ao arquivar conta", description: message });
+            },
+        });
     }
 }
