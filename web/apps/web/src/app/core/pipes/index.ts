@@ -11,3 +11,4 @@ export * from "./tp-investment.pipe";
 export * from "./tp-loan.pipe";
 export * from "./tp-transaction.pipe";
 export * from "./tp-transfer-method.pipe";
+export * from "./trend.pipe";
