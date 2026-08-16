@@ -1,6 +1,6 @@
 <ai-table [config]="config()">
     <ng-template aiCellTemplate="type" let-item>
-        <ai-badge variant="default" fill="line">{{ tpInvestmentMovementMap.get(item.type) }}</ai-badge>
+        <ai-badge-tp-investment-movement [type]="item.type" />
     </ng-template>
 
     <ng-template aiCellTemplate="quantity" let-item>
@@ -16,10 +16,17 @@
     </ng-template>
 
     <ng-template aiCellTemplate="date" let-item>
-        <ai-badge variant="default">{{ dateLabel(item.date) }}</ai-badge>
+        <ai-badge variant="default">
+            {{ dateLabel(item.date) }}
+        </ai-badge>
     </ng-template>
 
     <ng-template aiCellTemplate="remove" let-item>
-        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove(item)" />
+        <ai-button 
+            variant="destructive" 
+            fill="line" 
+            icon="delete-bin" 
+            size="xs" 
+            (click)="onRemove(item)" />
     </ng-template>
 </ai-table>

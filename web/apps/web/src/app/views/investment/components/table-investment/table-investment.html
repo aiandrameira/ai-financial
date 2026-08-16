@@ -1,6 +1,6 @@
 <ai-table [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="type" let-item>
-        <ai-badge variant="default" fill="line">{{ tpInvestmentMap.get(item.type) }}</ai-badge>
+        <ai-badge-tp-investment [type]="item.type" />
     </ng-template>
 
     <ng-template aiCellTemplate="quantity" let-item>
@@ -20,7 +20,7 @@
     </ng-template>
 
     <ng-template aiCellTemplate="profitLoss" let-item>
-        @let trend = profitTrend(item.profitLoss);
+        @let trend = item.profitLoss | trend;
         <ai-badge fill="line" [variant]="trend.variant">
             <ai-icon-material [icon]="trend.icon" size="sm" />
             {{ item.profitLoss | currency }} ({{ item.profitLossPercent }}%)
@@ -28,10 +28,21 @@
     </ng-template>
 
     <ng-template aiCellTemplate="movements" let-item>
-        <ai-button variant="default" fill="line" icon="line-chart" size="xs" aiTooltip="Ver movimentações" (click)="onMovements($event, item)" />
+        <ai-button 
+            variant="default" 
+            fill="line" 
+            icon="line-chart" 
+            size="xs" 
+            aiTooltip="Ver movimentações" 
+            (click)="onMovements($event, item)" />
     </ng-template>
 
     <ng-template aiCellTemplate="remove" let-item>
-        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove($event, item)" />
+        <ai-button 
+            variant="destructive" 
+            fill="line" 
+            icon="delete-bin" 
+            size="xs" 
+            (click)="onRemove($event, item)" />
     </ng-template>
 </ai-table>

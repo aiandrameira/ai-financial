@@ -1,14 +1,16 @@
 <ai-table [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="referenceMonth" let-item>
-        <ai-badge variant="default" class="capitalize">{{ monthLabel(item.referenceMonth) }}</ai-badge>
+        <ai-badge variant="default" class="capitalize">
+            {{ monthLabel(item.referenceMonth) }}
+        </ai-badge>
     </ng-template>
 
     <ng-template aiCellTemplate="status" let-item>
-        <ai-badge [variant]="statusVariant(item.status)" fill="line">{{ stInvoiceMap.get(item.status) }}</ai-badge>
+        <ai-badge-st-invoice [status]="item.status" />
     </ng-template>
 
     <ng-template aiCellTemplate="totalAmount" let-item>
-        @let trend = balanceTrend(item.totalAmount);
+        @let trend = item.totalAmount | trend;
         <ai-badge fill="line" [variant]="trend.variant">
             <ai-icon-material [icon]="trend.icon" size="sm" />
             {{ abs(item.totalAmount) | currency }}
@@ -16,6 +18,8 @@
     </ng-template>
 
     <ng-template aiCellTemplate="dueDate" let-item>
-        <ai-badge variant="default">{{ dueDateLabel(item.dueDate) }}</ai-badge>
+        <ai-badge variant="default">
+            {{ dueDateLabel(item.dueDate) }}
+        </ai-badge>
     </ng-template>
 </ai-table>

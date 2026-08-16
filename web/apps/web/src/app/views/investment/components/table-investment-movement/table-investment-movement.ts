@@ -3,7 +3,7 @@ import { DecimalPipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from "@angular/core";
 import { formatUtcDateDayjs } from "@core/helpers";
-import { TableImports } from "@core/ui";
+import { BadgeTpInvestmentMovement, TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMovementMap } from "@domain/enums";
 import { InvestmentMovementDto } from "@domain/schemas";
@@ -11,7 +11,7 @@ import { InvestmentMovementService } from "@infra/services";
 
 @Component({
     selector: "ai-table-investment-movement",
-    imports: [TableImports, AiBadge, DecimalPipe],
+    imports: [TableImports, AiBadge, DecimalPipe, BadgeTpInvestmentMovement],
     templateUrl: "./table-investment-movement.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

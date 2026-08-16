@@ -1,16 +1,15 @@
 import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { formatMonthYearDayjs, formatUtcDateDayjs } from "@core/helpers";
-import { IconMaterial, TableImports } from "@core/ui";
-import { INVOICE_STATUS_VARIANT } from "@domain/constants";
-import { stInvoiceEnum, stInvoiceMap } from "@domain/enums";
+import { TrendPipe } from "@core/pipes";
+import { BadgeStInvoice, IconMaterial, TableImports } from "@core/ui";
+import { stInvoiceMap } from "@domain/enums";
 import { CreditCardInvoiceDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { CreditCardInvoiceService } from "@infra/services";
 
 @Component({
     selector: "ai-table-credit-card-invoice",
-    imports: [TableImports, AiBadge, IconMaterial],
+    imports: [TableImports, AiBadge, IconMaterial, BadgeStInvoice, TrendPipe],
     templateUrl: "./table-credit-card-invoice.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -24,13 +23,6 @@ export class TableCreditCardInvoice {
 
     protected readonly stInvoiceMap = stInvoiceMap;
     protected abs = (value: string): number => Math.abs(Number(value));
-
-    protected balanceTrend(value: string): { variant: BadgeVariant; icon: string } {
-        const amount = Number(value);
-        if (amount < 0) return { variant: "destructive", icon: "trending_down" };
-        if (amount > 0) return { variant: "success", icon: "trending_up" };
-        return { variant: "default", icon: "trending_flat" };
-    }
 
     readonly columns = signal<AiTableColumn<CreditCardInvoiceDto>[]>([
         { key: "referenceMonth", label: "Mês" },
@@ -63,9 +55,5 @@ export class TableCreditCardInvoice {
 
     protected dueDateLabel(dueDate: string): string {
         return formatUtcDateDayjs(dueDate);
-    }
-
-    protected statusVariant(status: stInvoiceEnum): BadgeVariant {
-        return INVOICE_STATUS_VARIANT[status];
     }
 }

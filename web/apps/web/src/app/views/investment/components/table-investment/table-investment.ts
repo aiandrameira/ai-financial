@@ -3,16 +3,16 @@ import { DecimalPipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { IconMaterial, TableImports } from "@core/ui";
+import { TrendPipe } from "@core/pipes";
+import { BadgeTpInvestment, IconMaterial, TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMap } from "@domain/enums";
 import { InvestmentAssetDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { InvestmentService } from "@infra/services";
 
 @Component({
     selector: "ai-table-investment",
-    imports: [TableImports, AiBadge, IconMaterial, DecimalPipe],
+    imports: [TableImports, AiBadge, IconMaterial, DecimalPipe, BadgeTpInvestment, TrendPipe],
     templateUrl: "./table-investment.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -27,12 +27,6 @@ export class TableInvestment implements OnInit {
     protected readonly tpInvestmentMap = tpInvestmentMap;
 
     readonly edit = output<InvestmentAssetDto>();
-
-    protected profitTrend(value: number): { variant: BadgeVariant; icon: string } {
-        if (value < 0) return { variant: "destructive", icon: "trending_down" };
-        if (value > 0) return { variant: "success", icon: "trending_up" };
-        return { variant: "default", icon: "trending_flat" };
-    }
 
     readonly columns = signal<AiTableColumn<InvestmentAssetDto>[]>([
         { key: "name", label: "Nome" },
