@@ -4,7 +4,7 @@
     </ng-template>
 
     <ng-template aiCellTemplate="currentBalance" let-item>
-        @let trend = balanceTrend(item.currentBalance);
+        @let trend = item.currentBalance | trend;
         <ai-badge fill="line" [variant]="trend.variant">
             <ai-icon-material [icon]="trend.icon" size="sm" />
             {{ abs(item.currentBalance) | currency }}
@@ -12,7 +12,7 @@
     </ng-template>
 
     <ng-template aiCellTemplate="projectedBalance" let-item>
-        @let trend = balanceTrend(item.projectedBalance);
+        @let trend = item.projectedBalance | trend;
         <ai-badge fill="line" [variant]="trend.variant">
             <ai-icon-material [icon]="trend.icon" size="sm" />
             {{ abs(item.projectedBalance) | currency }}

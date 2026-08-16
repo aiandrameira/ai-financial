@@ -1,15 +1,15 @@
 import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
+import { TrendPipe } from "@core/pipes";
 import { BadgeTpAccount, IconMaterial, TableImports } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { AccountDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { AccountService } from "@infra/services";
 
 @Component({
     selector: "ai-table-account",
-    imports: [TableImports, BadgeTpAccount, IconMaterial],
+    imports: [TableImports, BadgeTpAccount, IconMaterial, TrendPipe],
     templateUrl: "./table-account.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,13 +23,6 @@ export class TableAccount implements OnInit {
     readonly edit = output<AccountDto>();
 
     protected abs = (value: string): number => Math.abs(Number(value));
-
-    protected balanceTrend(value: string): { variant: BadgeVariant; icon: string } {
-        const amount = Number(value);
-        if (amount < 0) return { variant: "destructive", icon: "trending_down" };
-        if (amount > 0) return { variant: "success", icon: "trending_up" };
-        return { variant: "default", icon: "trending_flat" };
-    }
 
     readonly columns = signal<AiTableColumn<AccountDto>[]>([
         { key: "name", label: "Nome" },

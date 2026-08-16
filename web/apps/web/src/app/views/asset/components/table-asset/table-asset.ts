@@ -1,16 +1,16 @@
 import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
-import { IconMaterial, TableImports } from "@core/ui";
+import { TrendPipe } from "@core/pipes";
+import { BadgeTpAsset, IconMaterial, TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpAssetMap } from "@domain/enums";
 import { AssetDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { AssetService } from "@infra/services";
 
 @Component({
     selector: "ai-table-asset",
-    imports: [TableImports, AiBadge, IconMaterial],
+    imports: [TableImports, AiBadge, IconMaterial, BadgeTpAsset, TrendPipe],
     templateUrl: "./table-asset.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -24,13 +24,6 @@ export class TableAsset implements OnInit {
     protected readonly tpAssetMap = tpAssetMap;
 
     readonly edit = output<AssetDto>();
-
-    protected valuationTrend(asset: AssetDto): { variant: BadgeVariant; icon: string } {
-        const delta = Number(asset.currentValue) - Number(asset.purchaseValue);
-        if (delta < 0) return { variant: "destructive", icon: "trending_down" };
-        if (delta > 0) return { variant: "success", icon: "trending_up" };
-        return { variant: "default", icon: "trending_flat" };
-    }
 
     readonly columns = signal<AiTableColumn<AssetDto>[]>([
         { key: "name", label: "Nome" },
