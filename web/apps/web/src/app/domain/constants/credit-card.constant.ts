@@ -1,8 +1,5 @@
-import type { AiIconType } from "@aiandralves/ai-ui";
 import { stInvoiceEnum, tpCreditCardNetworkEnum } from "@domain/enums";
 import type { BadgeVariant } from "@domain/types";
-
-export const CREDIT_CARD_ICONS: AiIconType[] = ["bank-card", "bank", "wallet", "money-dollar-circle", "shield-check", "safe"];
 
 export const CREDIT_CARD_NETWORKS = Object.values(tpCreditCardNetworkEnum);
 
