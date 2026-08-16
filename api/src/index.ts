@@ -10,6 +10,7 @@ import { budgetRoutes } from "./modules/budget/infra/routes/budget.routes"
 import { categoryRoutes } from "./modules/category/infra/routes/category.routes"
 import { creditCardInvoiceRoutes } from "./modules/credit-card-invoice/infra/routes/credit-card-invoice.routes"
 import { creditCardRoutes } from "./modules/credit-card/infra/routes/credit-card.routes"
+import { investmentRoutes } from "./modules/investment/infra/routes/investment.routes"
 import { loanRoutes } from "./modules/loan/infra/routes/loan.routes"
 import { transactionRoutes } from "./modules/transaction/infra/routes/transaction.routes"
 
@@ -29,6 +30,7 @@ const start = async () => {
         .use(categoryRoutes)
         .use(creditCardRoutes)
         .use(creditCardInvoiceRoutes)
+        .use(investmentRoutes)
         .use(loanRoutes)
         .use(transactionRoutes)
         .listen(env.PORT)
