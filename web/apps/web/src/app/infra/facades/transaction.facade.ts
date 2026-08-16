@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from "@angular/core";
-import { firstValueFrom } from "rxjs";
+import { finalize, forkJoin, Observable, tap } from "rxjs";
 
 import type { AccountDto, CategoryDto, CreditCardDto, TransactionDto } from "@domain/repositories";
 import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
@@ -27,54 +27,42 @@ export class TransactionFacade {
     #loading = signal(false);
     loading = this.#loading.asReadonly();
 
-    async load(): Promise<void> {
+    load(): void {
         this.#loading.set(true);
-        try {
-            const [transactions, accounts, categories, creditCards] = await Promise.all([
-                firstValueFrom(this.#transactionService.find()),
-                firstValueFrom(this.#accountService.find()),
-                firstValueFrom(this.#categoryService.find()),
-                firstValueFrom(this.#creditCardService.find()),
-            ]);
-            this.#transactions.set(transactions);
-            this.#accounts.set(accounts);
-            this.#categories.set(categories);
-            this.#creditCards.set(creditCards);
-        } finally {
-            this.#loading.set(false);
-        }
+        forkJoin([this.#transactionService.find(), this.#accountService.find(), this.#categoryService.find(), this.#creditCardService.find()])
+            .pipe(finalize(() => this.#loading.set(false)))
+            .subscribe(([transactions, accounts, categories, creditCards]) => {
+                this.#transactions.set(transactions);
+                this.#accounts.set(accounts);
+                this.#categories.set(categories);
+                this.#creditCards.set(creditCards);
+            });
     }
 
-    async create(input: RequestTransactionDto): Promise<void> {
-        await firstValueFrom(this.#transactionService.create(input));
-        await this.load();
+    create(input: RequestTransactionDto): Observable<TransactionDto> {
+        return this.#transactionService.create(input).pipe(tap(() => this.load()));
     }
 
-    async update(id: string, input: RequestTransactionDto): Promise<void> {
-        await firstValueFrom(this.#transactionService.update(id, input));
-        await this.load();
+    update(id: string, input: RequestTransactionDto): Observable<void> {
+        return this.#transactionService.update(id, input).pipe(tap(() => this.load()));
     }
 
-    async save(input: RequestTransactionDto): Promise<void> {
+    save(input: RequestTransactionDto): Observable<unknown> {
         if (input.id) {
-            await this.update(input.id, input);
-        } else {
-            await this.create(input);
+            return this.update(input.id, input);
         }
+        return this.create(input);
     }
 
-    async createTransfer(input: RequestTransferDto): Promise<void> {
-        await firstValueFrom(this.#transactionService.createTransfer(input));
-        await this.load();
+    createTransfer(input: RequestTransferDto): Observable<void> {
+        return this.#transactionService.createTransfer(input).pipe(tap(() => this.load()));
     }
 
-    async delete(id: string): Promise<void> {
-        await firstValueFrom(this.#transactionService.delete(id));
-        await this.load();
+    delete(id: string): Observable<void> {
+        return this.#transactionService.delete(id).pipe(tap(() => this.load()));
     }
 
-    async deleteTransfer(transferId: string): Promise<void> {
-        await firstValueFrom(this.#transactionService.deleteTransfer(transferId));
-        await this.load();
+    deleteTransfer(transferId: string): Observable<void> {
+        return this.#transactionService.deleteTransfer(transferId).pipe(tap(() => this.load()));
     }
 }
