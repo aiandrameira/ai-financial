@@ -1,10 +1,9 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiButtonToggle, AiDatePicker, AiInput, AiSelectImports, AiSwitch, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
+import { AiButtonToggle, AiSwitch, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
-import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
+import { disabled, form, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { TpAccountPipe } from "@core/pipes";
-import { BadgeCategory, BadgeTpTransaction, ButtonForm } from "@core/ui";
+import { BadgeCategory, BadgeTpAccount, BadgeTpTransaction, FormImports } from "@core/ui";
 import { matchesCategoryType } from "@core/utils";
 import { TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPES } from "@domain/constants";
 import { tpTransactionEnum } from "@domain/enums";
@@ -16,7 +15,7 @@ type TransactionOrigin = "account" | "creditCard";
 
 @Component({
     selector: "ai-form-transaction",
-    imports: [FormField, AiInput, AiBadge, AiButtonToggle, AiSwitch, AiSelectImports, ButtonForm, BadgeTpTransaction, BadgeCategory, TpAccountPipe, AiDatePicker, AiTextarea],
+    imports: [FormImports, AiButtonToggle, AiSwitch, BadgeTpTransaction, BadgeCategory, BadgeTpAccount],
     templateUrl: "./form-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

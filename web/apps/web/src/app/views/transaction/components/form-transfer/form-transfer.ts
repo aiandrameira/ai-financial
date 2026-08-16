@@ -1,9 +1,9 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiButton, AiDatePicker, AiInput, AiSelectImports, AiTextarea, AiToastService } from "@aiandralves/ai-ui";
+import { AiButton, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from "@angular/core";
-import { form, FormField, submit, validateStandardSchema } from "@angular/forms/signals";
+import { form, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { TpAccountPipe } from "@core/pipes";
+import { BadgeTpAccount, FormImports } from "@core/ui";
 import { TRANSFER_METHOD_ICONS, TRANSFER_METHODS } from "@domain/constants";
 import { tpTransferMethodEnum, tpTransferMethodMap } from "@domain/enums";
 import { makeRequestTransfer, RequestTransferDto, requestTransferSchema } from "@domain/schemas";
@@ -11,7 +11,7 @@ import { TransactionFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-form-transfer",
-    imports: [FormField, AiInput, AiBadge, AiButton, AiSelectImports, AiDatePicker, AiTextarea, TpAccountPipe],
+    imports: [FormImports, AiButton, BadgeTpAccount],
     templateUrl: "./form-transfer.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

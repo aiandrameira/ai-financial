@@ -24,17 +24,13 @@
                 (selectionChange)="onSourceChange($event)">
                 @for (account of accounts(); track account.id) {
                     <ai-select-item [value]="account.id">
-                        @let accountBadge = account.type | tpAccount;
-                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                        <ai-badge-tp-account [account]="account" />
                     </ai-select-item>
                 }
             </ai-select>
 
             @if (selectedSource(); as account) {
-                @let accountBadge = account.type | tpAccount;
-                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                    {{ account.name }}
-                </ai-badge>
+                <ai-badge-tp-account [account]="account" class="w-max" />
             }
         </div>
 
@@ -46,17 +42,13 @@
                 (selectionChange)="onDestinationChange($event)">
                 @for (account of accounts(); track account.id) {
                     <ai-select-item [value]="account.id">
-                        @let accountBadge = account.type | tpAccount;
-                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                        <ai-badge-tp-account [account]="account" />
                     </ai-select-item>
                 }
             </ai-select>
 
             @if (selectedDestination(); as account) {
-                @let accountBadge = account.type | tpAccount;
-                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                    {{ account.name }}
-                </ai-badge>
+                <ai-badge-tp-account [account]="account" class="w-max" />
             }
         </div>
     </div>

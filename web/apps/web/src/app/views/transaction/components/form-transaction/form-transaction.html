@@ -38,17 +38,13 @@
                     (selectionChange)="onAccountChange($event)">
                     @for (account of accounts(); track account.id) {
                         <ai-select-item [value]="account.id">
-                            @let accountBadge = account.type | tpAccount;
-                            <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                            <ai-badge-tp-account [account]="account" />
                         </ai-select-item>
                     }
                 </ai-select>
 
                 @if (selectedAccount(); as account) {
-                    @let accountBadge = account.type | tpAccount;
-                    <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                        {{ account.name }}
-                    </ai-badge>
+                    <ai-badge-tp-account [account]="account" class="w-max" />
                 }
             } @else {
                 <ai-select
@@ -58,7 +54,9 @@
                     [disabled]="form().disabled()"
                     (selectionChange)="onCreditCardChange($event)">
                     @for (creditCard of creditCards(); track creditCard.id) {
-                        <ai-select-item [value]="creditCard.id">{{ creditCard.name }}</ai-select-item>
+                        <ai-select-item [value]="creditCard.id">
+                            {{ creditCard.name }}
+                        </ai-select-item>
                     }
                 </ai-select>
 
@@ -91,18 +89,28 @@
             }
         </div>
 
-        <ai-input class="w-full" label="Valor" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
+        <ai-input class="w-full" 
+            label="Valor" 
+            [maskConfig]="vlMaskConfig" 
+            [formField]="form.amount" />
     </div>
 
     @if (canInstall()) {
         <div class="flex items-center justify-between gap-x-4 rounded-lg border border-border p-3">
             <div class="flex items-center gap-x-2">
-                <ai-switch [checked]="parcelar()" [disabled]="form().disabled()" (changeCheck)="onParcelarChange($event)" />
+                <ai-switch 
+                    [checked]="parcelar()" 
+                    [disabled]="form().disabled()" 
+                    (changeCheck)="onParcelarChange
+                    ($event)" />
                 <span class="text-sm font-medium">Parcelar compra</span>
             </div>
 
             @if (parcelar()) {
-                <ai-input class="w-28" type="number" label="Parcelas" [formField]="form.installments" />
+                <ai-input class="w-28" 
+                    type="number" 
+                    label="Parcelas" 
+                    [formField]="form.installments" />
             }
         </div>
     }
@@ -115,7 +123,11 @@
         [disabled]="form().disabled()"
         (valueChange)="onDateChange($event)" />
 
-    <ai-textarea class="w-full" label="Descrição" [rows]="6" [maxlength]="280" [formField]="form.description" />
+    <ai-textarea class="w-full" 
+        label="Descrição" 
+        [rows]="6" 
+        [maxlength]="280" 
+        [formField]="form.description" />
 
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">
         @let isNew = !id();
