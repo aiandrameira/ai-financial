@@ -1,0 +1,25 @@
+<ai-table [config]="config()">
+    <ng-template aiCellTemplate="type" let-item>
+        <ai-badge variant="default" fill="line">{{ tpInvestmentMovementMap.get(item.type) }}</ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="quantity" let-item>
+        {{ item.quantity | number: "1.0-8" }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="price" let-item>
+        {{ item.price | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="amount" let-item>
+        {{ item.amount | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="date" let-item>
+        <ai-badge variant="default">{{ dateLabel(item.date) }}</ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="remove" let-item>
+        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove(item)" />
+    </ng-template>
+</ai-table>

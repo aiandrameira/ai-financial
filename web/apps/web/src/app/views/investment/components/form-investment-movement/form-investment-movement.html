@@ -1,0 +1,41 @@
+<div class="flex flex-col gap-y-4">
+    <div class="flex flex-col gap-y-2">
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione o tipo"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of movementTypes; track type.value) {
+                <ai-select-item [value]="type.value">
+                    <ai-badge [icon]="type.icon" variant="default" fill="line">{{ type.label }}</ai-badge>
+                </ai-select-item>
+            }
+        </ai-select>
+
+        @if (selectedType(); as type) {
+            <ai-badge [icon]="type.icon" variant="default" fill="line" class="w-max">{{ type.label }}</ai-badge>
+        }
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
+        <ai-input class="w-full" type="number" label="Quantidade" [formField]="form.quantity" />
+        <ai-input class="w-full" label="Preço unitário" [maskConfig]="vlMaskConfig" [formField]="form.price" />
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
+        <ai-input class="w-full" label="Valor total" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
+
+        <ai-date-picker
+            class="w-full"
+            placeholder="Data"
+            format="dd/MM/yyyy"
+            [value]="form().value().date"
+            [disabled]="form().disabled()"
+            (valueChange)="onDateChange($event)" />
+    </div>
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        <ai-button-form [isNew]="true" [disabled]="form().disabled()" [loading]="loading()" (save)="onSave()" />
+    </div>
+</div>

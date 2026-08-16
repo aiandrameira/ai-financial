@@ -1,0 +1,10 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading icon="line-chart" title="Investimentos" description="Carteira de ativos, aportes e resgates." />
+        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
+            Cadastrar investimento
+        </ai-button>
+    </div>
+
+    <ai-table-investment (edit)="openEdit($event)" />
+</div>

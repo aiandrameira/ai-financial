@@ -1,0 +1,39 @@
+<div class="flex flex-col gap-y-4">
+    <ai-input class="w-full" label="Nome" [maxlength]="120" [formField]="form.name" />
+
+    <div class="flex flex-col gap-y-2">
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione o tipo"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of investmentTypes; track type.value) {
+                <ai-select-item [value]="type.value">
+                    <ai-badge [icon]="type.icon" variant="default" fill="line">{{ type.label }}</ai-badge>
+                </ai-select-item>
+            }
+        </ai-select>
+
+        @if (selectedType(); as type) {
+            <ai-badge [icon]="type.icon" variant="default" fill="line" class="w-max">{{ type.label }}</ai-badge>
+        }
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
+        <ai-input class="w-full" label="Corretora" [maxlength]="120" [formField]="form.broker" />
+        <ai-input class="w-full" label="Ticker" [maxlength]="20" [formField]="form.ticker" />
+    </div>
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        @let isDisabled = form().disabled();
+
+        <ai-button-form
+            [isNew]="isNew()"
+            [disabled]="isDisabled"
+            [loading]="loading()"
+            (cancelEdit)="enabled.set(true)"
+            (edit)="enabled.set(false)"
+            (save)="onSave()" />
+    </div>
+</div>
