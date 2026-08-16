@@ -1,7 +1,9 @@
 import { AI_DIALOG_DATA, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { AssetDto, RequestAssetDto } from "@domain/schemas";
-import { AssetFacade } from "@infra/facades";
+import { AssetService } from "@infra/services";
+import { Observable } from "rxjs";
 
 import { FormAsset } from "../form-asset/form-asset";
 
@@ -12,17 +14,25 @@ import { FormAsset } from "../form-asset/form-asset";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogAsset {
-    #facade = inject(AssetFacade);
+    #service = inject(AssetService);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogAsset>);
 
     protected readonly data = inject<{ asset: AssetDto | null }>(AI_DIALOG_DATA as never);
 
-    protected async onSave(payload: RequestAssetDto): Promise<void> {
+    protected onSave(payload: RequestAssetDto): void {
         const isNew = !payload.id;
+        const request$: Observable<unknown> = payload.id ? this.#service.update(payload.id, payload) : this.#service.create(payload);
 
-        await this.#facade.save(payload);
-        this.#toast.success({ message: isNew ? "Bem cadastrado com sucesso." : "Bem atualizado com sucesso." });
-        this.#dialogRef.close();
+        request$.subscribe({
+            next: () => {
+                this.#toast.success({ message: isNew ? "Bem cadastrado com sucesso." : "Bem atualizado com sucesso." });
+                this.#dialogRef.close();
+            },
+            error: (error: unknown) => {
+                const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível salvar o bem.") : "Não foi possível salvar o bem.";
+                this.#toast.destructive({ message: "Erro ao salvar bem", description: message });
+            },
+        });
     }
 }
