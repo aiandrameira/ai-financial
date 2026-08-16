@@ -1,0 +1,15 @@
+<div class="flex flex-col gap-y-4">
+    <ai-input class="w-full" label="Valor do aporte" [maskConfig]="vlMaskConfig" [formField]="form.amount" />
+
+    <ai-date-picker
+        class="w-full"
+        placeholder="Data"
+        format="dd/MM/yyyy"
+        [value]="form().value().date"
+        [disabled]="form().disabled()"
+        (valueChange)="onDateChange($event)" />
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        <ai-button-form [isNew]="true" [disabled]="form().disabled()" [loading]="loading()" (save)="onSave()" />
+    </div>
+</div>

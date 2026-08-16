@@ -1,0 +1,72 @@
+import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { HttpErrorResponse } from "@angular/common/http";
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
+import { IconMaterial, TableImports } from "@core/ui";
+import { removeAlertDialog } from "@core/utils";
+import { tpAssetMap } from "@domain/enums";
+import { AssetDto } from "@domain/schemas";
+import { BadgeVariant } from "@domain/types";
+import { AssetFacade } from "@infra/facades";
+
+@Component({
+    selector: "ai-table-asset",
+    imports: [TableImports, AiBadge, IconMaterial],
+    templateUrl: "./table-asset.html",
+    changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class TableAsset implements OnInit {
+    #facade = inject(AssetFacade);
+    #alert = inject(AiAlertDialogService);
+    #toast = inject(AiToastService);
+
+    protected readonly tpAssetMap = tpAssetMap;
+
+    readonly edit = output<AssetDto>();
+
+    protected valuationTrend(asset: AssetDto): { variant: BadgeVariant; icon: string } {
+        const delta = Number(asset.currentValue) - Number(asset.purchaseValue);
+        if (delta < 0) return { variant: "destructive", icon: "trending_down" };
+        if (delta > 0) return { variant: "success", icon: "trending_up" };
+        return { variant: "default", icon: "trending_flat" };
+    }
+
+    readonly columns = signal<AiTableColumn<AssetDto>[]>([
+        { key: "name", label: "Nome" },
+        { key: "type", label: "Tipo" },
+        { key: "purchaseValue", label: "Valor de aquisição" },
+        { key: "currentValue", label: "Valor atual" },
+        { key: "remove", label: "Apagar" },
+    ]);
+
+    readonly config = computed<AiTableConfig<AssetDto>>(() => ({
+        columns: this.columns(),
+        data: this.#facade.assets(),
+    }));
+
+    ngOnInit() {
+        this.#facade.load();
+    }
+
+    rowClick(item: AssetDto) {
+        this.edit.emit(item);
+    }
+
+    onRemove(event: MouseEvent, item: AssetDto) {
+        event.stopPropagation();
+
+        this.#alert.confirm({
+            ...removeAlertDialog(item.name, "Bem"),
+            onConfirm: () => this._remove(item),
+        });
+    }
+
+    private async _remove(item: AssetDto): Promise<void> {
+        try {
+            await this.#facade.delete(item.id);
+            this.#toast.success({ message: "Bem apagado com sucesso." });
+        } catch (error) {
+            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o bem.") : "Não foi possível apagar o bem.";
+            this.#toast.destructive({ message: "Erro ao apagar bem", description: message });
+        }
+    }
+}

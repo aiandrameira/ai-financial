@@ -1,0 +1,37 @@
+<ai-table [config]="config()" (rowClick)="rowClick($event)">
+    <ng-template aiCellTemplate="name" let-item>
+        <div class="flex items-center gap-x-2">
+            <ai-icon [icon]="iconOf(item)" size="sm" />
+            {{ item.name }}
+        </div>
+    </ng-template>
+
+    <ng-template aiCellTemplate="targetAmount" let-item>
+        {{ item.targetAmount | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="progress" let-item>
+        <div class="flex flex-col gap-y-1 min-w-35">
+            <div class="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div class="h-full bg-primary rounded-full" [style.width.%]="item.progressPercent"></div>
+            </div>
+            <span class="text-xs text-muted-foreground">{{ item.currentAmount | currency }} de {{ item.targetAmount | currency }} ({{ item.progressPercent }}%)</span>
+        </div>
+    </ng-template>
+
+    <ng-template aiCellTemplate="targetDate" let-item>
+        @if (item.targetDate) {
+            <ai-badge variant="default">{{ dateLabel(item.targetDate) }}</ai-badge>
+        } @else {
+            <span class="text-xs text-muted-foreground">Sem prazo</span>
+        }
+    </ng-template>
+
+    <ng-template aiCellTemplate="contributions" let-item>
+        <ai-button variant="default" fill="line" icon="hand-coin" size="xs" aiTooltip="Ver aportes" (click)="onContributions($event, item)" />
+    </ng-template>
+
+    <ng-template aiCellTemplate="remove" let-item>
+        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove($event, item)" />
+    </ng-template>
+</ai-table>

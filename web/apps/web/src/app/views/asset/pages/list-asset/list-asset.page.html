@@ -1,0 +1,10 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading icon="home" title="Bens" description="Patrimônio: imóveis, veículos e outros bens relevantes." />
+        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
+            Cadastrar bem
+        </ai-button>
+    </div>
+
+    <ai-table-asset (edit)="openEdit($event)" />
+</div>

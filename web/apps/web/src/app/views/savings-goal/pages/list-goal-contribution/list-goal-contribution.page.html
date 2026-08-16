@@ -1,0 +1,36 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading
+            icon="triangular-flag"
+            title="Aportes"
+            [description]="goal() ? 'Aportes da meta ' + goal()!.name + '.' : 'Aportes da meta.'"
+         />
+
+        <div class="flex flex-wrap gap-2 self-start sm:self-auto">
+            <ai-button size="sm" icon="add-circle" (click)="openContribution()">Registrar aporte</ai-button>
+            <ai-button size="sm" variant="default" (click)="goBack()">
+                <ai-icon icon="arrow-left" />
+                Voltar
+            </ai-button>
+        </div>
+    </div>
+
+    @if (goal(); as goal) {
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <div class="rounded-lg bg-muted/40 p-3">
+                <p class="text-xs text-muted-foreground">Valor atual</p>
+                <p class="font-semibold">{{ goal.currentAmount | currency }}</p>
+            </div>
+            <div class="rounded-lg bg-muted/40 p-3">
+                <p class="text-xs text-muted-foreground">Falta</p>
+                <p class="font-semibold">{{ goal.remainingAmount | currency }}</p>
+            </div>
+            <div class="rounded-lg bg-muted/40 p-3">
+                <p class="text-xs text-muted-foreground">Progresso</p>
+                <p class="font-semibold">{{ goal.progressPercent }}%</p>
+            </div>
+        </div>
+    }
+
+    <ai-table-goal-contribution [goalId]="id()" />
+</div>

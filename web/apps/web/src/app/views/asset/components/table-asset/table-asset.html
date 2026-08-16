@@ -1,0 +1,21 @@
+<ai-table [config]="config()" (rowClick)="rowClick($event)">
+    <ng-template aiCellTemplate="type" let-item>
+        <ai-badge variant="default" fill="line">{{ tpAssetMap.get(item.type) }}</ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="purchaseValue" let-item>
+        {{ item.purchaseValue | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="currentValue" let-item>
+        @let trend = valuationTrend(item);
+        <ai-badge fill="line" [variant]="trend.variant">
+            <ai-icon-material [icon]="trend.icon" size="sm" />
+            {{ item.currentValue | currency }}
+        </ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="remove" let-item>
+        <ai-button variant="destructive" fill="line" icon="delete-bin" size="xs" (click)="onRemove($event, item)" />
+    </ng-template>
+</ai-table>

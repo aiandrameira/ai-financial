@@ -1,0 +1,10 @@
+<div class="main">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading icon="triangular-flag" title="Metas" description="Metas de economia com progresso derivado dos aportes." />
+        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
+            Cadastrar meta
+        </ai-button>
+    </div>
+
+    <ai-table-savings-goal (edit)="openEdit($event)" />
+</div>
