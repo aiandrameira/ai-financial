@@ -1,5 +1,4 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-    <!-- Left Side: Form Inputs (7 cols - spacious & no line wrapping) -->
     <div class="lg:col-span-7 flex flex-col gap-y-4">
         <ai-input class="w-full"
             label="Nome"
@@ -15,17 +14,13 @@
                 (selectionChange)="onAccountChange($event)">
                 @for (account of accounts(); track account.id) {
                     <ai-select-item [value]="account.id">
-                        @let accountBadge = account.type | tpAccount;
-                        <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                        <ai-badge-tp-account [account]="account" />
                     </ai-select-item>
                 }
             </ai-select>
 
             @if (selectedAccount(); as account) {
-                @let accountBadge = account.type | tpAccount;
-                <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                    {{ account.name }}
-                </ai-badge>
+                <ai-badge-tp-account [account]="account" class="w-max" />
             }
         </div>
 
@@ -53,36 +48,18 @@
                 [formField]="form.dueDay" />
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-4">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione a bandeira"
-                [value]="form().value().network"
-                [disabled]="form().disabled()"
-                (selectionChange)="onNetworkChange($event)">
-                @for (network of creditCardNetworks; track network.value) {
-                    <ai-select-item [value]="network.value">
-                        {{ network.label }}
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione o ícone"
-                [value]="form().value().icon"
-                [disabled]="form().disabled()"
-                (selectionChange)="onIconChange($event)">
-                @for (icon of creditCardIcons; track icon) {
-                    <ai-select-item [value]="icon">
-                        <span class="flex items-center gap-x-2">
-                            <ai-icon [icon]="icon" size="sm" />
-                            {{ icon }}
-                        </span>
-                    </ai-select-item>
-                }
-            </ai-select>
-        </div>
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione a bandeira"
+            [value]="form().value().network"
+            [disabled]="form().disabled()"
+            (selectionChange)="onNetworkChange($event)">
+            @for (network of creditCardNetworks; track network) {
+                <ai-select-item [value]="network">
+                    <ai-badge-tp-credit-card-network [type]="network" />
+                </ai-select-item>
+            }
+        </ai-select>
 
         <div class="flex justify-end gap-x-2 border-t border-border pt-4 mt-2">
             @let isNew = !id();
@@ -98,7 +75,6 @@
         </div>
     </div>
 
-    <!-- Right Side: Credit Card Preview & Security Badge (5 cols) -->
     <div class="lg:col-span-5 flex flex-col items-center justify-between gap-y-4 bg-muted/30 dark:bg-zinc-900/40 p-5 rounded-2xl border border-border/60 shadow-2xs">
         <div class="w-full flex items-center justify-between px-1">
             <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Visualização do cartão</span>
@@ -112,8 +88,7 @@
                 [limitAmount]="form().value().limitAmount"
                 [closingDay]="form().value().closingDay"
                 [dueDay]="form().value().dueDay"
-                [network]="form().value().network"
-                [icon]="form().value().icon" />
+                [network]="form().value().network" />
         </div>
 
         <div class="flex items-center gap-x-2 text-[11px] text-muted-foreground bg-background/80 dark:bg-zinc-800/80 px-3.5 py-2 rounded-xl border border-border/50 w-full justify-center shadow-2xs">

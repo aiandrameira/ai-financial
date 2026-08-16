@@ -1,5 +1,8 @@
 <div class="flex flex-col gap-y-4">
-    <ai-input class="w-full" label="Nome" [maxlength]="120" [formField]="form.name" />
+    <ai-input class="w-full" 
+        label="Nome" 
+        [maxlength]="120" 
+        [formField]="form.name" />
 
     <div class="flex flex-col gap-y-2">
         <ai-select
@@ -10,18 +13,25 @@
             (selectionChange)="onIconChange($event)">
             @for (item of goalIcons; track item.value) {
                 <ai-select-item [value]="item.value">
-                    <ai-badge [icon]="item.icon" variant="default" fill="line">{{ item.label }}</ai-badge>
+                    <ai-badge [icon]="item.icon" variant="default" fill="line">
+                        {{ item.label }}
+                    </ai-badge>
                 </ai-select-item>
             }
         </ai-select>
 
         @if (selectedIcon(); as icon) {
-            <ai-badge [icon]="icon.icon" variant="default" fill="line" class="w-max">{{ icon.label }}</ai-badge>
+            <ai-badge [icon]="icon.icon" variant="default" fill="line" class="w-max">
+                {{ icon.label }}
+            </ai-badge>
         }
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
-        <ai-input class="w-full" label="Valor-alvo" [maskConfig]="vlMaskConfig" [formField]="form.targetAmount" />
+        <ai-input class="w-full" 
+            label="Valor-alvo" 
+            [maskConfig]="vlMaskConfig" 
+            [formField]="form.targetAmount" />
 
         <ai-date-picker
             class="w-full"
@@ -42,17 +52,13 @@
             <ai-select-item value="">Nenhuma</ai-select-item>
             @for (account of accounts(); track account.id) {
                 <ai-select-item [value]="account.id">
-                    @let accountBadge = account.type | tpAccount;
-                    <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line">{{ account.name }}</ai-badge>
+                    <ai-badge-tp-account [account]="account" />
                 </ai-select-item>
             }
         </ai-select>
 
         @if (selectedAccount(); as account) {
-            @let accountBadge = account.type | tpAccount;
-            <ai-badge [icon]="accountBadge.icon" [variant]="accountBadge.variant" fill="line" class="w-max">
-                {{ account.name }}
-            </ai-badge>
+            <ai-badge-tp-account [account]="account" class="w-max" />
         }
     </div>
 

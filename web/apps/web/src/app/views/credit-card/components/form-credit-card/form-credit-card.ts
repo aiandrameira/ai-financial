@@ -1,11 +1,10 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiIcon, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiIcon, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
-import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
+import { disabled, form, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { TpAccountPipe } from "@core/pipes";
-import { ButtonForm } from "@core/ui";
-import { CREDIT_CARD_ICONS, CREDIT_CARD_NETWORKS } from "@domain/constants";
+import { BadgeTpAccount, BadgeTpCreditCardNetwork, FormImports } from "@core/ui";
+import { CREDIT_CARD_NETWORKS } from "@domain/constants";
 import { tpCreditCardNetworkEnum } from "@domain/enums";
 import { CreditCardDto, makeRequestCreditCard, RequestCreditCardDto, requestCreditCardSchema } from "@domain/schemas";
 import { CreditCardAdapter } from "@infra/adapters";
@@ -15,7 +14,7 @@ import { CreditCardPreview } from "../credit-card-preview/credit-card-preview";
 
 @Component({
     selector: "ai-form-credit-card",
-    imports: [FormField, AiInput, AiBadge, AiIcon, AiSelectImports, ButtonForm, TpAccountPipe, CreditCardPreview],
+    imports: [FormImports, AiIcon, BadgeTpCreditCardNetwork, BadgeTpAccount, CreditCardPreview],
     templateUrl: "./form-credit-card.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -24,7 +23,6 @@ export class FormCreditCard {
     #facade = inject(CreditCardFacade);
 
     readonly accounts = this.#facade.accounts;
-    readonly creditCardIcons = CREDIT_CARD_ICONS;
     readonly creditCardNetworks = CREDIT_CARD_NETWORKS;
 
     readonly enabled = signal<boolean>(false);
@@ -72,10 +70,6 @@ export class FormCreditCard {
 
     protected onNetworkChange(value: unknown): void {
         this.creditCardSchema.update(current => ({ ...current, network: isArrayId(value) as tpCreditCardNetworkEnum }));
-    }
-
-    protected onIconChange(value: unknown): void {
-        this.creditCardSchema.update(current => ({ ...current, icon: isArrayId(value) }));
     }
 
     onSave(): void {
