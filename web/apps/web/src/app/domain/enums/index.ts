@@ -2,6 +2,7 @@ export * from "./st-invoice.enum";
 export * from "./st-loan-installment.enum";
 export * from "./st-transaction.enum";
 export * from "./tp-account.enum";
+export * from "./tp-asset.enum";
 export * from "./tp-credit-card-network.enum";
 export * from "./tp-category.enum";
 export * from "./tp-investment-movement.enum";
