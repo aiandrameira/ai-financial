@@ -6,15 +6,15 @@
             [value]="form().value().type"
             [disabled]="form().disabled()"
             (selectionChange)="onTypeChange($event)">
-            @for (type of movementTypes; track type.value) {
-                <ai-select-item [value]="type.value">
-                    <ai-badge [icon]="type.icon" variant="default" fill="line">{{ type.label }}</ai-badge>
+            @for (type of movementTypes; track type) {
+                <ai-select-item [value]="type">
+                    <ai-badge-tp-investment-movement [type]="type" />
                 </ai-select-item>
             }
         </ai-select>
 
-        @if (selectedType(); as type) {
-            <ai-badge [icon]="type.icon" variant="default" fill="line" class="w-max">{{ type.label }}</ai-badge>
+        @if (form().value().type; as type) {
+            <ai-badge-tp-investment-movement [type]="type" class="w-max" />
         }
     </div>
 

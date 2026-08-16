@@ -1,16 +1,14 @@
 import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
 import { formatUtcDateDayjs } from "@core/helpers";
-import { TableImports } from "@core/ui";
-import { LOAN_INSTALLMENT_STATUS_VARIANT } from "@domain/constants";
-import { stLoanInstallmentEnum, stLoanInstallmentMap } from "@domain/enums";
+import { BadgeStLoanInstallment, TableImports } from "@core/ui";
+import { stLoanInstallmentMap } from "@domain/enums";
 import { LoanInstallmentDto } from "@domain/schemas";
-import { BadgeVariant } from "@domain/types";
 import { LoanInstallmentService } from "@infra/services";
 
 @Component({
     selector: "ai-table-loan-installment",
-    imports: [TableImports, AiBadge],
+    imports: [TableImports, AiBadge, BadgeStLoanInstallment],
     templateUrl: "./table-loan-installment.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -51,9 +49,5 @@ export class TableLoanInstallment {
 
     protected dueDateLabel(dueDate: string): string {
         return formatUtcDateDayjs(dueDate);
-    }
-
-    protected statusVariant(status: stLoanInstallmentEnum): BadgeVariant {
-        return LOAN_INSTALLMENT_STATUS_VARIANT[status];
     }
 }

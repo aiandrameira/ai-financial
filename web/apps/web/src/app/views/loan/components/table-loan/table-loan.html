@@ -1,6 +1,6 @@
 <ai-table [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="type" let-item>
-        <ai-badge variant="default" fill="line">{{ tpLoanMap.get(item.type) }}</ai-badge>
+        <ai-badge-tp-loan [type]="item.type" />
     </ng-template>
 
     <ng-template aiCellTemplate="principalAmount" let-item>

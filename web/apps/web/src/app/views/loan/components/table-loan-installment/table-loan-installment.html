@@ -12,6 +12,6 @@
     </ng-template>
 
     <ng-template aiCellTemplate="status" let-item>
-        <ai-badge [variant]="statusVariant(item.status)" fill="line">{{ stLoanInstallmentMap.get(item.status) }}</ai-badge>
+        <ai-badge-st-loan-installment [status]="item.status" />
     </ng-template>
 </ai-table>

@@ -4,7 +4,7 @@
             <p class="text-sm text-muted-foreground">Parcela {{ data.installment.number }}/{{ data.loan.installmentsTotal }}</p>
             <p class="font-title text-2xl font-bold">{{ data.installment.amount | currency }}</p>
         </div>
-        <ai-badge [variant]="statusVariant[data.installment.status]" fill="line">{{ stLoanInstallmentMap.get(data.installment.status) }}</ai-badge>
+        <ai-badge-st-loan-installment [status]="data.installment.status" />
     </div>
 
     <div class="flex items-center justify-between border-y border-border py-2 text-sm text-muted-foreground">

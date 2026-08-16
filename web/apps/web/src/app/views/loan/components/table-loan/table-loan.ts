@@ -2,7 +2,7 @@ import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastSer
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { TableImports } from "@core/ui";
+import { BadgeTpLoan, TableImports } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpLoanMap } from "@domain/enums";
 import { LoanDto } from "@domain/schemas";
@@ -10,7 +10,7 @@ import { LoanService } from "@infra/services";
 
 @Component({
     selector: "ai-table-loan",
-    imports: [TableImports, AiBadge],
+    imports: [TableImports, BadgeTpLoan],
     templateUrl: "./table-loan.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

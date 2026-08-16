@@ -1,16 +1,16 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiBadge, AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
-import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from "@angular/core";
+import { AiDatePicker, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { ChangeDetectionStrategy, Component, inject, output, signal } from "@angular/core";
 import { disabled, form, FormField, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { ButtonForm } from "@core/ui";
+import { BadgeTpInvestmentMovement, ButtonForm } from "@core/ui";
 import { INVESTMENT_MOVEMENT_TYPES } from "@domain/constants";
 import { tpInvestmentMovementEnum } from "@domain/enums";
 import { makeRequestInvestmentMovement, RequestInvestmentMovementDto, requestInvestmentMovementSchema } from "@domain/schemas";
 
 @Component({
     selector: "ai-form-investment-movement",
-    imports: [FormField, AiInput, AiBadge, AiSelectImports, ButtonForm, AiDatePicker],
+    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpInvestmentMovement, AiDatePicker],
     templateUrl: "./form-investment-movement.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,8 +29,6 @@ export class FormInvestmentMovement {
 
     readonly save = output<RequestInvestmentMovementDto>();
     readonly loading = signal<boolean>(false);
-
-    readonly selectedType = computed(() => this.movementTypes.find(type => type.value === this.form().value().type) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,

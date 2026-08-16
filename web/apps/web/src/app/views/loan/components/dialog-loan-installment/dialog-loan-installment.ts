@@ -1,10 +1,11 @@
-import { AI_DIALOG_DATA, AiBadge, AiButton, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
+import { AI_DIALOG_DATA, AiButton, AiDialogRef, AiToastService } from "@aiandralves/ai-ui";
 import { CurrencyPipe, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
 import { finalize } from "rxjs";
 
 import { formatUtcDateDayjs } from "@core/helpers";
+import { BadgeStLoanInstallment } from "@core/ui";
 import { LOAN_INSTALLMENT_STATUS_VARIANT } from "@domain/constants";
 import { stLoanInstallmentEnum, stLoanInstallmentMap } from "@domain/enums";
 import { LoanDto, LoanInstallmentDto } from "@domain/schemas";
@@ -12,7 +13,7 @@ import { LoanInstallmentService } from "@infra/services";
 
 @Component({
     selector: "ai-dialog-loan-installment",
-    imports: [AiBadge, AiButton, CurrencyPipe, DatePipe],
+    imports: [AiButton, CurrencyPipe, DatePipe, BadgeStLoanInstallment],
     templateUrl: "./dialog-loan-installment.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

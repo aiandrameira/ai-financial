@@ -1,8 +1,8 @@
-import { AiBadge, AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
+import { AiInput, AiSelectImports, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, FormField, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { ButtonForm } from "@core/ui";
+import { BadgeTpInvestment, ButtonForm } from "@core/ui";
 import { INVESTMENT_TYPES } from "@domain/constants";
 import { tpInvestmentEnum } from "@domain/enums";
 import { InvestmentAssetDto, makeRequestInvestmentAsset, RequestInvestmentAssetDto, requestInvestmentAssetSchema } from "@domain/schemas";
@@ -10,7 +10,7 @@ import { InvestmentAdapter } from "@infra/adapters";
 
 @Component({
     selector: "ai-form-investment",
-    imports: [FormField, AiInput, AiBadge, AiSelectImports, ButtonForm],
+    imports: [FormField, AiInput, AiSelectImports, ButtonForm, BadgeTpInvestment],
     templateUrl: "./form-investment.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,8 +34,6 @@ export class FormInvestment {
 
     readonly save = output<RequestInvestmentAssetDto>();
     readonly loading = signal<boolean>(false);
-
-    readonly selectedType = computed(() => this.investmentTypes.find(type => type.value === this.form().value().type) ?? null);
 
     constructor() {
         effect(() => {
