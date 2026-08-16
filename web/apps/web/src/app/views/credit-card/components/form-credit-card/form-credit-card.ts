@@ -7,9 +7,9 @@ import { TpAccountPipe } from "@core/pipes";
 import { ButtonForm } from "@core/ui";
 import { CREDIT_CARD_ICONS, CREDIT_CARD_NETWORKS } from "@domain/constants";
 import { tpCreditCardNetworkEnum } from "@domain/enums";
-import { AccountDto, CreditCardDto, makeRequestCreditCard, RequestCreditCardDto, requestCreditCardSchema } from "@domain/schemas";
+import { CreditCardDto, makeRequestCreditCard, RequestCreditCardDto, requestCreditCardSchema } from "@domain/schemas";
 import { CreditCardAdapter } from "@infra/adapters";
-import { AccountService } from "@infra/services";
+import { CreditCardFacade } from "@infra/facades";
 
 import { CreditCardPreview } from "../credit-card-preview/credit-card-preview";
 
@@ -21,10 +21,9 @@ import { CreditCardPreview } from "../credit-card-preview/credit-card-preview";
 })
 export class FormCreditCard {
     #toast = inject(AiToastService);
-    #accountService = inject(AccountService);
+    #facade = inject(CreditCardFacade);
 
-    #accounts = signal<AccountDto[]>([]);
-    readonly accounts = this.#accounts.asReadonly();
+    readonly accounts = this.#facade.accounts;
     readonly creditCardIcons = CREDIT_CARD_ICONS;
     readonly creditCardNetworks = CREDIT_CARD_NETWORKS;
 
@@ -53,7 +52,7 @@ export class FormCreditCard {
     };
 
     constructor() {
-        this.#accountService.find().subscribe(accounts => this.#accounts.set(accounts));
+        this.#facade.load();
 
         effect(() => {
             const creditCard = this.creditCard();

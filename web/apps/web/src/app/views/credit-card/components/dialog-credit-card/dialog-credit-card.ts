@@ -2,8 +2,7 @@ import { AI_DIALOG_DATA, AiDialogRef, AiToastService } from "@aiandralves/ai-ui"
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { CreditCardDto, RequestCreditCardDto } from "@domain/schemas";
-import { CreditCardService } from "@infra/services";
-import { Observable } from "rxjs";
+import { CreditCardFacade } from "@infra/facades";
 
 import { FormCreditCard } from "../form-credit-card/form-credit-card";
 
@@ -14,7 +13,7 @@ import { FormCreditCard } from "../form-credit-card/form-credit-card";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogCreditCard {
-    #service = inject(CreditCardService);
+    #facade = inject(CreditCardFacade);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogCreditCard>);
 
@@ -22,9 +21,8 @@ export class DialogCreditCard {
 
     protected onSave(payload: RequestCreditCardDto): void {
         const isNew = !payload.id;
-        const request$: Observable<unknown> = payload.id ? this.#service.update(payload.id, payload) : this.#service.create(payload);
 
-        request$.subscribe({
+        this.#facade.save(payload).subscribe({
             next: () => {
                 this.#toast.success({ message: isNew ? "Cartão cadastrado com sucesso." : "Cartão atualizado com sucesso." });
                 this.#dialogRef.close();
