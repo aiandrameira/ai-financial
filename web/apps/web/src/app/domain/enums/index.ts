@@ -4,6 +4,8 @@ export * from "./st-transaction.enum";
 export * from "./tp-account.enum";
 export * from "./tp-credit-card-network.enum";
 export * from "./tp-category.enum";
+export * from "./tp-investment-movement.enum";
+export * from "./tp-investment.enum";
 export * from "./tp-loan.enum";
 export * from "./tp-transaction.enum";
 export * from "./tp-transfer-method.enum";
