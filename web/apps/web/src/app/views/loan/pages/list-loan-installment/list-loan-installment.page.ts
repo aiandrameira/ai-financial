@@ -1,11 +1,11 @@
 import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { AiHeading } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
-import { LoanInstallmentDto } from "@domain/schemas";
-import { LoanFacade } from "@infra/facades";
+import { LoanDto, LoanInstallmentDto } from "@domain/schemas";
+import { LoanService } from "@infra/services";
 
 import { DialogLoanInstallment, TableLoanInstallment } from "../../components";
 
@@ -16,17 +16,19 @@ import { DialogLoanInstallment, TableLoanInstallment } from "../../components";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListLoanInstallmentPage implements OnInit {
-    #loanFacade = inject(LoanFacade);
+    #loanService = inject(LoanService);
     #dialog = inject(AiDialogService);
     #location = inject(Location);
     #router = inject(Router);
 
+    #loans = signal<LoanDto[]>([]);
+
     readonly id = input<string>("");
 
-    readonly loan = computed(() => this.#loanFacade.loans().find(loan => loan.id === this.id()) ?? null);
+    readonly loan = computed(() => this.#loans().find(loan => loan.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#loanFacade.load();
+        this.#loanService.find().subscribe(loans => this.#loans.set(loans));
     }
 
     protected goBack(): void {

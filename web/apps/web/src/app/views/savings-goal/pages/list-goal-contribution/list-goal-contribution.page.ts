@@ -1,10 +1,11 @@
 import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { CurrencyPipe, Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { AiHeading } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
-import { SavingsGoalFacade } from "@infra/facades";
+import { SavingsGoalDto } from "@domain/schemas";
+import { SavingsGoalService } from "@infra/services";
 
 import { DialogGoalContribution, TableGoalContribution } from "../../components";
 
@@ -15,17 +16,19 @@ import { DialogGoalContribution, TableGoalContribution } from "../../components"
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListGoalContributionPage implements OnInit {
-    #goalFacade = inject(SavingsGoalFacade);
+    #goalService = inject(SavingsGoalService);
     #dialog = inject(AiDialogService);
     #location = inject(Location);
     #router = inject(Router);
 
+    #goals = signal<SavingsGoalDto[]>([]);
+
     readonly id = input<string>("");
 
-    readonly goal = computed(() => this.#goalFacade.goals().find(goal => goal.id === this.id()) ?? null);
+    readonly goal = computed(() => this.#goals().find(goal => goal.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#goalFacade.load();
+        this.#goalService.find().subscribe(goals => this.#goals.set(goals));
     }
 
     protected goBack(): void {

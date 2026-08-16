@@ -1,11 +1,11 @@
 import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { AiHeading } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
-import { CreditCardInvoiceDto } from "@domain/schemas";
-import { CreditCardFacade } from "@infra/facades";
+import { CreditCardDto, CreditCardInvoiceDto } from "@domain/schemas";
+import { CreditCardService } from "@infra/services";
 
 import { DialogCreditCardInvoice, TableCreditCardInvoice } from "../../components";
 
@@ -16,17 +16,19 @@ import { DialogCreditCardInvoice, TableCreditCardInvoice } from "../../component
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListCreditCardInvoicePage implements OnInit {
-    #creditCardFacade = inject(CreditCardFacade);
+    #creditCardService = inject(CreditCardService);
     #dialog = inject(AiDialogService);
     #location = inject(Location);
     #router = inject(Router);
 
+    #creditCards = signal<CreditCardDto[]>([]);
+
     readonly id = input<string>("");
 
-    readonly creditCard = computed(() => this.#creditCardFacade.creditCards().find(creditCard => creditCard.id === this.id()) ?? null);
+    readonly creditCard = computed(() => this.#creditCards().find(creditCard => creditCard.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#creditCardFacade.load();
+        this.#creditCardService.find().subscribe(creditCards => this.#creditCards.set(creditCards));
     }
 
     protected goBack(): void {

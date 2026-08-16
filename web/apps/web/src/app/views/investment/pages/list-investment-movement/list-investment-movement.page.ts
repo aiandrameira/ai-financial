@@ -1,11 +1,12 @@
 import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { CurrencyPipe, Location } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { AiHeading } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
 import { tpInvestmentMap } from "@domain/enums";
-import { InvestmentFacade } from "@infra/facades";
+import { InvestmentAssetDto } from "@domain/schemas";
+import { InvestmentService } from "@infra/services";
 
 import { DialogInvestmentMovement, DialogInvestmentPrice, TableInvestmentMovement } from "../../components";
 
@@ -16,19 +17,21 @@ import { DialogInvestmentMovement, DialogInvestmentPrice, TableInvestmentMovemen
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListInvestmentMovementPage implements OnInit {
-    #investmentFacade = inject(InvestmentFacade);
+    #investmentService = inject(InvestmentService);
     #dialog = inject(AiDialogService);
     #location = inject(Location);
     #router = inject(Router);
+
+    #assets = signal<InvestmentAssetDto[]>([]);
 
     readonly id = input<string>("");
 
     protected readonly tpInvestmentMap = tpInvestmentMap;
 
-    readonly asset = computed(() => this.#investmentFacade.assets().find(asset => asset.id === this.id()) ?? null);
+    readonly asset = computed(() => this.#assets().find(asset => asset.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#investmentFacade.load();
+        this.#investmentService.find().subscribe(assets => this.#assets.set(assets));
     }
 
     protected goBack(): void {

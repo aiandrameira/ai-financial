@@ -7,7 +7,7 @@ import { formatMonthYearDayjs } from "@core/helpers";
 import { AiHeading } from "@core/ui";
 import { formDialogOptions, removeAlertDialog } from "@core/utils";
 import { BudgetDto } from "@domain/schemas";
-import { BudgetFacade, CategoryFacade } from "@infra/facades";
+import { BudgetFacade } from "@infra/facades";
 
 import { CardBudget, DialogBudget } from "../../components";
 
@@ -19,7 +19,6 @@ import { CardBudget, DialogBudget } from "../../components";
 })
 export class ListBudgetPage implements OnInit {
     #facade = inject(BudgetFacade);
-    #categoryFacade = inject(CategoryFacade);
     #dialog = inject(AiDialogService);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
@@ -32,12 +31,15 @@ export class ListBudgetPage implements OnInit {
     readonly loading = this.#facade.loading;
 
     ngOnInit(): void {
-        this.#categoryFacade.load();
-        this.#facade.load(this.currentMonth());
+        this.load(this.currentMonth());
+    }
+
+    load(month: string): void {
+        this.#facade.load(month);
     }
 
     protected category(categoryId: string) {
-        return this.#categoryFacade.categories().find(category => category.id === categoryId) ?? null;
+        return this.#facade.categories().find(category => category.id === categoryId) ?? null;
     }
 
     protected previousMonth(): void {
@@ -51,7 +53,7 @@ export class ListBudgetPage implements OnInit {
     protected goToToday(): void {
         const today = dayjs().startOf("month").format("YYYY-MM-DD");
         this.currentMonth.set(today);
-        this.#facade.load(today);
+        this.load(today);
     }
 
     protected openCreate(): void {
@@ -74,7 +76,7 @@ export class ListBudgetPage implements OnInit {
     private _changeMonth(delta: number): void {
         const next = dayjs(this.currentMonth()).add(delta, "month").format("YYYY-MM-DD");
         this.currentMonth.set(next);
-        this.#facade.load(next);
+        this.load(next);
     }
 
     private _openDialog(budget: BudgetDto | null): void {
@@ -88,13 +90,16 @@ export class ListBudgetPage implements OnInit {
         });
     }
 
-    private async _remove(budget: BudgetDto): Promise<void> {
-        try {
-            await this.#facade.delete(budget.id);
-            this.#toast.success({ message: "Orçamento apagado com sucesso." });
-        } catch (error) {
-            const message = error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o orçamento.") : "Não foi possível apagar o orçamento.";
-            this.#toast.destructive({ message: "Erro ao apagar orçamento", description: message });
-        }
+    private _remove(budget: BudgetDto): void {
+        this.#facade.delete(budget.id, this.currentMonth()).subscribe({
+            next: () => {
+                this.#toast.success({ message: "Orçamento apagado com sucesso." });
+            },
+            error: error => {
+                const message =
+                    error instanceof HttpErrorResponse ? (error.error?.meta?.message ?? "Não foi possível apagar o orçamento.") : "Não foi possível apagar o orçamento.";
+                this.#toast.destructive({ message: "Erro ao apagar orçamento", description: message });
+            },
+        });
     }
 }
