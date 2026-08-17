@@ -16,19 +16,10 @@
     </div>
 
     @if (goal(); as goal) {
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-            <div class="rounded-lg bg-muted/40 p-3">
-                <p class="text-xs text-muted-foreground">Valor atual</p>
-                <p class="font-semibold">{{ goal.currentAmount | currency }}</p>
-            </div>
-            <div class="rounded-lg bg-muted/40 p-3">
-                <p class="text-xs text-muted-foreground">Falta</p>
-                <p class="font-semibold">{{ goal.remainingAmount | currency }}</p>
-            </div>
-            <div class="rounded-lg bg-muted/40 p-3">
-                <p class="text-xs text-muted-foreground">Progresso</p>
-                <p class="font-semibold">{{ goal.progressPercent }}%</p>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <ai-stat-card title="Valor atual" [value]="goal.currentAmount | currency" icon="money-dollar-circle" variant="emerald" />
+            <ai-stat-card title="Falta" [value]="goal.remainingAmount | currency" icon="time" variant="amber" />
+            <ai-stat-card title="Progresso" [value]="goal.progressPercent + '%'" icon="pie-chart" variant="sky" />
         </div>
     }
 

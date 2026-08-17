@@ -2,7 +2,7 @@ import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { CurrencyPipe, Location } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { AiHeading } from "@core/ui";
+import { AiHeading, StatCard } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
 import { SavingsGoalDto } from "@domain/schemas";
 import { SavingsGoalService } from "@infra/services";
@@ -11,7 +11,7 @@ import { DialogGoalContribution, TableGoalContribution } from "../../components"
 
 @Component({
     selector: "ai-list-goal-contribution",
-    imports: [AiButton, AiHeading, AiIcon, CurrencyPipe, TableGoalContribution],
+    imports: [AiButton, AiHeading, AiIcon, CurrencyPipe, TableGoalContribution, StatCard],
     templateUrl: "./list-goal-contribution.page.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
