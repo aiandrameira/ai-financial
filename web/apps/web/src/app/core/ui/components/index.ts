@@ -14,3 +14,5 @@ export * from "./badge-tp-transfer-method/badge-tp-transfer-method";
 export * from "./button-form/button-form";
 export * from "./heading/heading";
 export * from "./icon-material/icon-material";
+export * from "./info-card/info-card";
+export * from "./stat-card/stat-card";
