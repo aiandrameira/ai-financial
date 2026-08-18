@@ -13,7 +13,7 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
 
 @Component({
     selector: "ai-credit-card-preview",
-    imports: [AiIcon],
+    imports: [],
     template: `
         <div [class]="classes()">
             <!-- Fluid Wave SVG Background Overlay -->
@@ -47,7 +47,7 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
                     </svg>
                 </div>
 
-                <!-- Middle: Metallic Chip & Icon -->
+                <!-- Middle: Metallic Chip -->
                 <div class="flex items-center justify-between my-1">
                     <div class="flex items-center gap-x-3">
                         <!-- Refined Metallic Chip -->
@@ -61,10 +61,6 @@ const NETWORK_GRADIENT: Record<tpCreditCardNetworkEnum, string> = {
                             </div>
                             <div class="h-[1px] w-full bg-amber-700/40"></div>
                         </div>
-
-                        @if (icon()) {
-                            <ai-icon [icon]="iconType()" type="fill" size="sm" class="text-white/65" />
-                        }
                     </div>
                 </div>
 
@@ -125,7 +121,6 @@ export class CreditCardPreview {
     readonly closingDay = input<number>(1);
     readonly dueDay = input<number>(10);
     readonly network = input<tpCreditCardNetworkEnum>(tpCreditCardNetworkEnum.OTHER);
-    readonly icon = input<string>("");
 
     protected readonly tpCreditCardNetworkEnum = tpCreditCardNetworkEnum;
 
@@ -133,7 +128,6 @@ export class CreditCardPreview {
         const gradient = NETWORK_GRADIENT[this.network()] ?? NETWORK_GRADIENT[tpCreditCardNetworkEnum.OTHER];
         return `relative aspect-[1.586/1] w-full max-w-[400px] overflow-hidden rounded-2xl p-5 sm:p-6 text-white shadow-2xl transition-all duration-300 hover:scale-[1.01] ${gradient}`;
     });
-    protected readonly iconType = computed<AiIconType>(() => (this.icon() || "bank-card") as AiIconType);
     protected readonly networkLabel = computed<string>(() => {
         const network = this.network();
         return network === tpCreditCardNetworkEnum.OTHER ? "" : (tpCreditCardNetworkMap.get(network) ?? "");
