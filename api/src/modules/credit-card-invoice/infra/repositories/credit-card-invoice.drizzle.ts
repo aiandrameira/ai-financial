@@ -1,14 +1,14 @@
-import { and, count, eq, inArray, sql } from "drizzle-orm"
+import { and, count, eq, inArray, isNull, lte, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { creditCardInvoices, transactions } from "@/db/schema"
+import { creditCardInvoices, creditCards, transactions } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 
 import type { CreditCardInvoiceDto } from "../../app/dtos"
 import type { FindCreditCardInvoicesQuery } from "../../app/schemas"
-import { computeInvoicePeriod } from "../../domain/services"
 import { stInvoiceEnum } from "../../domain/enums"
-import type { CreditCardInvoiceRepository } from "../../domain/repositories"
+import type { CreditCardInvoiceRepository, DueSoonInvoiceDto } from "../../domain/repositories"
+import { computeInvoicePeriod } from "../../domain/services"
 
 type InvoiceRow = typeof creditCardInvoices.$inferSelect
 
@@ -28,7 +28,11 @@ async function computeTotals(invoiceIds: string[]): Promise<Map<string, string>>
 }
 
 function toDto(row: InvoiceRow, totalAmount = "0.00"): CreditCardInvoiceDto {
-    const status = row.paidAt ? stInvoiceEnum.PAID : row.closingDate <= new Date() ? stInvoiceEnum.CLOSED : stInvoiceEnum.OPEN
+    const status = row.paidAt
+        ? stInvoiceEnum.PAID
+        : row.closingDate <= new Date()
+          ? stInvoiceEnum.CLOSED
+          : stInvoiceEnum.OPEN
 
     return {
         id: row.id,
@@ -135,5 +139,20 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
             .update(creditCardInvoices)
             .set({ paidAt, updatedAt: new Date() })
             .where(and(eq(creditCardInvoices.userId, userId), eq(creditCardInvoices.id, id)))
+    }
+
+    async findDueSoon(maxDueDate: Date): Promise<DueSoonInvoiceDto[]> {
+        const rows = await db
+            .select({
+                id: creditCardInvoices.id,
+                userId: creditCardInvoices.userId,
+                cardName: creditCards.name,
+                dueDate: creditCardInvoices.dueDate,
+            })
+            .from(creditCardInvoices)
+            .innerJoin(creditCards, eq(creditCards.id, creditCardInvoices.creditCardId))
+            .where(and(isNull(creditCardInvoices.paidAt), lte(creditCardInvoices.dueDate, maxDueDate)))
+
+        return rows.map((row) => ({ ...row, dueDate: row.dueDate.toISOString() }))
     }
 }
