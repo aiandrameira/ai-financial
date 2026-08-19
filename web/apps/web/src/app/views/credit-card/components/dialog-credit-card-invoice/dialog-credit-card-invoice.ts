@@ -1,18 +1,19 @@
-import { AI_DIALOG_DATA, AiBadge, AiButton, AiDialogRef, AiIcon, AiToastService } from "@aiandralves/ai-ui";
+import { AI_DIALOG_DATA, AiButton, AiDialogRef, AiIcon, AiToastService } from "@aiandralves/ai-ui";
 import { CurrencyPipe, DatePipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import { finalize } from "rxjs";
 
 import { formatMonthYearDayjs, formatUtcDateDayjs } from "@core/helpers";
-import { INVOICE_STATUS_VARIANT } from "@domain/constants";
+import { StInvoicePipe } from "@core/pipes";
+import { BadgeStInvoice, InfoCard } from "@core/ui";
 import { stInvoiceEnum, stInvoiceMap } from "@domain/enums";
 import { CreditCardInvoiceDto } from "@domain/schemas";
 import { CreditCardInvoiceFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-dialog-credit-card-invoice",
-    imports: [AiBadge, AiButton, AiIcon, CurrencyPipe, DatePipe],
+    imports: [AiButton, AiIcon, CurrencyPipe, DatePipe, BadgeStInvoice, StInvoicePipe, InfoCard],
     templateUrl: "./dialog-credit-card-invoice.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,7 +24,6 @@ export class DialogCreditCardInvoice implements OnInit {
 
     protected readonly data = inject<{ creditCardId: string; invoice: CreditCardInvoiceDto }>(AI_DIALOG_DATA as never);
 
-    protected readonly statusVariant = INVOICE_STATUS_VARIANT;
     protected readonly stInvoiceMap = stInvoiceMap;
     protected readonly stInvoiceEnum = stInvoiceEnum;
     protected readonly referenceMonthLabel = computed(() => formatMonthYearDayjs(this.data.invoice.referenceMonth));

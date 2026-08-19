@@ -1,29 +1,13 @@
 <div class="flex flex-col gap-y-5">
-    <!-- Hero Invoice Banner Card -->
-    <div
-        [class]="
-            'relative overflow-hidden rounded-2xl border p-5 flex items-center justify-between transition-colors ' +
-            (data.invoice.status === stInvoiceEnum.PAID
-                ? 'bg-emerald-500/10 dark:bg-emerald-950/30 border-emerald-500/20 text-emerald-900 dark:text-emerald-100'
-                : data.invoice.status === stInvoiceEnum.CLOSED
-                  ? 'bg-amber-500/10 dark:bg-amber-950/30 border-amber-500/20 text-amber-900 dark:text-amber-100'
-                  : 'bg-sky-500/10 dark:bg-sky-950/30 border-sky-500/20 text-sky-900 dark:text-sky-100')
-        ">
+    @let st = data.invoice.status | stInvoice;
+    <div [class]="'relative overflow-hidden rounded-2xl border p-5 flex items-center justify-between transition-colors ' + st.bannerClass">
         <div class="flex items-center gap-x-4">
-            <div
-                [class]="
-                    'h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ' +
-                    (data.invoice.status === stInvoiceEnum.PAID
-                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                        : data.invoice.status === stInvoiceEnum.CLOSED
-                          ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                          : 'bg-sky-500/20 text-sky-600 dark:text-sky-400')
-                ">
-                <ai-icon [icon]="data.invoice.status === stInvoiceEnum.PAID ? 'shield-check' : 'bill'" size="lg" />
+            <div [class]="'h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ' + st.iconWrapperClass">
+                <ai-icon [icon]="st.icon" size="lg" />
             </div>
 
             <div class="flex flex-col">
-                <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground capitalize">
+                <span class="text-xs font-semibold tracking-wider text-muted-foreground capitalize">
                     Fatura de {{ referenceMonthLabel() }}
                 </span>
                 <span class="font-title text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
@@ -32,38 +16,14 @@
             </div>
         </div>
 
-        <ai-badge [variant]="statusVariant[data.invoice.status]" fill="line" class="capitalize">
-            @if (data.invoice.status === stInvoiceEnum.PAID) {
-                <ai-icon icon="shield-check" size="xs" class="mr-1 text-emerald-500" />
-            }
-            {{ stInvoiceMap.get(data.invoice.status) }}
-        </ai-badge>
+        <ai-badge-st-invoice [status]="data.invoice.status" class="capitalize" />
     </div>
 
-    <!-- Dates Grid Row -->
     <div class="grid grid-cols-2 gap-3">
-        <div class="flex items-center gap-x-3 bg-muted/40 dark:bg-zinc-900/40 p-3.5 rounded-xl border border-border/60">
-            <div class="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <ai-icon icon="calendar" size="sm" />
-            </div>
-            <div class="flex flex-col min-w-0">
-                <span class="text-[11px] font-medium text-muted-foreground">Fechamento</span>
-                <span class="text-sm font-semibold text-foreground truncate">{{ closingDateLabel() }}</span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-x-3 bg-muted/40 dark:bg-zinc-900/40 p-3.5 rounded-xl border border-border/60">
-            <div class="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <ai-icon icon="calendar" size="sm" />
-            </div>
-            <div class="flex flex-col min-w-0">
-                <span class="text-[11px] font-medium text-muted-foreground">Vencimento</span>
-                <span class="text-sm font-semibold text-foreground truncate">{{ dueDateLabel() }}</span>
-            </div>
-        </div>
+        <ai-info-card label="Fechamento" [value]="closingDateLabel()" icon="calendar" />
+        <ai-info-card label="Vencimento" [value]="dueDateLabel()" icon="calendar" />
     </div>
 
-    <!-- Purchases Section -->
     <div class="flex flex-col gap-y-3 pt-1">
         <div class="flex items-center justify-between px-1">
             <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-x-1.5">
@@ -120,7 +80,6 @@
         </div>
     </div>
 
-    <!-- Action Footer (Pay Invoice) -->
     @if (data.invoice.status !== stInvoiceEnum.PAID) {
         <div class="flex justify-end gap-x-2 border-t border-border pt-3 mt-1">
             <ai-button icon="check-double" [loading]="paying()" (click)="onPay()">Pagar fatura</ai-button>
