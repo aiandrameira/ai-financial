@@ -2,7 +2,7 @@ import { AiButton, AiDialogService, AiIcon } from "@aiandralves/ai-ui";
 import { CurrencyPipe, Location } from "@angular/common";
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { AiHeading } from "@core/ui";
+import { AiHeading, StatCard } from "@core/ui";
 import { formDialogOptions } from "@core/utils";
 import { tpInvestmentMap } from "@domain/enums";
 import { InvestmentAssetDto } from "@domain/schemas";
@@ -12,7 +12,7 @@ import { DialogInvestmentMovement, DialogInvestmentPrice, TableInvestmentMovemen
 
 @Component({
     selector: "ai-list-investment-movement",
-    imports: [AiButton, AiHeading, AiIcon, CurrencyPipe, TableInvestmentMovement],
+    imports: [AiButton, AiHeading, AiIcon, CurrencyPipe, TableInvestmentMovement, StatCard],
     templateUrl: "./list-investment-movement.page.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

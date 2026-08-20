@@ -5,9 +5,21 @@
             title="Cartões"
             description="Cartões de crédito e seus limites."
          />
-        <ai-button size="sm" icon="add-circle" class="self-start sm:self-auto" (click)="openCreate()">
-            Cadastrar cartão
-        </ai-button>
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+            <ai-button
+                size="sm"
+                variant="outline"
+                icon="notification"
+                [loading]="checkingDueInvoices()"
+                aiTooltip="Dispara na hora a mesma verificação que roda todo dia às 8h — útil para ver a integração com o AI Flow funcionando sem esperar o horário."
+                (click)="checkDueInvoices()"
+            >
+                Verificar faturas vencendo
+            </ai-button>
+            <ai-button size="sm" icon="add-circle" (click)="openCreate()">
+                Cadastrar cartão
+            </ai-button>
+        </div>
     </div>
 
     <ai-table-credit-card (edit)="openEdit($event)" />
