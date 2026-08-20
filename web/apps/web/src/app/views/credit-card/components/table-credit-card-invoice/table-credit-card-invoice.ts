@@ -1,7 +1,7 @@
 import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
-import { formatMonthYearDayjs, formatUtcDateDayjs } from "@core/helpers";
-import { TrendPipe } from "@core/pipes";
+import { formatMonthYearDayjs } from "@core/helpers";
+import { DueSoonPipe, TrendPipe } from "@core/pipes";
 import { BadgeStInvoice, IconMaterial, TableImports } from "@core/ui";
 import { stInvoiceMap } from "@domain/enums";
 import { CreditCardInvoiceDto } from "@domain/schemas";
@@ -9,7 +9,7 @@ import { CreditCardInvoiceService } from "@infra/services";
 
 @Component({
     selector: "ai-table-credit-card-invoice",
-    imports: [TableImports, AiBadge, IconMaterial, BadgeStInvoice, TrendPipe],
+    imports: [TableImports, AiBadge, IconMaterial, BadgeStInvoice, TrendPipe, DueSoonPipe],
     templateUrl: "./table-credit-card-invoice.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -51,9 +51,5 @@ export class TableCreditCardInvoice {
 
     protected monthLabel(referenceMonth: string): string {
         return formatMonthYearDayjs(referenceMonth);
-    }
-
-    protected dueDateLabel(dueDate: string): string {
-        return formatUtcDateDayjs(dueDate);
     }
 }
