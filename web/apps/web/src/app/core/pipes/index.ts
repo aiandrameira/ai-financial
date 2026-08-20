@@ -1,3 +1,4 @@
+export * from "./due-soon.pipe";
 export * from "./map-label.pipe";
 export * from "./st-invoice.pipe";
 export * from "./st-loan-installment.pipe";
