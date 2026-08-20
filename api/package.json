@@ -27,6 +27,7 @@
     "dependencies": {
         "@elysia/openapi": "^1.4.15",
         "@elysiajs/cors": "^1.4.2",
+        "@elysiajs/cron": "^1.4.2",
         "cloudinary": "^2.10.0",
         "drizzle-orm": "^0.45.2",
         "elysia": "latest",
