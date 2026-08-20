@@ -10,5 +10,6 @@ export * from "./investment-price/investment-price.service";
 export * from "./investment/investment.service";
 export * from "./loan-installment/loan-installment.service";
 export * from "./loan/loan.service";
+export * from "./notify-due-invoices/notify-due-invoices.service";
 export * from "./savings-goal/savings-goal.service";
 export * from "./transaction/transaction.service";
