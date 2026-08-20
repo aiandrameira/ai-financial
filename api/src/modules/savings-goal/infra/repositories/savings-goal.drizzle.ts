@@ -6,8 +6,8 @@ import type { IPaginated } from "@/http/api/response"
 
 import type { SavingsGoalDto } from "../../app/dtos"
 import type { CreateSavingsGoalSchema, FindSavingsGoalsQuery, UpdateSavingsGoalSchema } from "../../app/schemas"
-import { computeGoalProgress } from "../../domain/services"
 import type { SavingsGoalRepository } from "../../domain/repositories"
+import { computeGoalProgress } from "../../domain/services"
 
 type SavingsGoalRow = typeof savingsGoals.$inferSelect
 
@@ -113,7 +113,9 @@ export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
 
     async delete(userId: string, id: string): Promise<void> {
         await db.transaction(async (tx) => {
-            await tx.delete(goalContributions).where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, id)))
+            await tx
+                .delete(goalContributions)
+                .where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, id)))
             await tx.delete(savingsGoals).where(and(eq(savingsGoals.userId, userId), eq(savingsGoals.id, id)))
         })
     }

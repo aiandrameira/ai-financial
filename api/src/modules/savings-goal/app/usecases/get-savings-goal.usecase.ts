@@ -1,7 +1,6 @@
 import { NotFoundError } from "@/http/errors/errors"
-
-import type { SavingsGoalDto } from "../dtos"
 import type { SavingsGoalRepository } from "../../domain/repositories"
+import type { SavingsGoalDto } from "../dtos"
 
 export class GetSavingsGoalUseCase {
     constructor(private repository: SavingsGoalRepository) {}

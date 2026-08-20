@@ -1,8 +1,7 @@
-import type { AccountRepository } from "@/modules/account/domain/repositories"
 import { NotFoundError } from "@/http/errors/errors"
-
-import type { UpdateSavingsGoalSchema } from "../schemas"
+import type { AccountRepository } from "@/modules/account/domain/repositories"
 import type { SavingsGoalRepository } from "../../domain/repositories"
+import type { UpdateSavingsGoalSchema } from "../schemas"
 
 export class UpdateSavingsGoalUseCase {
     constructor(

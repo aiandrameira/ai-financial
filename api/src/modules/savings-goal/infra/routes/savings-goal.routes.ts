@@ -24,12 +24,14 @@ import {
 import { SavingsGoalController } from "../controllers/savings-goal.controller"
 import { GoalContributionDrizzleRepository } from "../repositories/goal-contribution.drizzle"
 import { SavingsGoalDrizzleRepository } from "../repositories/savings-goal.drizzle"
+import { AiFlowGoalReachedNotifier } from "../services/ai-flow-goal-reached-notifier"
 
 function buildController() {
     const repository = new SavingsGoalDrizzleRepository()
     const contributionRepository = new GoalContributionDrizzleRepository()
     const accountRepository = new AccountDrizzleRepository()
     const transactionRepository = new TransactionDrizzleRepository()
+    const goalReachedNotifier = new AiFlowGoalReachedNotifier()
 
     return new SavingsGoalController({
         find: new FindSavingsGoalsUseCase(repository),
@@ -38,7 +40,12 @@ function buildController() {
         update: new UpdateSavingsGoalUseCase(repository, accountRepository),
         delete: new DeleteSavingsGoalUseCase(repository),
         findContributions: new FindGoalContributionsUseCase(contributionRepository, repository),
-        createContribution: new CreateGoalContributionUseCase(contributionRepository, repository, transactionRepository),
+        createContribution: new CreateGoalContributionUseCase(
+            contributionRepository,
+            repository,
+            transactionRepository,
+            goalReachedNotifier,
+        ),
         deleteContribution: new DeleteGoalContributionUseCase(contributionRepository),
     })
 }
@@ -50,7 +57,8 @@ export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings 
         query: findSavingsGoalsQuerySchema,
         detail: {
             summary: "List savings goals",
-            description: "Includes computed progress (current amount, remaining amount, percent) derived from contributions.",
+            description:
+                "Includes computed progress (current amount, remaining amount, percent) derived from contributions.",
             responses: { 200: { description: "Paginated list of savings goals" } },
         },
     })
@@ -92,7 +100,10 @@ export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings 
         query: findGoalContributionsQuerySchema,
         detail: {
             summary: "List goal contributions",
-            responses: { 200: { description: "Paginated list of contributions" }, 404: { description: "Savings goal not found" } },
+            responses: {
+                200: { description: "Paginated list of contributions" },
+                404: { description: "Savings goal not found" },
+            },
         },
     })
     .post(
@@ -106,13 +117,23 @@ export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings 
             detail: {
                 summary: "Add a contribution",
                 description: "Optionally references the transaction that actually moved the money.",
-                responses: { 201: { description: "Contribution added" }, 404: { description: "Savings goal or transaction not found" } },
+                responses: {
+                    201: { description: "Contribution added" },
+                    404: { description: "Savings goal or transaction not found" },
+                },
             },
         },
     )
-    .delete("/:id/contributions/:contributionId", ({ params }) => controller.deleteContribution(env.DEV_USER_ID, params.id, params.contributionId), {
-        detail: {
-            summary: "Delete a contribution",
-            responses: { 200: { description: "Contribution deleted" }, 404: { description: "Contribution not found" } },
+    .delete(
+        "/:id/contributions/:contributionId",
+        ({ params }) => controller.deleteContribution(env.DEV_USER_ID, params.id, params.contributionId),
+        {
+            detail: {
+                summary: "Delete a contribution",
+                responses: {
+                    200: { description: "Contribution deleted" },
+                    404: { description: "Contribution not found" },
+                },
+            },
         },
-    })
+    )

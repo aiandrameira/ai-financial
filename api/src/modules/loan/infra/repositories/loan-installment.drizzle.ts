@@ -1,18 +1,22 @@
-import { and, count, eq } from "drizzle-orm"
+import { and, count, eq, isNull, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
-import { loanInstallments } from "@/db/schema"
+import { loanInstallments, loans } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
 import type { LoanInstallmentDto } from "../../app/dtos"
 import { stLoanInstallmentEnum } from "../../domain/enums"
-import type { LoanInstallmentRepository } from "../../domain/repositories"
+import type { DueSoonInstallmentDto, LoanInstallmentRepository } from "../../domain/repositories"
 
 type LoanInstallmentRow = typeof loanInstallments.$inferSelect
 
 function toDto(row: LoanInstallmentRow): LoanInstallmentDto {
-    const status = row.paidAt ? stLoanInstallmentEnum.PAID : row.dueDate < new Date() ? stLoanInstallmentEnum.LATE : stLoanInstallmentEnum.PENDING
+    const status = row.paidAt
+        ? stLoanInstallmentEnum.PAID
+        : row.dueDate < new Date()
+          ? stLoanInstallmentEnum.LATE
+          : stLoanInstallmentEnum.PENDING
 
     return {
         id: row.id,
@@ -51,7 +55,13 @@ export class LoanInstallmentDrizzleRepository implements LoanInstallmentReposito
         const [row] = await db
             .select()
             .from(loanInstallments)
-            .where(and(eq(loanInstallments.userId, userId), eq(loanInstallments.loanId, loanId), eq(loanInstallments.id, id)))
+            .where(
+                and(
+                    eq(loanInstallments.userId, userId),
+                    eq(loanInstallments.loanId, loanId),
+                    eq(loanInstallments.id, id),
+                ),
+            )
 
         return row ? toDto(row) : null
     }
@@ -61,5 +71,21 @@ export class LoanInstallmentDrizzleRepository implements LoanInstallmentReposito
             .update(loanInstallments)
             .set({ paidAt, updatedAt: new Date() })
             .where(and(eq(loanInstallments.userId, userId), eq(loanInstallments.id, id)))
+    }
+
+    async findDueSoon(maxDueDate: Date): Promise<DueSoonInstallmentDto[]> {
+        const rows = await db
+            .select({
+                id: loanInstallments.id,
+                userId: loanInstallments.userId,
+                loanName: loans.name,
+                installmentNumber: loanInstallments.number,
+                dueDate: loanInstallments.dueDate,
+            })
+            .from(loanInstallments)
+            .innerJoin(loans, eq(loans.id, loanInstallments.loanId))
+            .where(and(isNull(loanInstallments.paidAt), lte(loanInstallments.dueDate, maxDueDate)))
+
+        return rows.map((row) => ({ ...row, dueDate: row.dueDate.toISOString() }))
     }
 }

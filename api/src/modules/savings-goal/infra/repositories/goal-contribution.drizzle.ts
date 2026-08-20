@@ -22,7 +22,11 @@ function toDto(row: GoalContributionRow): GoalContributionDto {
 }
 
 export class GoalContributionDrizzleRepository implements GoalContributionRepository {
-    async find(userId: string, goalId: string, params: FindGoalContributionsQuery): Promise<IPaginated<GoalContributionDto>> {
+    async find(
+        userId: string,
+        goalId: string,
+        params: FindGoalContributionsQuery,
+    ): Promise<IPaginated<GoalContributionDto>> {
         const where = and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, goalId))
 
         const [rows, [{ total }]] = await Promise.all([
@@ -52,7 +56,13 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
         const [row] = await db
             .select()
             .from(goalContributions)
-            .where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, goalId), eq(goalContributions.id, id)))
+            .where(
+                and(
+                    eq(goalContributions.userId, userId),
+                    eq(goalContributions.goalId, goalId),
+                    eq(goalContributions.id, id),
+                ),
+            )
 
         return row ? toDto(row) : null
     }
@@ -73,10 +83,14 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
     }
 
     async delete(userId: string, id: string): Promise<void> {
-        await db.delete(goalContributions).where(and(eq(goalContributions.userId, userId), eq(goalContributions.id, id)))
+        await db
+            .delete(goalContributions)
+            .where(and(eq(goalContributions.userId, userId), eq(goalContributions.id, id)))
     }
 
     async deleteByGoal(userId: string, goalId: string): Promise<void> {
-        await db.delete(goalContributions).where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, goalId)))
+        await db
+            .delete(goalContributions)
+            .where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, goalId)))
     }
 }
