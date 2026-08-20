@@ -21,6 +21,9 @@ const envSchema = z.object({
     CLOUDINARY_API_KEY: z.string().default(""),
     CLOUDINARY_API_SECRET: z.string().default(""),
     CLOUDINARY_FOLDER: z.string().default("ai-financial"),
+
+    AI_FLOW_API_URL: z.string().default(""),
+    AI_FLOW_API_KEY: z.string().default(""),
 })
 
 const parsedEnv = envSchema.parse(typeof Bun !== "undefined" ? Bun.env : process.env)
