@@ -4,7 +4,8 @@
     </ng-template>
 
     <ng-template aiCellTemplate="dueDate" let-item>
-        <ai-badge variant="default">{{ dueDateLabel(item.dueDate) }}</ai-badge>
+        @let due = item.dueDate | dueSoon: item.paidAt;
+        <ai-badge [variant]="due.variant" [icon]="due.icon" fill="line">{{ due.label }}</ai-badge>
     </ng-template>
 
     <ng-template aiCellTemplate="amount" let-item>
