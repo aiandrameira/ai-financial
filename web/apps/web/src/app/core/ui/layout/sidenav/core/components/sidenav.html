@@ -9,13 +9,13 @@
         [class.transition-all]="!resizing()"
         [style.--sidenav-width.px]="collapsed() ? SIDENAV_COLLAPSED_WIDTH : width()"
     >
-        <ai-sidenav-profile [user]="user()" [userMenuItems]="userMenuItems()" [collapsed]="collapsed()" (userMenuAction)="onUserMenuAction($event)" />
+        <ai-sidenav-profile [user]="user()" [userMenuItems]="userMenuItems()" [collapsed]="effectiveCollapsed()" (userMenuAction)="onUserMenuAction($event)" />
 
         <div class="flex-1 overflow-y-auto py-4">
             @for (group of groups(); track group.label) {
                 <div class="px-3 pb-4">
-                    @if (!collapsed()) {
-                        <p class="px-2 pb-2 text-xs font-title font-bold tracking-wider uppercase text-muted-foreground">{{ group.label }}</p>
+                    @if (!effectiveCollapsed()) {
+                        <p class="truncate px-2 pb-2 text-xs font-title font-bold tracking-wider uppercase text-muted-foreground">{{ group.label }}</p>
                     }
 
                     <nav class="flex flex-col gap-y-1">
@@ -24,14 +24,14 @@
                                 [routerLink]="item.path"
                                 routerLinkActive="bg-primary/10 text-primary"
                                 [aiPosition]="'right'"
-                                [aiTooltip]="collapsed() ? item.label : ''"
-                                [class.justify-center]="collapsed()"
-                                class="flex items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                                [aiTooltip]="effectiveCollapsed() ? item.label : ''"
+                                [class.justify-center]="effectiveCollapsed()"
+                                class="flex min-w-0 items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
                                 (click)="sidenav.closeMobile()"
                             >
                                 <ai-icon [icon]="item.icon" size="sm" />
-                                @if (!collapsed()) {
-                                    <span>{{ item.label }}</span>
+                                @if (!effectiveCollapsed()) {
+                                    <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
                                 }
                             </a>
                         }
@@ -41,29 +41,29 @@
         </div>
 
         <div class="flex flex-col gap-0.5 border-t border-border p-2">
-            <div class="flex items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                [class.justify-center]="collapsed()"
+            <div class="flex min-w-0 items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                [class.justify-center]="effectiveCollapsed()"
                 [aiPosition]="'right'"
-                [aiTooltip]="collapsed() ? 'Tema' : ''">
+                [aiTooltip]="effectiveCollapsed() ? 'Tema' : ''">
                 <ai-icon icon="moon-clear" size="sm" />
-                @if (!collapsed()) {
-                    <span>Tema</span>
+                @if (!effectiveCollapsed()) {
+                    <span class="truncate">Tema</span>
                 }
             </div>
 
-            <div class="flex items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                [class.justify-center]="collapsed()"
+            <div class="flex min-w-0 items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                [class.justify-center]="effectiveCollapsed()"
                 [aiPosition]="'right'"
-                [aiTooltip]="collapsed() ? '00:00' : ''">
+                [aiTooltip]="effectiveCollapsed() ? '00:00' : ''">
                 <ai-icon icon="timer" size="sm" />
-                @if (!collapsed()) {
-                    <span class="flex-1">Tempo</span>
-                    <span class="text-xs">00:00</span>
+                @if (!effectiveCollapsed()) {
+                    <span class="min-w-0 flex-1 truncate">Tempo</span>
+                    <span class="shrink-0 text-xs">00:00</span>
                 }
             </div>
         </div>
 
-        @if (!collapsed()) {
+        @if (!effectiveCollapsed()) {
             <div
                 class="absolute top-0 right-0 hidden h-full w-1 cursor-col-resize hover:bg-primary/30 md:block"
                 aiResizeHandle
