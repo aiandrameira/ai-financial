@@ -6,32 +6,8 @@ import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
 
 import type { LoanInstallmentDto } from "../../app/dtos"
-import { stLoanInstallmentEnum } from "../../domain/enums"
 import type { DueSoonInstallmentDto, LoanInstallmentRepository } from "../../domain/repositories"
-
-type LoanInstallmentRow = typeof loanInstallments.$inferSelect
-
-function toDto(row: LoanInstallmentRow): LoanInstallmentDto {
-    const status = row.paidAt
-        ? stLoanInstallmentEnum.PAID
-        : row.dueDate < new Date()
-          ? stLoanInstallmentEnum.LATE
-          : stLoanInstallmentEnum.PENDING
-
-    return {
-        id: row.id,
-        loanId: row.loanId,
-        number: row.number,
-        dueDate: row.dueDate.toISOString(),
-        amount: row.amount,
-        principalPortion: row.principalPortion,
-        interestPortion: row.interestPortion,
-        paidAt: row.paidAt?.toISOString() ?? null,
-        status,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
+import { mapLoanInstallmentToDto } from "../mappers"
 
 export class LoanInstallmentDrizzleRepository implements LoanInstallmentRepository {
     async find(userId: string, loanId: string, params: PaginationParams): Promise<IPaginated<LoanInstallmentDto>> {
@@ -48,7 +24,7 @@ export class LoanInstallmentDrizzleRepository implements LoanInstallmentReposito
             db.select({ total: count() }).from(loanInstallments).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return { data: rows.map(mapLoanInstallmentToDto), page: params.page, size: params.size, total }
     }
 
     async get(userId: string, loanId: string, id: string): Promise<LoanInstallmentDto | null> {
@@ -63,7 +39,7 @@ export class LoanInstallmentDrizzleRepository implements LoanInstallmentReposito
                 ),
             )
 
-        return row ? toDto(row) : null
+        return row ? mapLoanInstallmentToDto(row) : null
     }
 
     async pay(userId: string, id: string, paidAt: Date): Promise<void> {

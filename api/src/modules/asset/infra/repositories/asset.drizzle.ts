@@ -7,21 +7,7 @@ import type { IPaginated } from "@/http/api/response"
 import type { AssetDto } from "../../app/dtos"
 import type { CreateAssetSchema, FindAssetsQuery, UpdateAssetSchema } from "../../app/schemas"
 import type { AssetRepository } from "../../domain/repositories"
-
-type AssetRow = typeof assets.$inferSelect
-
-function toDto(row: AssetRow): AssetDto {
-    return {
-        id: row.id,
-        name: row.name,
-        type: row.type,
-        purchaseValue: row.purchaseValue,
-        currentValue: row.currentValue,
-        acquiredAt: row.acquiredAt.toISOString(),
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
+import { mapAssetToDto } from "../mappers"
 
 export class AssetDrizzleRepository implements AssetRepository {
     async find(userId: string, params: FindAssetsQuery): Promise<IPaginated<AssetDto>> {
@@ -38,7 +24,7 @@ export class AssetDrizzleRepository implements AssetRepository {
             db.select({ total: count() }).from(assets).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return { data: rows.map(mapAssetToDto), page: params.page, size: params.size, total }
     }
 
     async get(userId: string, id: string): Promise<AssetDto | null> {
@@ -47,7 +33,7 @@ export class AssetDrizzleRepository implements AssetRepository {
             .from(assets)
             .where(and(eq(assets.userId, userId), eq(assets.id, id)))
 
-        return row ? toDto(row) : null
+        return row ? mapAssetToDto(row) : null
     }
 
     async create(userId: string, body: CreateAssetSchema): Promise<AssetDto> {
@@ -63,7 +49,7 @@ export class AssetDrizzleRepository implements AssetRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapAssetToDto(row)
     }
 
     async update(userId: string, id: string, body: UpdateAssetSchema): Promise<void> {

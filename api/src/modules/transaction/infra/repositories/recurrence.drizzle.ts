@@ -6,20 +6,7 @@ import { toDateString } from "@/http/helpers"
 
 import type { RecurrenceDto } from "../../app/dtos"
 import type { CreateRecurrenceData, RecurrenceRepository } from "../../domain/repositories"
-
-type RecurrenceRow = typeof recurrences.$inferSelect
-
-function toDto(row: RecurrenceRow): RecurrenceDto {
-    return {
-        id: row.id,
-        frequency: row.frequency,
-        interval: row.interval,
-        startDate: row.startDate,
-        endDate: row.endDate,
-        nextOccurrence: row.nextOccurrence,
-        active: row.active,
-    }
-}
+import { mapRecurrenceToDto } from "../mappers"
 
 export class RecurrenceDrizzleRepository implements RecurrenceRepository {
     async create(userId: string, data: CreateRecurrenceData): Promise<RecurrenceDto> {
@@ -35,7 +22,7 @@ export class RecurrenceDrizzleRepository implements RecurrenceRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapRecurrenceToDto(row)
     }
 
     async findDue(userId: string, asOf: Date): Promise<RecurrenceDto[]> {
@@ -50,7 +37,7 @@ export class RecurrenceDrizzleRepository implements RecurrenceRepository {
                 ),
             )
 
-        return rows.map(toDto)
+        return rows.map(mapRecurrenceToDto)
     }
 
     async advance(id: string, nextOccurrence: Date, active: boolean): Promise<void> {

@@ -7,8 +7,7 @@ import type { IPaginated } from "@/http/api/response"
 import type { BudgetDto } from "../../app/dtos"
 import type { CreateBudgetSchema, FindBudgetsQuery, UpdateBudgetSchema } from "../../app/schemas"
 import type { BudgetRepository } from "../../domain/repositories"
-
-type BudgetRow = typeof budgets.$inferSelect
+import { mapBudgetToDto } from "../mappers"
 
 function monthEnd(referenceMonth: Date): Date {
     return new Date(Date.UTC(referenceMonth.getUTCFullYear(), referenceMonth.getUTCMonth() + 1, 1))
@@ -31,25 +30,18 @@ async function computeRealizedAmount(categoryId: string, referenceMonth: Date): 
     return row.total
 }
 
-function toDto(row: BudgetRow, realizedAmount: string): BudgetDto {
-    return {
-        id: row.id,
-        categoryId: row.categoryId,
-        referenceMonth: row.referenceMonth.toISOString(),
-        plannedAmount: row.plannedAmount,
-        realizedAmount,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
-
 export class BudgetDrizzleRepository implements BudgetRepository {
     async find(userId: string, params: FindBudgetsQuery): Promise<IPaginated<BudgetDto>> {
         const where = and(
             eq(budgets.userId, userId),
             params.categoryId ? eq(budgets.categoryId, params.categoryId) : undefined,
             params.referenceMonth
-                ? eq(budgets.referenceMonth, new Date(Date.UTC(params.referenceMonth.getUTCFullYear(), params.referenceMonth.getUTCMonth(), 1)))
+                ? eq(
+                      budgets.referenceMonth,
+                      new Date(
+                          Date.UTC(params.referenceMonth.getUTCFullYear(), params.referenceMonth.getUTCMonth(), 1),
+                      ),
+                  )
                 : undefined,
         )
 
@@ -64,7 +56,11 @@ export class BudgetDrizzleRepository implements BudgetRepository {
             db.select({ total: count() }).from(budgets).where(where),
         ])
 
-        const data = await Promise.all(rows.map(async (row) => toDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))))
+        const data = await Promise.all(
+            rows.map(async (row) =>
+                mapBudgetToDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth)),
+            ),
+        )
 
         return { data, page: params.page, size: params.size, total }
     }
@@ -77,18 +73,24 @@ export class BudgetDrizzleRepository implements BudgetRepository {
 
         if (!row) return null
 
-        return toDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
+        return mapBudgetToDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
     }
 
     async getByCategoryAndMonth(userId: string, categoryId: string, referenceMonth: Date): Promise<BudgetDto | null> {
         const [row] = await db
             .select()
             .from(budgets)
-            .where(and(eq(budgets.userId, userId), eq(budgets.categoryId, categoryId), eq(budgets.referenceMonth, referenceMonth)))
+            .where(
+                and(
+                    eq(budgets.userId, userId),
+                    eq(budgets.categoryId, categoryId),
+                    eq(budgets.referenceMonth, referenceMonth),
+                ),
+            )
 
         if (!row) return null
 
-        return toDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
+        return mapBudgetToDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
     }
 
     async create(userId: string, body: CreateBudgetSchema): Promise<BudgetDto> {
@@ -102,7 +104,7 @@ export class BudgetDrizzleRepository implements BudgetRepository {
             })
             .returning()
 
-        return toDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
+        return mapBudgetToDto(row, await computeRealizedAmount(row.categoryId, row.referenceMonth))
     }
 
     async update(userId: string, id: string, body: UpdateBudgetSchema): Promise<void> {

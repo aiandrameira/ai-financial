@@ -6,11 +6,9 @@ import type { IPaginated } from "@/http/api/response"
 
 import type { CreditCardInvoiceDto } from "../../app/dtos"
 import type { FindCreditCardInvoicesQuery } from "../../app/schemas"
-import { stInvoiceEnum } from "../../domain/enums"
 import type { CreditCardInvoiceRepository, DueSoonInvoiceDto } from "../../domain/repositories"
 import { computeInvoicePeriod } from "../../domain/services"
-
-type InvoiceRow = typeof creditCardInvoices.$inferSelect
+import { mapCreditCardInvoiceToDto } from "../mappers"
 
 async function computeTotals(invoiceIds: string[]): Promise<Map<string, string>> {
     if (invoiceIds.length === 0) return new Map()
@@ -25,27 +23,6 @@ async function computeTotals(invoiceIds: string[]): Promise<Map<string, string>>
         .groupBy(transactions.invoiceId)
 
     return new Map(rows.map((row) => [row.invoiceId as string, row.total]))
-}
-
-function toDto(row: InvoiceRow, totalAmount = "0.00"): CreditCardInvoiceDto {
-    const status = row.paidAt
-        ? stInvoiceEnum.PAID
-        : row.closingDate <= new Date()
-          ? stInvoiceEnum.CLOSED
-          : stInvoiceEnum.OPEN
-
-    return {
-        id: row.id,
-        creditCardId: row.creditCardId,
-        referenceMonth: row.referenceMonth.toISOString(),
-        closingDate: row.closingDate.toISOString(),
-        dueDate: row.dueDate.toISOString(),
-        status,
-        totalAmount,
-        paidAt: row.paidAt?.toISOString() ?? null,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
 }
 
 export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepository {
@@ -70,7 +47,7 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
         const totals = await computeTotals(rows.map((row) => row.id))
 
         return {
-            data: rows.map((row) => toDto(row, totals.get(row.id))),
+            data: rows.map((row) => mapCreditCardInvoiceToDto(row, totals.get(row.id))),
             page: params.page,
             size: params.size,
             total,
@@ -92,7 +69,7 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
         if (!row) return null
 
         const totals = await computeTotals([row.id])
-        return toDto(row, totals.get(row.id))
+        return mapCreditCardInvoiceToDto(row, totals.get(row.id))
     }
 
     async getOrCreateForDate(
@@ -117,7 +94,7 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
 
         if (existing) {
             const totals = await computeTotals([existing.id])
-            return toDto(existing, totals.get(existing.id))
+            return mapCreditCardInvoiceToDto(existing, totals.get(existing.id))
         }
 
         const [created] = await db
@@ -131,7 +108,7 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
             })
             .returning()
 
-        return toDto(created)
+        return mapCreditCardInvoiceToDto(created)
     }
 
     async pay(userId: string, id: string, paidAt: Date): Promise<void> {

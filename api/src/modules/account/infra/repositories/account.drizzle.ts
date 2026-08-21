@@ -4,14 +4,11 @@ import { db } from "@/db/client"
 import { accounts, transactions } from "@/db/schema"
 import type { IPaginated } from "@/http/api/response"
 import type { PaginationParams } from "@/http/api/schema/schemas"
-import { addDecimal } from "@/http/helpers"
 
 import type { AccountDto } from "../../app/dtos"
 import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas"
 import type { AccountRepository } from "../../domain/repositories"
-
-type AccountRow = typeof accounts.$inferSelect
-type Balances = { current: string; projected: string }
+import { type Balances, mapAccountToDto } from "../mappers"
 
 async function computeBalances(accountIds: string[]): Promise<Map<string, Balances>> {
     if (accountIds.length === 0) return new Map()
@@ -27,26 +24,6 @@ async function computeBalances(accountIds: string[]): Promise<Map<string, Balanc
         .groupBy(transactions.accountId)
 
     return new Map(rows.map((row) => [row.accountId as string, { current: row.current, projected: row.projected }]))
-}
-
-function toDto(row: AccountRow, balances?: Balances): AccountDto {
-    const current = balances?.current ?? "0"
-    const projected = balances?.projected ?? "0"
-
-    return {
-        id: row.id,
-        name: row.name,
-        type: row.type,
-        institution: row.institution,
-        initialBalance: row.initialBalance,
-        currentBalance: addDecimal(row.initialBalance, current),
-        projectedBalance: addDecimal(row.initialBalance, projected),
-        color: row.color,
-        icon: row.icon,
-        archivedAt: row.archivedAt?.toISOString() ?? null,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
 }
 
 export class AccountDrizzleRepository implements AccountRepository {
@@ -67,7 +44,7 @@ export class AccountDrizzleRepository implements AccountRepository {
         const balances = await computeBalances(rows.map((row) => row.id))
 
         return {
-            data: rows.map((row) => toDto(row, balances.get(row.id))),
+            data: rows.map((row) => mapAccountToDto(row, balances.get(row.id))),
             page: params.page,
             size: params.size,
             total,
@@ -83,7 +60,7 @@ export class AccountDrizzleRepository implements AccountRepository {
         if (!row) return null
 
         const balances = await computeBalances([row.id])
-        return toDto(row, balances.get(row.id))
+        return mapAccountToDto(row, balances.get(row.id))
     }
 
     async create(userId: string, body: CreateAccountSchema): Promise<AccountDto> {
@@ -100,7 +77,7 @@ export class AccountDrizzleRepository implements AccountRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapAccountToDto(row)
     }
 
     async update(userId: string, id: string, body: UpdateAccountSchema): Promise<void> {

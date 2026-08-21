@@ -7,9 +7,7 @@ import type { IPaginated } from "@/http/api/response"
 import type { SavingsGoalDto } from "../../app/dtos"
 import type { CreateSavingsGoalSchema, FindSavingsGoalsQuery, UpdateSavingsGoalSchema } from "../../app/schemas"
 import type { SavingsGoalRepository } from "../../domain/repositories"
-import { computeGoalProgress } from "../../domain/services"
-
-type SavingsGoalRow = typeof savingsGoals.$inferSelect
+import { mapSavingsGoalToDto } from "../mappers"
 
 async function computeContributedAmounts(goalIds: string[]): Promise<Map<string, string>> {
     if (goalIds.length === 0) return new Map()
@@ -24,24 +22,6 @@ async function computeContributedAmounts(goalIds: string[]): Promise<Map<string,
         .groupBy(goalContributions.goalId)
 
     return new Map(rows.map((row) => [row.goalId, row.total]))
-}
-
-function toDto(row: SavingsGoalRow, contributedAmount = "0"): SavingsGoalDto {
-    const progress = computeGoalProgress(Number(row.targetAmount), [Number(contributedAmount)])
-
-    return {
-        id: row.id,
-        name: row.name,
-        targetAmount: row.targetAmount,
-        targetDate: row.targetDate?.toISOString() ?? null,
-        icon: row.icon,
-        linkedAccountId: row.linkedAccountId,
-        currentAmount: progress.currentAmount,
-        remainingAmount: progress.remainingAmount,
-        progressPercent: progress.progressPercent,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
 }
 
 export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
@@ -62,7 +42,7 @@ export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
         const contributedAmounts = await computeContributedAmounts(rows.map((row) => row.id))
 
         return {
-            data: rows.map((row) => toDto(row, contributedAmounts.get(row.id))),
+            data: rows.map((row) => mapSavingsGoalToDto(row, contributedAmounts.get(row.id))),
             page: params.page,
             size: params.size,
             total: Number(total),
@@ -78,7 +58,7 @@ export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
         if (!row) return null
 
         const contributedAmounts = await computeContributedAmounts([row.id])
-        return toDto(row, contributedAmounts.get(row.id))
+        return mapSavingsGoalToDto(row, contributedAmounts.get(row.id))
     }
 
     async create(userId: string, body: CreateSavingsGoalSchema): Promise<SavingsGoalDto> {
@@ -94,7 +74,7 @@ export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapSavingsGoalToDto(row)
     }
 
     async update(userId: string, id: string, body: UpdateSavingsGoalSchema): Promise<void> {

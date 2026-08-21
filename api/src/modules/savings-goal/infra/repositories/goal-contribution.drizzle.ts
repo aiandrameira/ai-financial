@@ -7,19 +7,7 @@ import type { IPaginated } from "@/http/api/response"
 import type { GoalContributionDto } from "../../app/dtos"
 import type { CreateGoalContributionSchema, FindGoalContributionsQuery } from "../../app/schemas"
 import type { GoalContributionRepository } from "../../domain/repositories"
-
-type GoalContributionRow = typeof goalContributions.$inferSelect
-
-function toDto(row: GoalContributionRow): GoalContributionDto {
-    return {
-        id: row.id,
-        goalId: row.goalId,
-        transactionId: row.transactionId,
-        amount: row.amount,
-        date: row.date.toISOString(),
-        createdAt: row.createdAt.toISOString(),
-    }
-}
+import { mapGoalContributionToDto } from "../mappers"
 
 export class GoalContributionDrizzleRepository implements GoalContributionRepository {
     async find(
@@ -40,7 +28,7 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
             db.select({ total: count() }).from(goalContributions).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return { data: rows.map(mapGoalContributionToDto), page: params.page, size: params.size, total }
     }
 
     async findAll(userId: string, goalId: string): Promise<GoalContributionDto[]> {
@@ -49,7 +37,7 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
             .from(goalContributions)
             .where(and(eq(goalContributions.userId, userId), eq(goalContributions.goalId, goalId)))
 
-        return rows.map(toDto)
+        return rows.map(mapGoalContributionToDto)
     }
 
     async get(userId: string, goalId: string, id: string): Promise<GoalContributionDto | null> {
@@ -64,7 +52,7 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
                 ),
             )
 
-        return row ? toDto(row) : null
+        return row ? mapGoalContributionToDto(row) : null
     }
 
     async create(userId: string, goalId: string, body: CreateGoalContributionSchema): Promise<GoalContributionDto> {
@@ -79,7 +67,7 @@ export class GoalContributionDrizzleRepository implements GoalContributionReposi
             })
             .returning()
 
-        return toDto(row)
+        return mapGoalContributionToDto(row)
     }
 
     async delete(userId: string, id: string): Promise<void> {

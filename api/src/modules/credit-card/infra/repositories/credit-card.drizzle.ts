@@ -8,25 +8,7 @@ import type { PaginationParams } from "@/http/api/schema/schemas"
 import type { CreditCardDto } from "../../app/dtos"
 import type { CreateCreditCardSchema, UpdateCreditCardSchema } from "../../app/schemas"
 import type { CreditCardRepository } from "../../domain/repositories"
-
-type CreditCardRow = typeof creditCards.$inferSelect
-
-function toDto(row: CreditCardRow): CreditCardDto {
-    return {
-        id: row.id,
-        name: row.name,
-        accountId: row.accountId,
-        institution: row.institution,
-        limitAmount: row.limitAmount,
-        closingDay: row.closingDay,
-        dueDay: row.dueDay,
-        network: row.network,
-        icon: row.icon,
-        archivedAt: row.archivedAt?.toISOString() ?? null,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
+import { mapCreditCardToDto } from "../mappers"
 
 export class CreditCardDrizzleRepository implements CreditCardRepository {
     async find(userId: string, params: PaginationParams): Promise<IPaginated<CreditCardDto>> {
@@ -43,7 +25,7 @@ export class CreditCardDrizzleRepository implements CreditCardRepository {
             db.select({ total: count() }).from(creditCards).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return { data: rows.map(mapCreditCardToDto), page: params.page, size: params.size, total }
     }
 
     async get(userId: string, id: string): Promise<CreditCardDto | null> {
@@ -52,7 +34,7 @@ export class CreditCardDrizzleRepository implements CreditCardRepository {
             .from(creditCards)
             .where(and(eq(creditCards.userId, userId), eq(creditCards.id, id)))
 
-        return row ? toDto(row) : null
+        return row ? mapCreditCardToDto(row) : null
     }
 
     async create(userId: string, body: CreateCreditCardSchema): Promise<CreditCardDto> {
@@ -71,7 +53,7 @@ export class CreditCardDrizzleRepository implements CreditCardRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapCreditCardToDto(row)
     }
 
     async update(userId: string, id: string, body: UpdateCreditCardSchema): Promise<void> {

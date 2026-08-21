@@ -8,21 +8,7 @@ import type { PaginationParams } from "@/http/api/schema/schemas"
 import type { CategoryDto } from "../../app/dtos"
 import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas"
 import type { CategoryRepository } from "../../domain/repositories"
-
-type CategoryRow = typeof categories.$inferSelect
-
-function toDto(row: CategoryRow): CategoryDto {
-    return {
-        id: row.id,
-        name: row.name,
-        type: row.type,
-        parentId: row.parentId,
-        icon: row.icon,
-        color: row.color,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
+import { mapCategoryToDto } from "../mappers"
 
 export class CategoryDrizzleRepository implements CategoryRepository {
     async find(userId: string, params: PaginationParams): Promise<IPaginated<CategoryDto>> {
@@ -39,7 +25,7 @@ export class CategoryDrizzleRepository implements CategoryRepository {
             db.select({ total: count() }).from(categories).where(where),
         ])
 
-        return { data: rows.map(toDto), page: params.page, size: params.size, total }
+        return { data: rows.map(mapCategoryToDto), page: params.page, size: params.size, total }
     }
 
     async get(userId: string, id: string): Promise<CategoryDto | null> {
@@ -48,7 +34,7 @@ export class CategoryDrizzleRepository implements CategoryRepository {
             .from(categories)
             .where(and(eq(categories.userId, userId), eq(categories.id, id)))
 
-        return row ? toDto(row) : null
+        return row ? mapCategoryToDto(row) : null
     }
 
     async create(userId: string, body: CreateCategorySchema): Promise<CategoryDto> {
@@ -64,7 +50,7 @@ export class CategoryDrizzleRepository implements CategoryRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapCategoryToDto(row)
     }
 
     async update(userId: string, id: string, body: UpdateCategorySchema): Promise<void> {

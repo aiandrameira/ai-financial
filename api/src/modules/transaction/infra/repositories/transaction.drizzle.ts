@@ -6,7 +6,6 @@ import type { IPaginated } from "@/http/api/response"
 
 import type { TransactionDto } from "../../app/dtos"
 import type { FindTransactionsQuery } from "../../app/schemas"
-import type { tpTransferMethodEnum } from "../../domain/enums/tp-transfer-method.enum"
 import { tpTransactionEnum } from "../../domain/enums/tp-transaction.enum"
 import type {
     CreateTransactionData,
@@ -14,38 +13,7 @@ import type {
     TransactionRepository,
     UpdateTransactionData,
 } from "../../domain/repositories"
-
-type TransactionRow = typeof transactions.$inferSelect
-
-function toDto(
-    row: TransactionRow,
-    transferMethod: tpTransferMethodEnum | null = null,
-    creditCardId: string | null = null,
-    installmentsTotal: number | null = null,
-): TransactionDto {
-    return {
-        id: row.id,
-        accountId: row.accountId,
-        invoiceId: row.invoiceId,
-        creditCardId,
-        categoryId: row.categoryId,
-        type: row.type,
-        status: row.status,
-        amount: row.amount,
-        description: row.description,
-        date: row.date.toISOString(),
-        tags: row.tags,
-        recurrenceId: row.recurrenceId,
-        transferId: row.transferId,
-        transferMethod,
-        installmentGroupId: row.installmentGroupId,
-        installmentNumber: row.installmentNumber,
-        installmentsTotal,
-        attachmentUrl: row.attachmentUrl,
-        createdAt: row.createdAt.toISOString(),
-        updatedAt: row.updatedAt.toISOString(),
-    }
-}
+import { mapTransactionToDto } from "../mappers"
 
 export class TransactionDrizzleRepository implements TransactionRepository {
     async find(userId: string, params: FindTransactionsQuery): Promise<IPaginated<TransactionDto>> {
@@ -80,7 +48,9 @@ export class TransactionDrizzleRepository implements TransactionRepository {
         ])
 
         return {
-            data: rows.map((row) => toDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal)),
+            data: rows.map((row) =>
+                mapTransactionToDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal),
+            ),
             page: params.page,
             size: params.size,
             total,
@@ -101,7 +71,9 @@ export class TransactionDrizzleRepository implements TransactionRepository {
             .leftJoin(installmentGroups, eq(transactions.installmentGroupId, installmentGroups.id))
             .where(and(eq(transactions.userId, userId), eq(transactions.id, id)))
 
-        return row ? toDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal) : null
+        return row
+            ? mapTransactionToDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal)
+            : null
     }
 
     async findLatestByRecurrence(userId: string, recurrenceId: string): Promise<TransactionDto | null> {
@@ -112,7 +84,7 @@ export class TransactionDrizzleRepository implements TransactionRepository {
             .orderBy(desc(transactions.date))
             .limit(1)
 
-        return row ? toDto(row) : null
+        return row ? mapTransactionToDto(row) : null
     }
 
     async create(userId: string, data: CreateTransactionData): Promise<TransactionDto> {
@@ -136,7 +108,7 @@ export class TransactionDrizzleRepository implements TransactionRepository {
             })
             .returning()
 
-        return toDto(row)
+        return mapTransactionToDto(row)
     }
 
     async createTransfer(
@@ -186,8 +158,8 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 .where(inArray(transactions.id, [source.id, destination.id]))
 
             return {
-                source: toDto({ ...source, transferId: transfer.id }, transfer.method),
-                destination: toDto({ ...destination, transferId: transfer.id }, transfer.method),
+                source: mapTransactionToDto({ ...source, transferId: transfer.id }, transfer.method),
+                destination: mapTransactionToDto({ ...destination, transferId: transfer.id }, transfer.method),
             }
         })
     }
