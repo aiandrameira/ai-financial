@@ -26,6 +26,6 @@ export const creditCards = pgTable("credit_cards", {
     network: creditCardNetworkPgEnum("network").notNull().default(tpCreditCardNetworkEnum.OTHER),
     icon: text("icon"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true, precision: 3 }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
