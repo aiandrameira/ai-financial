@@ -1,4 +1,4 @@
-import { FindResponse, GetResponse, IPaginated, PaginatedResponse } from "./api-response.interface";
+import { FindResponse, GetResponse } from "./api-response.interface";
 
 /**
  * Adapter para respostas da API do tipo Get
@@ -27,20 +27,5 @@ export class FindAdapter<T> {
 
     adapt(): T[] {
         return this.response?.data || [];
-    }
-}
-
-export class PaginationAdapter<T> {
-    private response: PaginatedResponse<T>;
-
-    constructor(response: unknown) {
-        this.response = response as PaginatedResponse<T>;
-    }
-
-    adapt(): IPaginated<T> {
-        if (!this.response) return {} as IPaginated<T>;
-
-        const { data, total, page, size } = this.response;
-        return { data, total, page, size };
     }
 }

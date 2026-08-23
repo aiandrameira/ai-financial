@@ -1,4 +1,4 @@
-import { FindAdapter, GetAdapter, PaginationAdapter } from "./api-response.adapter";
+import { FindAdapter, GetAdapter } from "./api-response.adapter";
 
 export class ResponseFactory {
     /**
@@ -21,25 +21,11 @@ export class ResponseFactory {
         return new FindAdapter<T>(response);
     }
 
-    /**
-     * Cria adapter para PaginatedResponse<T>
-     */
-    static createPaginatedAdapter<T>(response: unknown): PaginationAdapter<T> {
-        if (!this.isPaginatedResponse(response)) {
-            throw new Error("Resposta não é do tipo PaginatedResponse<T>");
-        }
-        return new PaginationAdapter<T>(response);
-    }
-
     private static isGetResponse(response: unknown): boolean {
         return response !== null && typeof response === "object" && "data" in response;
     }
 
     private static isFindResponse(response: unknown): boolean {
         return response !== null && typeof response === "object" && "data" in response;
-    }
-
-    private static isPaginatedResponse(response: unknown): boolean {
-        return response !== null && typeof response === "object" && "data" in response && "total" in response && "page" in response && "size" in response;
     }
 }

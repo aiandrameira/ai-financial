@@ -1,5 +1,5 @@
 import { ResponseFactory } from "./api-response.factory";
-import { CursorPaginated, CursorPaginatedResponse, IPaginated } from "./api-response.interface";
+import { CursorPaginated, CursorPaginatedResponse } from "./api-response.interface";
 
 /**
  * Mapeia automaticamente respostas GetResponse<T> para o tipo T
@@ -22,33 +22,16 @@ export function mapFind<T>(response: unknown): T[] {
 }
 
 /**
- * Mapeia automaticamente respostas PaginatedResponse<T> para IPaginated<T>
- * @param response - Resposta da API (auto-detecta se é PaginatedResponse)
- * @returns Estrutura paginada IPaginated<T>
+ * Mapeia automaticamente respostas CursorPaginatedResponse<T> para CursorPaginated<T>
+ * @param response - Resposta da API (formato de paginação por cursor)
+ * @returns Estrutura paginada CursorPaginated<T>
  */
-export function mapPaginated<T>(response: unknown): IPaginated<T> {
-    const adapter = ResponseFactory.createPaginatedAdapter<T>(response);
-    return adapter.adapt();
-}
-
 export function mapCursorPaginated<T>(response: unknown): CursorPaginated<T> {
-    if (isCursorPaginatedResponse<T>(response)) {
-        return { data: response.data, pagination: response.pagination };
+    if (!isCursorPaginatedResponse<T>(response)) {
+        throw new Error("Resposta inválida para paginação por cursor");
     }
 
-    if (isLegacyPaginatedResponse<T>(response)) {
-        return {
-            data: response.data,
-            pagination: {
-                limit: response.size,
-                next: null,
-                prev: null,
-                total: response.total,
-            },
-        };
-    }
-
-    throw new Error("Resposta inválida para paginação por cursor");
+    return { data: response.data, pagination: response.pagination };
 }
 
 function isCursorPaginatedResponse<T>(response: unknown): response is CursorPaginatedResponse<T> {
@@ -60,18 +43,5 @@ function isCursorPaginatedResponse<T>(response: unknown): response is CursorPagi
         "pagination" in response &&
         response.pagination !== null &&
         typeof response.pagination === "object"
-    );
-}
-
-function isLegacyPaginatedResponse<T>(response: unknown): response is { data: T[]; size: number; total: number } {
-    return (
-        response !== null &&
-        typeof response === "object" &&
-        "data" in response &&
-        Array.isArray(response.data) &&
-        "size" in response &&
-        typeof response.size === "number" &&
-        "total" in response &&
-        typeof response.total === "number"
     );
 }
