@@ -1,9 +1,8 @@
 import { Elysia } from "elysia"
 
 import { env } from "@/env"
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
 
-import { createCreditCardSchema, updateCreditCardSchema } from "../../app/schemas"
+import { createCreditCardSchema, findCreditCardsQuerySchema, updateCreditCardSchema } from "../../app/schemas"
 import {
     ArchiveCreditCardUseCase,
     CreateCreditCardUseCase,
@@ -31,10 +30,10 @@ const controller = buildController()
 
 export const creditCardRoutes = new Elysia({ prefix: "/credit-cards", tags: ["Credit Cards"] })
     .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: paginationQuerySchema,
+        query: findCreditCardsQuerySchema,
         detail: {
             summary: "List credit cards",
-            responses: { 200: { description: "Paginated list of credit cards" } },
+            responses: { 200: { description: "Cursor-paginated list of credit cards" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {

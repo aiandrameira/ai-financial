@@ -1,13 +1,12 @@
-import type { IPaginated } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { CreditCardDto } from "../dtos"
-import type { CreditCardRepository } from "../../domain/repositories"
+import type { CreditCardRepository, FindCreditCardsParams } from "../../domain/repositories"
 
 export class FindCreditCardsUseCase {
     constructor(private repository: CreditCardRepository) {}
 
-    async execute(userId: string, params: PaginationParams): Promise<IPaginated<CreditCardDto>> {
+    async execute(userId: string, params: FindCreditCardsParams): Promise<ICursorPaginated<CreditCardDto>> {
         return this.repository.find(userId, params)
     }
 }

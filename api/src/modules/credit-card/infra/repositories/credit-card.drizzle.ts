@@ -1,31 +1,50 @@
-import { and, count, eq, isNull } from "drizzle-orm"
+import { type AnyColumn, and, count, eq, isNull } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { creditCards } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { CreditCardDto } from "../../app/dtos"
 import type { CreateCreditCardSchema, UpdateCreditCardSchema } from "../../app/schemas"
-import type { CreditCardRepository } from "../../domain/repositories"
+import type { CreditCardRepository, CreditCardSortColumn, FindCreditCardsParams } from "../../domain/repositories"
 import { mapCreditCardToDto } from "../mappers"
 
+type SortStrategy = {
+    column: AnyColumn
+    getValue: (row: CreditCardDto) => string
+    parseValue?: (value: string | number) => unknown
+}
+
+const SORT_STRATEGIES: Record<CreditCardSortColumn, SortStrategy> = {
+    name: { column: creditCards.name, getValue: (row) => row.name },
+    network: { column: creditCards.network, getValue: (row) => row.network },
+    createdAt: { column: creditCards.createdAt, getValue: (row) => row.createdAt, parseValue: (value) => new Date(value) },
+}
+
 export class CreditCardDrizzleRepository implements CreditCardRepository {
-    async find(userId: string, params: PaginationParams): Promise<IPaginated<CreditCardDto>> {
-        const where = and(eq(creditCards.userId, userId), isNull(creditCards.archivedAt))
+    async find(userId: string, params: FindCreditCardsParams): Promise<ICursorPaginated<CreditCardDto>> {
+        const filterWhere = and(eq(creditCards.userId, userId), isNull(creditCards.archivedAt))
 
-        const [rows, [{ total }]] = await Promise.all([
-            db
-                .select()
-                .from(creditCards)
-                .where(where)
-                .orderBy(creditCards.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(creditCards).where(where),
-        ])
+        const strategy = SORT_STRATEGIES[params.sortBy]
+        const sort = { column: strategy.column, direction: params.sortDirection, parseValue: strategy.parseValue }
+        const cursorCondition = cursorWhere({ id: creditCards.id }, params, sort)
+        const pageWhere = cursorCondition ? and(filterWhere, cursorCondition) : filterWhere
 
-        return { data: rows.map(mapCreditCardToDto), page: params.page, size: params.size, total }
+        const rowsQuery = db
+            .select()
+            .from(creditCards)
+            .where(pageWhere)
+            .orderBy(...cursorOrder({ id: creditCards.id }, params, sort))
+            .limit(params.limit + 1)
+
+        const totalQuery = params.includeTotal ? db.select({ total: count() }).from(creditCards).where(filterWhere) : undefined
+
+        const [rows, totalResult] = await Promise.all([rowsQuery, totalQuery])
+        const total = totalResult ? totalResult[0].total : undefined
+        const data = rows.map(mapCreditCardToDto)
+
+        return buildCursorPage(data, params.limit, params, total, { getValue: strategy.getValue })
     }
 
     async get(userId: string, id: string): Promise<CreditCardDto | null> {
