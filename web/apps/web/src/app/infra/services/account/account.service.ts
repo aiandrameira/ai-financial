@@ -16,7 +16,7 @@ export class AccountService implements AccountRepository {
     #api = environment.apiUrl.concat("/accounts");
 
     find(): Observable<AccountDto[]> {
-        return this.#client.get(this.#api, { params: { page: 1, size: 100 } }).pipe(map(response => mapFind(response)));
+        return this.#client.get(this.#api, { params: { limit: 100 } }).pipe(map(response => mapFind(response)));
     }
 
     create(body: RequestAccountDto): Observable<AccountDto> {

@@ -16,7 +16,7 @@ export class CreditCardService implements CreditCardRepository {
     #api = environment.apiUrl.concat("/credit-cards");
 
     find(): Observable<CreditCardDto[]> {
-        return this.#client.get(this.#api, { params: { page: 1, size: 100 } }).pipe(map(response => mapFind(response)));
+        return this.#client.get(this.#api, { params: { limit: 100 } }).pipe(map(response => mapFind(response)));
     }
 
     create(body: RequestCreditCardDto): Observable<CreditCardDto> {
