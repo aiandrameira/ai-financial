@@ -1,9 +1,8 @@
 import { Elysia } from "elysia"
 
 import { env } from "@/env"
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
 
-import { createCategorySchema, updateCategorySchema } from "../../app/schemas"
+import { createCategorySchema, findCategoriesQuerySchema, updateCategorySchema } from "../../app/schemas"
 import {
     CreateCategoryUseCase,
     DeleteCategoryUseCase,
@@ -29,10 +28,10 @@ const controller = buildController()
 
 export const categoryRoutes = new Elysia({ prefix: "/categories", tags: ["Categories"] })
     .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: paginationQuerySchema,
+        query: findCategoriesQuerySchema,
         detail: {
             summary: "List categories",
-            responses: { 200: { description: "Paginated list of categories" } },
+            responses: { 200: { description: "Cursor-paginated list of categories" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {

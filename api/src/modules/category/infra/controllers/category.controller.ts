@@ -1,5 +1,4 @@
 import { ApiResponse } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
 
 import type { CreateCategorySchema, UpdateCategorySchema } from "../../app/schemas"
 import type {
@@ -9,6 +8,7 @@ import type {
     GetCategoryUseCase,
     UpdateCategoryUseCase,
 } from "../../app/usecases"
+import type { FindCategoriesParams } from "../../domain/repositories"
 
 type UseCases = {
     find: FindCategoriesUseCase
@@ -21,9 +21,9 @@ type UseCases = {
 export class CategoryController {
     constructor(private usecases: UseCases) {}
 
-    async find(userId: string, params: PaginationParams) {
+    async find(userId: string, params: FindCategoriesParams) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {
