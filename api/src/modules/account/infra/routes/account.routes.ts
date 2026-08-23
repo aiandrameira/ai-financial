@@ -1,9 +1,8 @@
 import { Elysia } from "elysia"
 
 import { env } from "@/env"
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
 
-import { createAccountSchema, updateAccountSchema } from "../../app/schemas"
+import { createAccountSchema, findAccountsQuerySchema, updateAccountSchema } from "../../app/schemas"
 import {
     ArchiveAccountUseCase,
     CreateAccountUseCase,
@@ -31,10 +30,10 @@ const controller = buildController()
 
 export const accountRoutes = new Elysia({ prefix: "/accounts", tags: ["Accounts"] })
     .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: paginationQuerySchema,
+        query: findAccountsQuerySchema,
         detail: {
             summary: "List accounts",
-            responses: { 200: { description: "Paginated list of accounts" } },
+            responses: { 200: { description: "Cursor-paginated list of accounts" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {

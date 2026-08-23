@@ -1,14 +1,26 @@
-import { and, count, eq, inArray, isNull, sql } from "drizzle-orm"
+import { type AnyColumn, and, count, eq, inArray, isNull, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { accounts, transactions } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { AccountDto } from "../../app/dtos"
 import type { CreateAccountSchema, UpdateAccountSchema } from "../../app/schemas"
-import type { AccountRepository } from "../../domain/repositories"
+import type { AccountRepository, AccountSortColumn, FindAccountsParams } from "../../domain/repositories"
 import { type Balances, mapAccountToDto } from "../mappers"
+
+type SortStrategy = {
+    column: AnyColumn
+    getValue: (row: AccountDto) => string
+    parseValue?: (value: string | number) => unknown
+}
+
+const SORT_STRATEGIES: Record<AccountSortColumn, SortStrategy> = {
+    name: { column: accounts.name, getValue: (row) => row.name },
+    type: { column: accounts.type, getValue: (row) => row.type },
+    createdAt: { column: accounts.createdAt, getValue: (row) => row.createdAt, parseValue: (value) => new Date(value) },
+}
 
 async function computeBalances(accountIds: string[]): Promise<Map<string, Balances>> {
     if (accountIds.length === 0) return new Map()
@@ -27,28 +39,30 @@ async function computeBalances(accountIds: string[]): Promise<Map<string, Balanc
 }
 
 export class AccountDrizzleRepository implements AccountRepository {
-    async find(userId: string, params: PaginationParams): Promise<IPaginated<AccountDto>> {
-        const where = and(eq(accounts.userId, userId), isNull(accounts.archivedAt))
+    async find(userId: string, params: FindAccountsParams): Promise<ICursorPaginated<AccountDto>> {
+        const filterWhere = and(eq(accounts.userId, userId), isNull(accounts.archivedAt))
 
-        const [rows, [{ total }]] = await Promise.all([
-            db
-                .select()
-                .from(accounts)
-                .where(where)
-                .orderBy(accounts.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(accounts).where(where),
-        ])
+        const strategy = SORT_STRATEGIES[params.sortBy]
+        const sort = { column: strategy.column, direction: params.sortDirection, parseValue: strategy.parseValue }
+        const cursorCondition = cursorWhere({ id: accounts.id }, params, sort)
+        const pageWhere = cursorCondition ? and(filterWhere, cursorCondition) : filterWhere
+
+        const rowsQuery = db
+            .select()
+            .from(accounts)
+            .where(pageWhere)
+            .orderBy(...cursorOrder({ id: accounts.id }, params, sort))
+            .limit(params.limit + 1)
+
+        const totalQuery = params.includeTotal ? db.select({ total: count() }).from(accounts).where(filterWhere) : undefined
+
+        const [rows, totalResult] = await Promise.all([rowsQuery, totalQuery])
+        const total = totalResult ? totalResult[0].total : undefined
 
         const balances = await computeBalances(rows.map((row) => row.id))
+        const data = rows.map((row) => mapAccountToDto(row, balances.get(row.id)))
 
-        return {
-            data: rows.map((row) => mapAccountToDto(row, balances.get(row.id))),
-            page: params.page,
-            size: params.size,
-            total,
-        }
+        return buildCursorPage(data, params.limit, params, total, { getValue: strategy.getValue })
     }
 
     async get(userId: string, id: string): Promise<AccountDto | null> {
