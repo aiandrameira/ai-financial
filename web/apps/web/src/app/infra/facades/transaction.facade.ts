@@ -1,42 +1,56 @@
-import { inject, Injectable, signal } from "@angular/core";
-import { finalize, forkJoin, Observable, tap } from "rxjs";
+import { httpResource } from "@angular/common/http";
+import { computed, inject, Injectable } from "@angular/core";
+import { Observable, tap } from "rxjs";
 
+import { mapFind } from "@core/ui";
 import type { AccountDto, CategoryDto, CreditCardDto, TransactionDto } from "@domain/repositories";
 import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
-import { AccountService, CategoryService, CreditCardService, TransactionService } from "@infra/services";
+import { environment } from "@env/environment";
+import { TransactionService } from "@infra/services";
+
+const TRANSACTIONS_API = environment.apiUrl.concat("/transactions");
+const ACCOUNTS_API = environment.apiUrl.concat("/accounts");
+const CATEGORIES_API = environment.apiUrl.concat("/categories");
+const CREDIT_CARDS_API = environment.apiUrl.concat("/credit-cards");
 
 @Injectable({ providedIn: "root" })
 export class TransactionFacade {
     #transactionService = inject(TransactionService);
-    #accountService = inject(AccountService);
-    #categoryService = inject(CategoryService);
-    #creditCardService = inject(CreditCardService);
 
-    #transactions = signal<TransactionDto[]>([]);
-    transactions = this.#transactions.asReadonly();
+    #transactionsResource = httpResource(() => ({ url: TRANSACTIONS_API, params: { page: 1, size: 100 } }), {
+        parse: response => mapFind<TransactionDto>(response),
+        defaultValue: [],
+    });
 
-    #accounts = signal<AccountDto[]>([]);
-    accounts = this.#accounts.asReadonly();
+    #accountsResource = httpResource(() => ({ url: ACCOUNTS_API, params: { limit: 100 } }), {
+        parse: response => mapFind<AccountDto>(response),
+        defaultValue: [],
+    });
 
-    #categories = signal<CategoryDto[]>([]);
-    categories = this.#categories.asReadonly();
+    #categoriesResource = httpResource(() => ({ url: CATEGORIES_API, params: { limit: 100 } }), {
+        parse: response => mapFind<CategoryDto>(response),
+        defaultValue: [],
+    });
 
-    #creditCards = signal<CreditCardDto[]>([]);
-    creditCards = this.#creditCards.asReadonly();
+    #creditCardsResource = httpResource(() => ({ url: CREDIT_CARDS_API, params: { limit: 100 } }), {
+        parse: response => mapFind<CreditCardDto>(response),
+        defaultValue: [],
+    });
 
-    #loading = signal(false);
-    loading = this.#loading.asReadonly();
+    readonly transactions = computed(() => (this.#transactionsResource.status() === "error" ? [] : this.#transactionsResource.value()));
+    readonly accounts = computed(() => (this.#accountsResource.status() === "error" ? [] : this.#accountsResource.value()));
+    readonly categories = computed(() => (this.#categoriesResource.status() === "error" ? [] : this.#categoriesResource.value()));
+    readonly creditCards = computed(() => (this.#creditCardsResource.status() === "error" ? [] : this.#creditCardsResource.value()));
+
+    readonly loading = computed(
+        () => this.#transactionsResource.isLoading() || this.#accountsResource.isLoading() || this.#categoriesResource.isLoading() || this.#creditCardsResource.isLoading(),
+    );
 
     load(): void {
-        this.#loading.set(true);
-        forkJoin([this.#transactionService.find(), this.#accountService.find(), this.#categoryService.find(), this.#creditCardService.find()])
-            .pipe(finalize(() => this.#loading.set(false)))
-            .subscribe(([transactions, accounts, categories, creditCards]) => {
-                this.#transactions.set(transactions);
-                this.#accounts.set(accounts);
-                this.#categories.set(categories);
-                this.#creditCards.set(creditCards);
-            });
+        this.#transactionsResource.reload();
+        this.#accountsResource.reload();
+        this.#categoriesResource.reload();
+        this.#creditCardsResource.reload();
     }
 
     create(input: RequestTransactionDto): Observable<TransactionDto> {
