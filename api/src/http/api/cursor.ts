@@ -1,17 +1,37 @@
-import { and, asc, desc, eq, gt, lt, or, type AnyColumn, type SQL } from "drizzle-orm"
 import { Buffer } from "node:buffer"
+import { and, asc, desc, eq, gt, lt, or, type AnyColumn, type SQL } from "drizzle-orm"
 
 import { ValidationError } from "@/http/errors/errors"
 
 import type { CursorPagination, ICursorPaginated } from "./response"
 
-export type CursorValue = { id: string }
+export type CursorValue = {
+    id: string
+}
+
 export type SortDirection = "asc" | "desc"
-export type CursorSortColumn = { column: AnyColumn; direction: SortDirection; parseValue?: (value: string | number) => unknown }
+
+export type CursorSortColumn = {
+    column: AnyColumn
+    direction: SortDirection
+    parseValue?: (value: string | number) => unknown
+}
+
 type CursorDirection = "next" | "previous"
-type DecodedCursor = { id: string; direction: CursorDirection; sortValue?: string | number }
-export type CursorQueryParams = { cursor?: string }
-export type CursorColumns = { id: AnyColumn }
+
+type DecodedCursor = {
+    id: string
+    direction: CursorDirection
+    sortValue?: string | number
+}
+
+export type CursorQueryParams = {
+    cursor?: string
+}
+
+export type CursorColumns = {
+    id: AnyColumn
+}
 
 export function encodeCursor(value: CursorValue & { sortValue?: string | number }, direction: CursorDirection): string {
     const payload: Record<string, unknown> = { id: value.id, direction }
@@ -54,7 +74,11 @@ export function isValidCursor(cursor: string): boolean {
     }
 }
 
-export function cursorWhere(columns: CursorColumns, { cursor }: CursorQueryParams, sort?: CursorSortColumn): SQL | undefined {
+export function cursorWhere(
+    columns: CursorColumns,
+    { cursor }: CursorQueryParams,
+    sort?: CursorSortColumn,
+): SQL | undefined {
     if (!cursor) return undefined
     const decoded = decodeCursor(cursor)
 
@@ -95,6 +119,7 @@ export function buildCursorPage<T extends CursorValue>(
     const hasNextPage = isPrevious ? Boolean(cursor) : hasExtraItem
     const makeCursor = (row: T, dir: CursorDirection) =>
         encodeCursor({ id: row.id, sortValue: sort?.getValue(row) }, dir)
+
     const pagination: CursorPagination = {
         limit,
         next: hasNextPage && data.length > 0 ? makeCursor(data[data.length - 1], "next") : null,

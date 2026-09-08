@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { AccountFilter } from "@domain/filters";
+import { AccountFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { AccountDto, AccountRepository } from "@domain/repositories";
 import type { RequestAccountDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -15,8 +18,13 @@ export class AccountService implements AccountRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/accounts");
 
-    find(): Observable<AccountDto[]> {
-        return this.#client.get(this.#api, { params: { limit: 100 } }).pipe(map(response => mapFind(response)));
+    find(filter: AccountFilterDto = {}): Observable<CursorPaginated<AccountDto>> {
+        const params = new AccountFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<AccountDto>(response)));
+    }
+
+    findAll(filter: AccountFilterDto = {}): Observable<AccountDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(body: RequestAccountDto): Observable<AccountDto> {

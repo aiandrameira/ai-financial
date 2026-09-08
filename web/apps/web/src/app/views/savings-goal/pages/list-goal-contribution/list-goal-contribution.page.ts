@@ -28,7 +28,7 @@ export class ListGoalContributionPage implements OnInit {
     readonly goal = computed(() => this.#goals().find(goal => goal.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#goalService.find().subscribe(goals => this.#goals.set(goals));
+        this.#goalService.findAll().subscribe(goals => this.#goals.set(goals));
     }
 
     protected goBack(): void {

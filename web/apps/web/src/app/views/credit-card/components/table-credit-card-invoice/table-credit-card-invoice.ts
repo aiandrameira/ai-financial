@@ -1,11 +1,11 @@
 import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { formatMonthYearDayjs } from "@core/helpers";
 import { DueSoonPipe, TrendPipe } from "@core/pipes";
-import { BadgeStInvoice, IconMaterial, TableImports } from "@core/ui";
+import { BadgeStInvoice, createCursorPageNav, IconMaterial, TableImports, toAiTablePagination } from "@core/ui";
 import { stInvoiceMap } from "@domain/enums";
 import { CreditCardInvoiceDto } from "@domain/schemas";
-import { CreditCardInvoiceService } from "@infra/services";
+import { CreditCardInvoiceFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-credit-card-invoice",
@@ -14,15 +14,18 @@ import { CreditCardInvoiceService } from "@infra/services";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableCreditCardInvoice {
-    #service = inject(CreditCardInvoiceService);
-
-    #invoices = signal<CreditCardInvoiceDto[]>([]);
+    #facade = inject(CreditCardInvoiceFacade);
 
     readonly creditCardId = input.required<string>();
     readonly view = output<CreditCardInvoiceDto>();
 
     protected readonly stInvoiceMap = stInvoiceMap;
     protected abs = (value: string): number => Math.abs(Number(value));
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorPageNav(this.#facade);
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<CreditCardInvoiceDto>[]>([
         { key: "referenceMonth", label: "Mês" },
@@ -33,14 +36,14 @@ export class TableCreditCardInvoice {
 
     readonly config = computed<AiTableConfig<CreditCardInvoiceDto>>(() => ({
         columns: this.columns(),
-        data: this.#invoices(),
+        data: this.#facade.invoices(),
     }));
 
     constructor() {
         effect(() => {
             const creditCardId = this.creditCardId();
             if (creditCardId) {
-                this.#service.find(creditCardId).subscribe(invoices => this.#invoices.set(invoices));
+                untracked(() => this.#facade.load(creditCardId));
             }
         });
     }

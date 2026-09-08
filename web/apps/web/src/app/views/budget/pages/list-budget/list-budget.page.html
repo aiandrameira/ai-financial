@@ -28,4 +28,19 @@
             <p>Nenhum orçamento cadastrado para {{ monthLabel() }}.</p>
         </div>
     }
+    <ai-pagination
+        mode="cursor"
+        [pageIndex]="paginationConfig().pageIndex ?? 1"
+        [pageSize]="paginationConfig().pageSize ?? 10"
+        [totalItems]="paginationConfig().totalItems ?? 0"
+        [hasNext]="paginationConfig().hasNext"
+        [hasPrevious]="paginationConfig().hasPrevious"
+        [disabled]="loading()"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        [showFirstLast]="false"
+        [showPageSize]="true"
+        [showInfo]="true"
+        (changePageIndex)="onPageChange($event)"
+        (changePageSize)="onPageSizeChange($event)"
+    />
 </div>

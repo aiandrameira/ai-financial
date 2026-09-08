@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 import { tpRecurrenceFrequencyEnum } from "../../domain/enums/tp-recurrence-frequency.enum"
 import { stTransactionEnum } from "../../domain/enums/st-transaction.enum"
@@ -51,7 +51,7 @@ export const createTransferSchema = z.object({
 
 export type CreateTransferSchema = z.infer<typeof createTransferSchema>
 
-export const findTransactionsQuerySchema = paginationQuerySchema.extend({
+export const findTransactionsQuerySchema = cursorPaginationQuerySchema.extend({
     accountId: z.string().optional(),
     invoiceId: z.string().optional(),
     categoryId: z.string().optional(),

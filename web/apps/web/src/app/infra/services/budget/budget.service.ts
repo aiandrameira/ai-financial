@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { BudgetFilter } from "@domain/filters";
+import { BudgetFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { BudgetDto, BudgetRepository } from "@domain/repositories";
 import type { RequestBudgetDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -15,8 +18,13 @@ export class BudgetService implements BudgetRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/budgets");
 
-    find(referenceMonth: string): Observable<BudgetDto[]> {
-        return this.#client.get(this.#api, { params: { page: 1, size: 100, referenceMonth } }).pipe(map(response => mapFind(response)));
+    find(filter: BudgetFilterDto = {}): Observable<CursorPaginated<BudgetDto>> {
+        const params = new BudgetFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<BudgetDto>(response)));
+    }
+
+    findAll(filter: BudgetFilterDto = {}): Observable<BudgetDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(body: RequestBudgetDto): Observable<BudgetDto> {

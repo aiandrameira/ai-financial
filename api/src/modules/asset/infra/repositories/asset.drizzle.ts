@@ -1,8 +1,9 @@
-import { and, count, eq } from "drizzle-orm"
+import { ilike, and, count, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { assets } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { AssetDto } from "../../app/dtos"
 import type { CreateAssetSchema, FindAssetsQuery, UpdateAssetSchema } from "../../app/schemas"
@@ -10,21 +11,30 @@ import type { AssetRepository } from "../../domain/repositories"
 import { mapAssetToDto } from "../mappers"
 
 export class AssetDrizzleRepository implements AssetRepository {
-    async find(userId: string, params: FindAssetsQuery): Promise<IPaginated<AssetDto>> {
-        const where = eq(assets.userId, userId)
+    async find(userId: string, params: FindAssetsQuery): Promise<ICursorPaginated<AssetDto>> {
+        const where = and(eq(assets.userId, userId), params.query ? ilike(assets.name, `%${params.query}%`) : undefined)
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: assets.createdAt,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: assets.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(assets)
-                .where(where)
-                .orderBy(assets.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(assets).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: assets.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(assets).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
-        return { data: rows.map(mapAssetToDto), page: params.page, size: params.size, total }
+        return buildCursorPage(rows.map(mapAssetToDto), params.limit, params, total, {
+            getValue: (row: AssetDto) => row.createdAt,
+        })
     }
 
     async get(userId: string, id: string): Promise<AssetDto | null> {

@@ -1,7 +1,13 @@
 import { ApiResponse } from "@/http/api/response"
 
 import type { CreateAssetSchema, FindAssetsQuery, UpdateAssetSchema } from "../../app/schemas"
-import type { CreateAssetUseCase, DeleteAssetUseCase, FindAssetsUseCase, GetAssetUseCase, UpdateAssetUseCase } from "../../app/usecases"
+import type {
+    CreateAssetUseCase,
+    DeleteAssetUseCase,
+    FindAssetsUseCase,
+    GetAssetUseCase,
+    UpdateAssetUseCase,
+} from "../../app/usecases"
 
 type UseCases = {
     find: FindAssetsUseCase
@@ -16,7 +22,7 @@ export class AssetController {
 
     async find(userId: string, params: FindAssetsQuery) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {

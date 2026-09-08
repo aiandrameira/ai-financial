@@ -1,4 +1,4 @@
-import { type AnyColumn, and, count, eq, isNull } from "drizzle-orm"
+import { ilike, type AnyColumn, and, count, eq, isNull } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { creditCards } from "@/db/schema"
@@ -19,12 +19,20 @@ type SortStrategy = {
 const SORT_STRATEGIES: Record<CreditCardSortColumn, SortStrategy> = {
     name: { column: creditCards.name, getValue: (row) => row.name },
     network: { column: creditCards.network, getValue: (row) => row.network },
-    createdAt: { column: creditCards.createdAt, getValue: (row) => row.createdAt, parseValue: (value) => new Date(value) },
+    createdAt: {
+        column: creditCards.createdAt,
+        getValue: (row) => row.createdAt,
+        parseValue: (value) => new Date(value),
+    },
 }
 
 export class CreditCardDrizzleRepository implements CreditCardRepository {
     async find(userId: string, params: FindCreditCardsParams): Promise<ICursorPaginated<CreditCardDto>> {
-        const filterWhere = and(eq(creditCards.userId, userId), isNull(creditCards.archivedAt))
+        const filterWhere = and(
+            eq(creditCards.userId, userId),
+            params.query ? ilike(creditCards.name, `%${params.query}%`) : undefined,
+            isNull(creditCards.archivedAt),
+        )
 
         const strategy = SORT_STRATEGIES[params.sortBy]
         const sort = { column: strategy.column, direction: params.sortDirection, parseValue: strategy.parseValue }
@@ -38,7 +46,9 @@ export class CreditCardDrizzleRepository implements CreditCardRepository {
             .orderBy(...cursorOrder({ id: creditCards.id }, params, sort))
             .limit(params.limit + 1)
 
-        const totalQuery = params.includeTotal ? db.select({ total: count() }).from(creditCards).where(filterWhere) : undefined
+        const totalQuery = params.includeTotal
+            ? db.select({ total: count() }).from(creditCards).where(filterWhere)
+            : undefined
 
         const [rows, totalResult] = await Promise.all([rowsQuery, totalQuery])
         const total = totalResult ? totalResult[0].total : undefined

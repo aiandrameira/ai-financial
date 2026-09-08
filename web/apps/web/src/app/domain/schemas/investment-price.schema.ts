@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 export const requestInvestmentPriceSchema = z.object({
     price: z.number().positive("Informe um valor maior que zero").default(0),
@@ -21,3 +22,10 @@ export const investmentPriceSchema = z.object({
 });
 
 export type InvestmentPriceDto = z.infer<typeof investmentPriceSchema>;
+
+export const investmentPriceFilterSchema = cursorFilterSchema;
+export type InvestmentPriceFilterDto = z.infer<typeof investmentPriceFilterSchema>;
+
+export function makeInvestmentPriceFilter(raw: Partial<InvestmentPriceFilterDto> = {}): InvestmentPriceFilterDto {
+    return investmentPriceFilterSchema.parse(raw);
+}

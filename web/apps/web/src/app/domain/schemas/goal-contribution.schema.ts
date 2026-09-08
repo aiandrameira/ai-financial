@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 export const requestGoalContributionSchema = z.object({
     amount: z.number().positive("Informe um valor maior que zero").default(0),
@@ -21,3 +22,10 @@ export const goalContributionSchema = z.object({
 });
 
 export type GoalContributionDto = z.infer<typeof goalContributionSchema>;
+
+export const goalContributionFilterSchema = cursorFilterSchema;
+export type GoalContributionFilterDto = z.infer<typeof goalContributionFilterSchema>;
+
+export function makeGoalContributionFilter(raw: Partial<GoalContributionFilterDto> = {}): GoalContributionFilterDto {
+    return goalContributionFilterSchema.parse(raw);
+}

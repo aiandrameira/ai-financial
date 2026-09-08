@@ -1,6 +1,6 @@
 import type { CreditCardRepository } from "@/modules/credit-card/domain/repositories"
 import { NotFoundError } from "@/http/errors/errors"
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { CreditCardInvoiceDto } from "../dtos"
 import type { FindCreditCardInvoicesQuery } from "../schemas"
@@ -16,7 +16,7 @@ export class FindCreditCardInvoicesUseCase {
         userId: string,
         creditCardId: string,
         params: FindCreditCardInvoicesQuery,
-    ): Promise<IPaginated<CreditCardInvoiceDto>> {
+    ): Promise<ICursorPaginated<CreditCardInvoiceDto>> {
         const creditCard = await this.creditCardRepository.get(userId, creditCardId)
         if (!creditCard) throw new NotFoundError("Credit card not found")
 

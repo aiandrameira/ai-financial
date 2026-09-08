@@ -1,27 +1,25 @@
 import type { AiIconType } from "@aiandralves/ai-ui";
-import { AiAlertDialogService, AiBadge, AiIcon, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiBadge, AiIcon, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { formatUtcDateDayjs } from "@core/helpers";
-import { TableImports } from "@core/ui";
+import { createCursorSearchController, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { SavingsGoalDto } from "@domain/schemas";
-import { SavingsGoalService } from "@infra/services";
+import { SavingsGoalFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-savings-goal",
-    imports: [TableImports, AiBadge, AiIcon],
+    imports: [TableImports, AiInput, AiBadge, AiIcon],
     templateUrl: "./table-savings-goal.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableSavingsGoal implements OnInit {
-    #service = inject(SavingsGoalService);
+    #facade = inject(SavingsGoalFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
-
-    #goals = signal<SavingsGoalDto[]>([]);
 
     readonly edit = output<SavingsGoalDto>();
 
@@ -32,6 +30,15 @@ export class TableSavingsGoal implements OnInit {
     protected dateLabel(date: string): string {
         return formatUtcDateDayjs(date);
     }
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<SavingsGoalDto>[]>([
         { key: "name", label: "Nome" },
@@ -44,7 +51,7 @@ export class TableSavingsGoal implements OnInit {
 
     readonly config = computed<AiTableConfig<SavingsGoalDto>>(() => ({
         columns: this.columns(),
-        data: this.#goals(),
+        data: this.#facade.goals(),
     }));
 
     ngOnInit() {
@@ -52,7 +59,7 @@ export class TableSavingsGoal implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(goals => this.#goals.set(goals));
+        this.#facade.load();
     }
 
     rowClick(item: SavingsGoalDto) {
@@ -75,7 +82,7 @@ export class TableSavingsGoal implements OnInit {
     }
 
     private _remove(item: SavingsGoalDto): void {
-        this.#service.delete(item.id).subscribe({
+        this.#facade.delete(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Meta apagada com sucesso." });
                 this.load();

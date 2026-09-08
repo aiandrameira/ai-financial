@@ -1,28 +1,35 @@
-import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { TrendPipe } from "@core/pipes";
-import { BadgeTpAccount, IconMaterial, TableImports } from "@core/ui";
+import { BadgeTpAccount, createCursorSearchController, IconMaterial, TableImports, toAiTablePagination } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { AccountDto } from "@domain/schemas";
-import { AccountService } from "@infra/services";
+import { AccountFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-account",
-    imports: [TableImports, BadgeTpAccount, IconMaterial, TrendPipe],
+    imports: [TableImports, AiInput, BadgeTpAccount, IconMaterial, TrendPipe],
     templateUrl: "./table-account.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableAccount implements OnInit {
-    #service = inject(AccountService);
+    #facade = inject(AccountFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
-
-    #accounts = signal<AccountDto[]>([]);
 
     readonly edit = output<AccountDto>();
 
     protected abs = (value: string): number => Math.abs(Number(value));
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<AccountDto>[]>([
         { key: "name", label: "Nome" },
@@ -34,7 +41,7 @@ export class TableAccount implements OnInit {
 
     readonly config = computed<AiTableConfig<AccountDto>>(() => ({
         columns: this.columns(),
-        data: this.#accounts(),
+        data: this.#facade.accounts(),
     }));
 
     ngOnInit() {
@@ -42,7 +49,7 @@ export class TableAccount implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(accounts => this.#accounts.set(accounts));
+        this.#facade.load();
     }
 
     rowClick(item: AccountDto) {
@@ -61,7 +68,7 @@ export class TableAccount implements OnInit {
     private _archive(item: AccountDto): void {
         if (!item.id) return;
 
-        this.#service.archive(item.id).subscribe({
+        this.#facade.archive(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Conta arquivada com sucesso." });
                 this.load();

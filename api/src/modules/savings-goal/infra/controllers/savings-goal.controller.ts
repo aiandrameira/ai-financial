@@ -34,7 +34,7 @@ export class SavingsGoalController {
 
     async find(userId: string, params: FindSavingsGoalsQuery) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {
@@ -59,7 +59,7 @@ export class SavingsGoalController {
 
     async findContributions(userId: string, goalId: string, params: FindGoalContributionsQuery) {
         const result = await this.usecases.findContributions.execute(userId, goalId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async createContribution(userId: string, goalId: string, body: CreateGoalContributionSchema) {

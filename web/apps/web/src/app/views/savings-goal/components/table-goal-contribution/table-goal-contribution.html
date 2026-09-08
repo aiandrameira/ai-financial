@@ -1,4 +1,4 @@
-<ai-table [config]="config()">
+<ai-table [pagination]="paginationConfig()" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" [config]="config()">
     <ng-template aiCellTemplate="date" let-item>
         <ai-badge variant="default">{{ dateLabel(item.date) }}</ai-badge>
     </ng-template>

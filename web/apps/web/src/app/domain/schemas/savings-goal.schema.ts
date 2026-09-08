@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 export const requestSavingsGoalSchema = z.object({
     id: z
@@ -33,3 +34,10 @@ export const savingsGoalSchema = z.object({
 });
 
 export type SavingsGoalDto = z.infer<typeof savingsGoalSchema>;
+
+export const savingsGoalFilterSchema = cursorFilterSchema;
+export type SavingsGoalFilterDto = z.infer<typeof savingsGoalFilterSchema>;
+
+export function makeSavingsGoalFilter(raw: Partial<SavingsGoalFilterDto> = {}): SavingsGoalFilterDto {
+    return savingsGoalFilterSchema.parse(raw);
+}

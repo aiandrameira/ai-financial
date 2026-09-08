@@ -59,7 +59,7 @@ export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings 
             summary: "List savings goals",
             description:
                 "Includes computed progress (current amount, remaining amount, percent) derived from contributions.",
-            responses: { 200: { description: "Paginated list of savings goals" } },
+            responses: { 200: { description: "Cursor-paginated list of savings goals" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
@@ -101,7 +101,7 @@ export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings 
         detail: {
             summary: "List goal contributions",
             responses: {
-                200: { description: "Paginated list of contributions" },
+                200: { description: "Cursor-paginated list of contributions" },
                 404: { description: "Savings goal not found" },
             },
         },

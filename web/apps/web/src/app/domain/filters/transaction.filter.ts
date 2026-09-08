@@ -1,25 +1,14 @@
 import { FilterManager, FilterProps } from "@core/ui";
-
-export type TransactionFilterProps = {
-    page?: number;
-    size?: number;
-    accountId?: string;
-    invoiceId?: string;
-    categoryId?: string;
-    status?: string;
-    type?: string;
-    dateFrom?: string;
-    dateTo?: string;
-};
+import { TransactionFilterDto } from "@domain/schemas";
 
 export class TransactionFilter {
-    props: TransactionFilterProps;
+    props: TransactionFilterDto;
 
-    constructor(props: TransactionFilterProps) {
+    constructor(props: TransactionFilterDto) {
         this.props = props;
     }
 
     getFilters(): FilterManager {
-        return new FilterProps<TransactionFilterProps>(this.props).getFilters();
+        return new FilterProps<TransactionFilterDto>(this.props).getFilters();
     }
 }

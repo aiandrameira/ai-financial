@@ -1,8 +1,8 @@
-import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { TpTransactionPipe } from "@core/pipes";
-import { BadgeStTransaction, BadgeTpTransaction, IconMaterial, TableImports } from "@core/ui";
+import { BadgeStTransaction, BadgeTpTransaction, createCursorSearchController, IconMaterial, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpTransactionEnum, tpTransactionTrendIconMap } from "@domain/enums";
 import { TransactionDto } from "@domain/schemas";
@@ -10,7 +10,7 @@ import { TransactionFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-transaction",
-    imports: [TableImports, BadgeTpTransaction, BadgeStTransaction, TpTransactionPipe, IconMaterial],
+    imports: [TableImports, AiInput, BadgeTpTransaction, BadgeStTransaction, TpTransactionPipe, IconMaterial],
     templateUrl: "./table-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,6 +23,15 @@ export class TableTransaction implements OnInit {
 
     protected abs = (value: number): number => Math.abs(value);
     protected trendIcon = (type: tpTransactionEnum): string | null => tpTransactionTrendIconMap.get(type) ?? null;
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<TransactionDto>[]>([
         { key: "date", label: "Data" },

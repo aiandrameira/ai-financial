@@ -1,8 +1,9 @@
-import { and, eq, inArray, isNotNull, sql } from "drizzle-orm"
+import { ilike, count, and, eq, inArray, isNotNull, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { loanInstallments, loans } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { LoanDto } from "../../app/dtos"
 import type { CreateLoanSchema, FindLoansQuery, UpdateLoanSchema } from "../../app/schemas"
@@ -26,28 +27,36 @@ async function computePaidPrincipal(loanIds: string[]): Promise<Map<string, stri
 }
 
 export class LoanDrizzleRepository implements LoanRepository {
-    async find(userId: string, params: FindLoansQuery): Promise<IPaginated<LoanDto>> {
-        const where = eq(loans.userId, userId)
+    async find(userId: string, params: FindLoansQuery): Promise<ICursorPaginated<LoanDto>> {
+        const where = and(eq(loans.userId, userId), params.query ? ilike(loans.name, `%${params.query}%`) : undefined)
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: loans.createdAt,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: loans.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(loans)
-                .where(where)
-                .orderBy(loans.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: sql<number>`count(*)` }).from(loans).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: loans.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(loans).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
         const paidPrincipal = await computePaidPrincipal(rows.map((row) => row.id))
 
-        return {
-            data: rows.map((row) => mapLoanToDto(row, paidPrincipal.get(row.id))),
-            page: params.page,
-            size: params.size,
-            total: Number(total),
-        }
+        return buildCursorPage(
+            rows.map((row) => mapLoanToDto(row, paidPrincipal.get(row.id))),
+            params.limit,
+            params,
+            total,
+            { getValue: (row: LoanDto) => row.createdAt },
+        )
     }
 
     async get(userId: string, id: string): Promise<LoanDto | null> {

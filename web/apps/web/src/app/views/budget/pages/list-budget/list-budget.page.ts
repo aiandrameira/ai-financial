@@ -1,10 +1,10 @@
-import { AiAlertDialogService, AiButton, AiDialogService, AiIcon, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiButton, AiDialogService, AiIcon, AiPagination, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from "@angular/core";
 import dayjs from "dayjs";
 
 import { formatMonthYearDayjs } from "@core/helpers";
-import { AiHeading } from "@core/ui";
+import { AiHeading, createCursorPageNav, toAiTablePagination } from "@core/ui";
 import { formDialogOptions, removeAlertDialog } from "@core/utils";
 import { BudgetDto } from "@domain/schemas";
 import { BudgetFacade } from "@infra/facades";
@@ -13,7 +13,7 @@ import { CardBudget, DialogBudget } from "../../components";
 
 @Component({
     selector: "ai-list-budget",
-    imports: [AiHeading, AiButton, AiIcon, CardBudget],
+    imports: [AiHeading, AiButton, AiIcon, AiPagination, CardBudget],
     templateUrl: "./list-budget.page.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -29,6 +29,10 @@ export class ListBudgetPage implements OnInit {
 
     readonly budgets = this.#facade.budgets;
     readonly loading = this.#facade.loading;
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorPageNav(this.#facade);
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     ngOnInit(): void {
         this.load(this.currentMonth());

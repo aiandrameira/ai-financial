@@ -1,8 +1,9 @@
-import { and, count, desc, eq, gte, inArray, lte } from "drizzle-orm"
+import { ilike, and, count, desc, eq, gte, inArray, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { creditCardInvoices, installmentGroups, transactions, transfers } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { TransactionDto } from "../../app/dtos"
 import type { FindTransactionsQuery } from "../../app/schemas"
@@ -16,9 +17,10 @@ import type {
 import { mapTransactionToDto } from "../mappers"
 
 export class TransactionDrizzleRepository implements TransactionRepository {
-    async find(userId: string, params: FindTransactionsQuery): Promise<IPaginated<TransactionDto>> {
+    async find(userId: string, params: FindTransactionsQuery): Promise<ICursorPaginated<TransactionDto>> {
         const where = and(
             eq(transactions.userId, userId),
+            params.query ? ilike(transactions.description, `%${params.query}%`) : undefined,
             params.accountId ? eq(transactions.accountId, params.accountId) : undefined,
             params.invoiceId ? eq(transactions.invoiceId, params.invoiceId) : undefined,
             params.categoryId ? eq(transactions.categoryId, params.categoryId) : undefined,
@@ -28,7 +30,14 @@ export class TransactionDrizzleRepository implements TransactionRepository {
             params.dateTo ? lte(transactions.date, params.dateTo) : undefined,
         )
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: transactions.date,
+            direction: "desc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: transactions.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select({
                     transaction: transactions,
@@ -40,21 +49,22 @@ export class TransactionDrizzleRepository implements TransactionRepository {
                 .leftJoin(transfers, eq(transactions.transferId, transfers.id))
                 .leftJoin(creditCardInvoices, eq(transactions.invoiceId, creditCardInvoices.id))
                 .leftJoin(installmentGroups, eq(transactions.installmentGroupId, installmentGroups.id))
-                .where(where)
-                .orderBy(desc(transactions.date), desc(transactions.createdAt))
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(transactions).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: transactions.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(transactions).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
-        return {
-            data: rows.map((row) =>
+        return buildCursorPage(
+            rows.map((row) =>
                 mapTransactionToDto(row.transaction, row.transferMethod, row.creditCardId, row.installmentsTotal),
             ),
-            page: params.page,
-            size: params.size,
+            params.limit,
+            params,
             total,
-        }
+            { getValue: (row: TransactionDto) => row.date },
+        )
     }
 
     async get(userId: string, id: string): Promise<TransactionDto | null> {

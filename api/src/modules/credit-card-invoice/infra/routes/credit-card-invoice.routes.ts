@@ -37,7 +37,7 @@ export const creditCardInvoiceRoutes = new Elysia({
         query: findCreditCardInvoicesQuerySchema,
         detail: {
             summary: "List credit card invoices",
-            responses: { 200: { description: "Paginated list of invoices" } },
+            responses: { 200: { description: "Cursor-paginated list of invoices" } },
         },
     })
     .get("/current", ({ params }) => controller.getCurrent(env.DEV_USER_ID, params.id), {
@@ -56,7 +56,12 @@ export const creditCardInvoiceRoutes = new Elysia({
         body: payCreditCardInvoiceSchema,
         detail: {
             summary: "Pay a credit card invoice",
-            description: "Creates a settlement transaction on the card's associated account and marks the invoice as paid.",
-            responses: { 200: { description: "Invoice paid" }, 404: { description: "Invoice not found" }, 409: { description: "Invoice already paid" } },
+            description:
+                "Creates a settlement transaction on the card's associated account and marks the invoice as paid.",
+            responses: {
+                200: { description: "Invoice paid" },
+                404: { description: "Invoice not found" },
+                409: { description: "Invoice already paid" },
+            },
         },
     })

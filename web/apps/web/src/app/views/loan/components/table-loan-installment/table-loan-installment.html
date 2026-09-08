@@ -1,4 +1,4 @@
-<ai-table [config]="config()" (rowClick)="rowClick($event)">
+<ai-table [pagination]="paginationConfig()" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="number" let-item>
         <ai-badge variant="default">{{ item.number }}/{{ config().data.length }}</ai-badge>
     </ng-template>

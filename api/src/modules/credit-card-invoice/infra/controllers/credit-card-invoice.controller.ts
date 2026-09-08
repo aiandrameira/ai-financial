@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import type { CursorPaginationParams } from "@/http/api/schema/schemas"
 
 import type { PayCreditCardInvoiceSchema } from "../../app/schemas"
 import type {
@@ -19,9 +19,9 @@ type UseCases = {
 export class CreditCardInvoiceController {
     constructor(private usecases: UseCases) {}
 
-    async find(userId: string, creditCardId: string, params: PaginationParams) {
+    async find(userId: string, creditCardId: string, params: CursorPaginationParams) {
         const result = await this.usecases.find.execute(userId, creditCardId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, creditCardId: string, id: string) {

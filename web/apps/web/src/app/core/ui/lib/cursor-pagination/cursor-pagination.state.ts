@@ -1,4 +1,4 @@
-import { signal } from "@angular/core";
+import { computed, signal } from "@angular/core";
 
 import { CursorPagination } from "../api-response";
 
@@ -19,6 +19,13 @@ export class CursorPaginationState<TSort extends string = never> {
     readonly pageSize = this.#pageSize.asReadonly();
     readonly sortBy = this.#sortBy.asReadonly();
     readonly sortDirection = this.#sortDirection.asReadonly();
+
+    /** Derived from `getPagination`/`isLoading`, so every facade satisfies `CursorTablePaginationSource` for free. */
+    readonly #pagination = computed(() => this.#getPagination());
+    readonly hasNext = computed(() => this.#pagination().next !== null);
+    readonly hasPrevious = computed(() => this.#pagination().prev !== null);
+    readonly total = computed(() => this.#pagination().total ?? 0);
+    readonly loading = computed(() => this.#isLoading());
 
     constructor(config: CursorPaginationConfig<TSort>) {
         this.#getPagination = config.getPagination;

@@ -1,4 +1,4 @@
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 import { NotFoundError } from "@/http/errors/errors"
 
 import type { InvestmentMovementDto } from "../dtos"
@@ -11,7 +11,11 @@ export class FindInvestmentMovementsUseCase {
         private assetRepository: InvestmentAssetRepository,
     ) {}
 
-    async execute(userId: string, investmentId: string, params: FindInvestmentMovementsQuery): Promise<IPaginated<InvestmentMovementDto>> {
+    async execute(
+        userId: string,
+        investmentId: string,
+        params: FindInvestmentMovementsQuery,
+    ): Promise<ICursorPaginated<InvestmentMovementDto>> {
         const asset = await this.assetRepository.get(userId, investmentId)
         if (!asset) throw new NotFoundError("Investment asset not found")
 

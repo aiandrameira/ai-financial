@@ -1,10 +1,12 @@
+import type { CursorPaginated } from "@core/ui";
 import type { Observable } from "rxjs";
+import type { TransactionFilterDto } from "../schemas";
 
-import type { TransactionFilterProps } from "../filters";
 import type { RequestTransactionDto, RequestTransferDto, TransactionDto } from "../schemas";
 
 export interface TransactionRepository {
-    find(filter?: TransactionFilterProps): Observable<TransactionDto[]>;
+    find(filter?: TransactionFilterDto): Observable<CursorPaginated<TransactionDto>>;
+    findAll(filter?: TransactionFilterDto): Observable<TransactionDto[]>;
     create(input: RequestTransactionDto): Observable<TransactionDto>;
     update(id: string, input: RequestTransactionDto): Observable<void>;
     createTransfer(input: RequestTransferDto): Observable<void>;

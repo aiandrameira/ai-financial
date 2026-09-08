@@ -1,8 +1,8 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
-export const findCreditCardInvoicesQuerySchema = paginationQuerySchema
+export const findCreditCardInvoicesQuerySchema = cursorPaginationQuerySchema
 
 export type FindCreditCardInvoicesQuery = z.infer<typeof findCreditCardInvoicesQuerySchema>
 

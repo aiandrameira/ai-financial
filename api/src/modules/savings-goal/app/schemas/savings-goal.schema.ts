@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 export const createSavingsGoalSchema = z.object({
     name: z.string().min(1).max(120),
@@ -16,7 +16,7 @@ export const updateSavingsGoalSchema = createSavingsGoalSchema
 
 export type UpdateSavingsGoalSchema = z.infer<typeof updateSavingsGoalSchema>
 
-export const findSavingsGoalsQuerySchema = paginationQuerySchema
+export const findSavingsGoalsQuerySchema = cursorPaginationQuerySchema
 
 export type FindSavingsGoalsQuery = z.infer<typeof findSavingsGoalsQuerySchema>
 
@@ -28,8 +28,6 @@ export const createGoalContributionSchema = z.object({
 
 export type CreateGoalContributionSchema = z.infer<typeof createGoalContributionSchema>
 
-export const findGoalContributionsQuerySchema = paginationQuerySchema.extend({
-    size: z.coerce.number().int().min(1).max(300).default(10),
-})
+export const findGoalContributionsQuerySchema = cursorPaginationQuerySchema
 
 export type FindGoalContributionsQuery = z.infer<typeof findGoalContributionsQuerySchema>

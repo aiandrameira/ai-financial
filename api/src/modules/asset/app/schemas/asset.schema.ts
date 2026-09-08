@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 import { tpAssetEnum } from "../../domain/enums"
 
@@ -18,6 +18,6 @@ export const updateAssetSchema = createAssetSchema
 
 export type UpdateAssetSchema = z.infer<typeof updateAssetSchema>
 
-export const findAssetsQuerySchema = paginationQuerySchema
+export const findAssetsQuerySchema = cursorPaginationQuerySchema
 
 export type FindAssetsQuery = z.infer<typeof findAssetsQuerySchema>

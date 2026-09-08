@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { InvestmentFilter } from "@domain/filters";
+import { InvestmentFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { InvestmentAssetDto, InvestmentRepository } from "@domain/repositories";
 import type { RequestInvestmentAssetDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -15,8 +18,13 @@ export class InvestmentService implements InvestmentRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/investments");
 
-    find(): Observable<InvestmentAssetDto[]> {
-        return this.#client.get(this.#api, { params: { page: 1, size: 100 } }).pipe(map(response => mapFind(response)));
+    find(filter: InvestmentFilterDto = {}): Observable<CursorPaginated<InvestmentAssetDto>> {
+        const params = new InvestmentFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<InvestmentAssetDto>(response)));
+    }
+
+    findAll(filter: InvestmentFilterDto = {}): Observable<InvestmentAssetDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     get(id: string): Observable<InvestmentAssetDto> {

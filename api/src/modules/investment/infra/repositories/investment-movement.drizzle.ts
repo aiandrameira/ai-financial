@@ -1,8 +1,9 @@
-import { and, count, desc, eq } from "drizzle-orm"
+import { and, count, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { investmentMovements } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { InvestmentMovementDto } from "../../app/dtos"
 import type { CreateInvestmentMovementSchema, FindInvestmentMovementsQuery } from "../../app/schemas"
@@ -14,21 +15,30 @@ export class InvestmentMovementDrizzleRepository implements InvestmentMovementRe
         userId: string,
         investmentId: string,
         params: FindInvestmentMovementsQuery,
-    ): Promise<IPaginated<InvestmentMovementDto>> {
+    ): Promise<ICursorPaginated<InvestmentMovementDto>> {
         const where = and(eq(investmentMovements.userId, userId), eq(investmentMovements.investmentId, investmentId))
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: investmentMovements.date,
+            direction: "desc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: investmentMovements.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(investmentMovements)
-                .where(where)
-                .orderBy(desc(investmentMovements.date))
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(investmentMovements).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: investmentMovements.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(investmentMovements).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
-        return { data: rows.map(mapInvestmentMovementToDto), page: params.page, size: params.size, total }
+        return buildCursorPage(rows.map(mapInvestmentMovementToDto), params.limit, params, total, {
+            getValue: (row: InvestmentMovementDto) => row.date,
+        })
     }
 
     async findAll(userId: string, investmentId: string): Promise<InvestmentMovementDto[]> {

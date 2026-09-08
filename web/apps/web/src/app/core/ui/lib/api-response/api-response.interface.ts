@@ -6,6 +6,16 @@ export interface Meta {
     type: MetaType;
 }
 
+export interface GetResponse<T> {
+    data: T;
+    meta: Meta;
+}
+
+export interface FindResponse<T> {
+    data: T[];
+    meta: Meta;
+}
+
 export interface CursorPagination {
     limit: number;
     next: string | null;
@@ -19,16 +29,6 @@ export interface CursorPaginated<T> {
 }
 
 export interface CursorPaginatedResponse<T> extends CursorPaginated<T> {
-    meta: Meta;
-}
-
-export interface GetResponse<T> {
-    data: T;
-    meta: Meta;
-}
-
-export interface FindResponse<T> {
-    data: T[];
     meta: Meta;
 }
 

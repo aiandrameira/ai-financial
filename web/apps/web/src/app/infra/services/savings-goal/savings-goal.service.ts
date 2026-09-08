@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { SavingsGoalFilter } from "@domain/filters";
+import { SavingsGoalFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { SavingsGoalDto, SavingsGoalRepository } from "@domain/repositories";
 import type { RequestSavingsGoalDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -25,8 +28,13 @@ export class SavingsGoalService implements SavingsGoalRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/goals");
 
-    find(): Observable<SavingsGoalDto[]> {
-        return this.#client.get(this.#api, { params: { page: 1, size: 100 } }).pipe(map(response => mapFind(response)));
+    find(filter: SavingsGoalFilterDto = {}): Observable<CursorPaginated<SavingsGoalDto>> {
+        const params = new SavingsGoalFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<SavingsGoalDto>(response)));
+    }
+
+    findAll(filter: SavingsGoalFilterDto = {}): Observable<SavingsGoalDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(body: RequestSavingsGoalDto): Observable<SavingsGoalDto> {

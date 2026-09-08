@@ -1,4 +1,12 @@
-<ai-table [config]="config()" (rowClick)="rowClick($event)">
+<div class="flex flex-wrap items-center gap-3 mb-4">
+    <ai-input class="w-full sm:w-2/5" variant="outlined" label="Filtrar por nome" icon="search" [value]="query()" (valueChange)="onQueryChange($event)" />
+    <div class="flex gap-2 border-l-2 border-border pl-2">
+        <ai-button variant="default" size="sm" icon="brush-3" (click)="clear()">Limpar</ai-button>
+        <ai-button variant="primary" size="sm" icon="search" (click)="search()">Filtrar</ai-button>
+    </div>
+</div>
+
+<ai-table [pagination]="paginationConfig()" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="type" let-item>
         <ai-badge-tp-asset [type]="item.type" />
     </ng-template>

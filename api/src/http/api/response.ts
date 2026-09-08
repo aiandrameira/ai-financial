@@ -1,24 +1,9 @@
 type ResponseType = "success" | "error"
 
-export type IPaginated<T> = {
-    data: T[]
-    total: number
-    page: number
-    size: number
-}
-
 type Meta = {
     message: string
     status: number
     type: ResponseType
-}
-
-export type PaginatedResponse<T> = {
-    data: T[]
-    page: number
-    size: number
-    total: number
-    meta: Meta
 }
 
 export type CursorPagination = {
@@ -59,16 +44,6 @@ export type ErrorResponse = {
 }
 
 export const ApiResponse = {
-    paginated<T>(result: IPaginated<T>, message = "OK", status = 200): PaginatedResponse<T> {
-        return {
-            data: result.data,
-            page: result.page,
-            size: result.size,
-            total: result.total,
-            meta: { message, status, type: "success" },
-        }
-    },
-
     cursorPaginated<T>(result: ICursorPaginated<T>, message = "OK", status = 200): CursorPaginatedResponse<T> {
         return {
             data: result.data,

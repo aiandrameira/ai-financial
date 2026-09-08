@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 import { tpLoanEnum } from "../../domain/enums"
 
@@ -24,13 +24,11 @@ export const updateLoanSchema = z.object({
 
 export type UpdateLoanSchema = z.infer<typeof updateLoanSchema>
 
-export const findLoansQuerySchema = paginationQuerySchema
+export const findLoansQuerySchema = cursorPaginationQuerySchema
 
 export type FindLoansQuery = z.infer<typeof findLoansQuerySchema>
 
-export const findLoanInstallmentsQuerySchema = paginationQuerySchema.extend({
-    size: z.coerce.number().int().min(1).max(600).default(10),
-})
+export const findLoanInstallmentsQuerySchema = cursorPaginationQuerySchema
 
 export type FindLoanInstallmentsQuery = z.infer<typeof findLoanInstallmentsQuerySchema>
 

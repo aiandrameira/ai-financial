@@ -70,7 +70,7 @@ export const transactionRoutes = new Elysia({ prefix: "/transactions", tags: ["T
         detail: {
             summary: "List transactions",
             description: "Supports filters by account, category, status, type, and date range.",
-            responses: { 200: { description: "Paginated list of transactions" } },
+            responses: { 200: { description: "Cursor-paginated list of transactions" } },
         },
     })
     .post(

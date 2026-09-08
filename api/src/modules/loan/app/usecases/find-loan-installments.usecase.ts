@@ -1,5 +1,5 @@
-import type { IPaginated } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import type { ICursorPaginated } from "@/http/api/response"
+import type { CursorPaginationParams } from "@/http/api/schema/schemas"
 import { NotFoundError } from "@/http/errors/errors"
 
 import type { LoanInstallmentDto } from "../dtos"
@@ -11,7 +11,11 @@ export class FindLoanInstallmentsUseCase {
         private loanRepository: LoanRepository,
     ) {}
 
-    async execute(userId: string, loanId: string, params: PaginationParams): Promise<IPaginated<LoanInstallmentDto>> {
+    async execute(
+        userId: string,
+        loanId: string,
+        params: CursorPaginationParams,
+    ): Promise<ICursorPaginated<LoanInstallmentDto>> {
         const loan = await this.loanRepository.get(userId, loanId)
         if (!loan) throw new NotFoundError("Loan not found")
 

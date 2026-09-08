@@ -2,7 +2,8 @@ import { and, count, eq, inArray, isNull, lte, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { creditCardInvoices, creditCards, transactions } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { CreditCardInvoiceDto } from "../../app/dtos"
 import type { FindCreditCardInvoicesQuery } from "../../app/schemas"
@@ -30,28 +31,36 @@ export class CreditCardInvoiceDrizzleRepository implements CreditCardInvoiceRepo
         userId: string,
         creditCardId: string,
         params: FindCreditCardInvoicesQuery,
-    ): Promise<IPaginated<CreditCardInvoiceDto>> {
+    ): Promise<ICursorPaginated<CreditCardInvoiceDto>> {
         const where = and(eq(creditCardInvoices.userId, userId), eq(creditCardInvoices.creditCardId, creditCardId))
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: creditCardInvoices.referenceMonth,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: creditCardInvoices.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(creditCardInvoices)
-                .where(where)
-                .orderBy(creditCardInvoices.referenceMonth)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(creditCardInvoices).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: creditCardInvoices.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(creditCardInvoices).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
         const totals = await computeTotals(rows.map((row) => row.id))
 
-        return {
-            data: rows.map((row) => mapCreditCardInvoiceToDto(row, totals.get(row.id))),
-            page: params.page,
-            size: params.size,
+        return buildCursorPage(
+            rows.map((row) => mapCreditCardInvoiceToDto(row, totals.get(row.id))),
+            params.limit,
+            params,
             total,
-        }
+            { getValue: (row: CreditCardInvoiceDto) => row.referenceMonth },
+        )
     }
 
     async get(userId: string, creditCardId: string, id: string): Promise<CreditCardInvoiceDto | null> {

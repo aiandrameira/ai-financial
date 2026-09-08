@@ -1,4 +1,4 @@
-import { type AnyColumn, and, count, eq } from "drizzle-orm"
+import { ilike, type AnyColumn, and, count, eq } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { categories } from "@/db/schema"
@@ -19,12 +19,19 @@ type SortStrategy = {
 const SORT_STRATEGIES: Record<CategorySortColumn, SortStrategy> = {
     name: { column: categories.name, getValue: (row) => row.name },
     type: { column: categories.type, getValue: (row) => row.type },
-    createdAt: { column: categories.createdAt, getValue: (row) => row.createdAt, parseValue: (value) => new Date(value) },
+    createdAt: {
+        column: categories.createdAt,
+        getValue: (row) => row.createdAt,
+        parseValue: (value) => new Date(value),
+    },
 }
 
 export class CategoryDrizzleRepository implements CategoryRepository {
     async find(userId: string, params: FindCategoriesParams): Promise<ICursorPaginated<CategoryDto>> {
-        const filterWhere = eq(categories.userId, userId)
+        const filterWhere = and(
+            eq(categories.userId, userId),
+            params.query ? ilike(categories.name, `%${params.query}%`) : undefined,
+        )
 
         const strategy = SORT_STRATEGIES[params.sortBy]
         const sort = { column: strategy.column, direction: params.sortDirection, parseValue: strategy.parseValue }
@@ -38,7 +45,9 @@ export class CategoryDrizzleRepository implements CategoryRepository {
             .orderBy(...cursorOrder({ id: categories.id }, params, sort))
             .limit(params.limit + 1)
 
-        const totalQuery = params.includeTotal ? db.select({ total: count() }).from(categories).where(filterWhere) : undefined
+        const totalQuery = params.includeTotal
+            ? db.select({ total: count() }).from(categories).where(filterWhere)
+            : undefined
 
         const [rows, totalResult] = await Promise.all([rowsQuery, totalQuery])
         const total = totalResult ? totalResult[0].total : undefined

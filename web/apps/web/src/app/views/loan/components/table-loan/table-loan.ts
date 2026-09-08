@@ -1,30 +1,37 @@
-import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { BadgeTpLoan, TableImports } from "@core/ui";
+import { BadgeTpLoan, createCursorSearchController, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpLoanMap } from "@domain/enums";
 import { LoanDto } from "@domain/schemas";
-import { LoanService } from "@infra/services";
+import { LoanFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-loan",
-    imports: [TableImports, BadgeTpLoan],
+    imports: [TableImports, AiInput, BadgeTpLoan],
     templateUrl: "./table-loan.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableLoan implements OnInit {
-    #service = inject(LoanService);
+    #facade = inject(LoanFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
 
-    #loans = signal<LoanDto[]>([]);
-
     protected readonly tpLoanMap = tpLoanMap;
 
     readonly edit = output<LoanDto>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<LoanDto>[]>([
         { key: "name", label: "Nome" },
@@ -38,7 +45,7 @@ export class TableLoan implements OnInit {
 
     readonly config = computed<AiTableConfig<LoanDto>>(() => ({
         columns: this.columns(),
-        data: this.#loans(),
+        data: this.#facade.loans(),
     }));
 
     ngOnInit() {
@@ -46,7 +53,7 @@ export class TableLoan implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(loans => this.#loans.set(loans));
+        this.#facade.load();
     }
 
     rowClick(item: LoanDto) {
@@ -69,7 +76,7 @@ export class TableLoan implements OnInit {
     }
 
     private _remove(item: LoanDto): void {
-        this.#service.delete(item.id).subscribe({
+        this.#facade.delete(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Financiamento apagado com sucesso." });
                 this.load();

@@ -1,5 +1,4 @@
-import { HttpResourceRef } from "@angular/common/http";
-import { computed, effect, signal, Signal } from "@angular/core";
+import { computed, effect, ResourceRef, signal, Signal } from "@angular/core";
 
 import { CursorPaginated } from "../api-response";
 
@@ -14,7 +13,7 @@ export interface LastGoodCursorPage<T> {
     readonly total: Signal<number>;
 }
 
-export function toLastGoodCursorPage<T>(resource: HttpResourceRef<CursorPaginated<T>>, emptyValue: CursorPaginated<T>): LastGoodCursorPage<T> {
+export function toLastGoodCursorPage<T>(resource: ResourceRef<CursorPaginated<T>>, emptyValue: CursorPaginated<T>): LastGoodCursorPage<T> {
     const lastGood = signal(emptyValue);
     const list = computed(() => (resource.status() === "resolved" ? resource.value() : lastGood()));
 

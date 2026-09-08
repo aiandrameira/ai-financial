@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { tpLoanEnum } from "../enums";
 
@@ -37,3 +38,10 @@ export const loanSchema = z.object({
 });
 
 export type LoanDto = z.infer<typeof loanSchema>;
+
+export const loanFilterSchema = cursorFilterSchema;
+export type LoanFilterDto = z.infer<typeof loanFilterSchema>;
+
+export function makeLoanFilter(raw: Partial<LoanFilterDto> = {}): LoanFilterDto {
+    return loanFilterSchema.parse(raw);
+}

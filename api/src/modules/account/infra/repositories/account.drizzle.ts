@@ -1,4 +1,4 @@
-import { type AnyColumn, and, count, eq, inArray, isNull, sql } from "drizzle-orm"
+import { ilike, type AnyColumn, and, count, eq, inArray, isNull, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { accounts, transactions } from "@/db/schema"
@@ -40,7 +40,11 @@ async function computeBalances(accountIds: string[]): Promise<Map<string, Balanc
 
 export class AccountDrizzleRepository implements AccountRepository {
     async find(userId: string, params: FindAccountsParams): Promise<ICursorPaginated<AccountDto>> {
-        const filterWhere = and(eq(accounts.userId, userId), isNull(accounts.archivedAt))
+        const filterWhere = and(
+            eq(accounts.userId, userId),
+            params.query ? ilike(accounts.name, `%${params.query}%`) : undefined,
+            isNull(accounts.archivedAt),
+        )
 
         const strategy = SORT_STRATEGIES[params.sortBy]
         const sort = { column: strategy.column, direction: params.sortDirection, parseValue: strategy.parseValue }
@@ -54,7 +58,9 @@ export class AccountDrizzleRepository implements AccountRepository {
             .orderBy(...cursorOrder({ id: accounts.id }, params, sort))
             .limit(params.limit + 1)
 
-        const totalQuery = params.includeTotal ? db.select({ total: count() }).from(accounts).where(filterWhere) : undefined
+        const totalQuery = params.includeTotal
+            ? db.select({ total: count() }).from(accounts).where(filterWhere)
+            : undefined
 
         const [rows, totalResult] = await Promise.all([rowsQuery, totalQuery])
         const total = totalResult ? totalResult[0].total : undefined

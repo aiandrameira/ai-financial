@@ -1,10 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { TransactionFilter } from "@domain/filters";
+import { TransactionFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
-import { TransactionFilter, type TransactionFilterProps } from "@domain/filters";
+import { mapGet } from "@core/ui";
 import type { TransactionDto, TransactionRepository } from "@domain/repositories";
 import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -16,9 +18,13 @@ export class TransactionService implements TransactionRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/transactions");
 
-    find(filter: TransactionFilterProps = {}): Observable<TransactionDto[]> {
-        const params = new TransactionFilter({ page: 1, size: 100, ...filter }).getFilters().toParams();
-        return this.#client.get(this.#api, { params }).pipe(map(response => mapFind(response)));
+    find(filter: TransactionFilterDto = {}): Observable<CursorPaginated<TransactionDto>> {
+        const params = new TransactionFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<TransactionDto>(response)));
+    }
+
+    findAll(filter: TransactionFilterDto = {}): Observable<TransactionDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(body: RequestTransactionDto): Observable<TransactionDto> {

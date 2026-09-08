@@ -1,7 +1,13 @@
 import { ApiResponse } from "@/http/api/response"
 
 import type { CreateBudgetSchema, FindBudgetsQuery, UpdateBudgetSchema } from "../../app/schemas"
-import type { CreateBudgetUseCase, DeleteBudgetUseCase, FindBudgetsUseCase, GetBudgetUseCase, UpdateBudgetUseCase } from "../../app/usecases"
+import type {
+    CreateBudgetUseCase,
+    DeleteBudgetUseCase,
+    FindBudgetsUseCase,
+    GetBudgetUseCase,
+    UpdateBudgetUseCase,
+} from "../../app/usecases"
 
 type UseCases = {
     find: FindBudgetsUseCase
@@ -16,7 +22,7 @@ export class BudgetController {
 
     async find(userId: string, params: FindBudgetsQuery) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {

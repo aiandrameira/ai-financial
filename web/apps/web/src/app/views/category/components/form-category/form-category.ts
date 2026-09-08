@@ -44,7 +44,7 @@ export class FormCategory {
     readonly selectedParent = computed(() => this.parentOptions().find(item => item.id === this.form().value().parentId) ?? null);
 
     constructor() {
-        this.#service.find().subscribe(categories => this.#categories.set(categories));
+        this.#service.findAll().subscribe(categories => this.#categories.set(categories));
 
         effect(() => {
             const category = this.category();

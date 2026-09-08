@@ -82,7 +82,7 @@ core/
 
 - **Schemas (`domain/schemas/`)**: Use `zod` for validation. Export the schema, the TypeScript type inferred via `z.infer`, and a factory function (e.g., `makeTransaction`) to parse raw data and instantiate default states for UI;
 - **Repositories (`domain/repositories/`)**: Interfaces defining data contracts returning Observables (e.g., `TransactionRepository`);
-- **Filters (`domain/filters/`)**: One class per entity that needs query filtering beyond plain pagination, wrapping a `FilterProps<Props>` from `@core/ui` and exposing `getFilters(): FilterManager` (see `core/ui/lib/filter/filter.md`). Only add one when there's a real filter surface (e.g. `TransactionFilter` for account/category/status/date-range) — plain pagination-only lists just pass `{ page, size }` directly, no filter class needed;
+- **Filters (`domain/filters/`)**: One class per entity for typed query filtering and cursor pagination, wrapping a `FilterProps<Props>` from `@core/ui` and exposing `getFilters(): FilterManager` (see `core/ui/lib/filter/filter.md`). Only add one when there's a real filter surface (e.g. `TransactionFilter` for account/category/status/date-range) — plain pagination-only lists just pass `{ page, size }` directly, no filter class needed;
 - **Enums (`domain/enums/`)**: Definition of constant values and maps for UI display.
 
 Structure:
@@ -101,8 +101,8 @@ domain/
 
 ## 5. Infra Layer (`infra/`)
 
-- **Services (`infra/services/`)**: Implement Domain Repository interfaces. Handle HTTP requests (using `#client = inject(HttpClient)`, `#api = environment.apiUrl.concat("/entities")`), pointed at `ai-financial/api`. Unwrap the API's response envelope with `mapGet`/`mapFind`/`mapPaginated` from `@core/ui` inside `.pipe(map(...))` — never read `response.data` by hand. Group files by entity (e.g., `services/transaction/transaction.service.ts` and `.spec.ts`);
-- **Facades (`infra/facades/`)**: Encapsulate logic for external services to avoid bloating components, orchestrating Services and signal-based state: `providedIn: 'root'`, a private writable signal, a public `.asReadonly()`, `load()`/mutation methods that resubscribe.
+- **Services (`infra/services/`)**: Implement Domain Repository interfaces. Handle HTTP requests (using `#client = inject(HttpClient)`, `#api = environment.apiUrl.concat("/entities")`), pointed at `ai-financial/api`. Unwrap the API's response envelope with `mapGet`/`mapFind`/`mapCursorPaginated` from `@core/ui` inside `.pipe(map(...))` — never read `response.data` by hand. Group files by entity (e.g., `services/transaction/transaction.service.ts` and `.spec.ts`);
+- **Facades (`infra/facades/`)**: Encapsulate logic for external services to avoid bloating components, orchestrating Services and signal-based state: `providedIn: 'root'`, `CursorPaginationState`, `rxResource`, and `toLastGoodCursorPage`; mutations reset and reload the list. Tables use `toAiTablePagination` and the shared cursor controllers (see `docs/pagination.md` at the repository root).
 
 _Note: Provide barrel files (`index.ts`) for public folders to export relevant symbols._
 

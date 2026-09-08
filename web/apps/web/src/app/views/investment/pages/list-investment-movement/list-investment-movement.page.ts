@@ -31,7 +31,7 @@ export class ListInvestmentMovementPage implements OnInit {
     readonly asset = computed(() => this.#assets().find(asset => asset.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#investmentService.find().subscribe(assets => this.#assets.set(assets));
+        this.#investmentService.findAll().subscribe(assets => this.#assets.set(assets));
     }
 
     protected goBack(): void {

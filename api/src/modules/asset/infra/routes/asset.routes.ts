@@ -3,7 +3,13 @@ import { Elysia } from "elysia"
 import { env } from "@/env"
 
 import { createAssetSchema, findAssetsQuerySchema, updateAssetSchema } from "../../app/schemas"
-import { CreateAssetUseCase, DeleteAssetUseCase, FindAssetsUseCase, GetAssetUseCase, UpdateAssetUseCase } from "../../app/usecases"
+import {
+    CreateAssetUseCase,
+    DeleteAssetUseCase,
+    FindAssetsUseCase,
+    GetAssetUseCase,
+    UpdateAssetUseCase,
+} from "../../app/usecases"
 import { AssetController } from "../controllers/asset.controller"
 import { AssetDrizzleRepository } from "../repositories/asset.drizzle"
 
@@ -26,8 +32,9 @@ export const assetRoutes = new Elysia({ prefix: "/assets", tags: ["Assets"] })
         query: findAssetsQuerySchema,
         detail: {
             summary: "List assets",
-            description: "Assets used to reflect net worth alongside linked debts (e.g. a financed vehicle or property).",
-            responses: { 200: { description: "Paginated list of assets" } },
+            description:
+                "Assets used to reflect net worth alongside linked debts (e.g. a financed vehicle or property).",
+            responses: { 200: { description: "Cursor-paginated list of assets" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {

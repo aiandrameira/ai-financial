@@ -1,4 +1,4 @@
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { TransactionDto } from "../../app/dtos"
 import type { FindTransactionsQuery } from "../../app/schemas"
@@ -45,7 +45,7 @@ export type UpdateTransactionData = Partial<{
 }>
 
 export interface TransactionRepository {
-    find(userId: string, params: FindTransactionsQuery): Promise<IPaginated<TransactionDto>>
+    find(userId: string, params: FindTransactionsQuery): Promise<ICursorPaginated<TransactionDto>>
     get(userId: string, id: string): Promise<TransactionDto | null>
     findLatestByRecurrence(userId: string, recurrenceId: string): Promise<TransactionDto | null>
     create(userId: string, data: CreateTransactionData): Promise<TransactionDto>

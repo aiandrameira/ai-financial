@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { tpCategoryEnum } from "../enums";
 
@@ -31,3 +32,13 @@ export const categorySchema = z.object({
 });
 
 export type CategoryDto = z.infer<typeof categorySchema>;
+
+export const categoryFilterSchema = cursorFilterSchema.extend({
+    sortBy: z.enum(["name", "type", "createdAt"]).optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+});
+export type CategoryFilterDto = z.infer<typeof categoryFilterSchema>;
+
+export function makeCategoryFilter(raw: Partial<CategoryFilterDto> = {}): CategoryFilterDto {
+    return categoryFilterSchema.parse(raw);
+}

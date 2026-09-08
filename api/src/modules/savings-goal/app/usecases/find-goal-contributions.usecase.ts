@@ -1,4 +1,4 @@
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 import { NotFoundError } from "@/http/errors/errors"
 import type { GoalContributionRepository, SavingsGoalRepository } from "../../domain/repositories"
 import type { GoalContributionDto } from "../dtos"
@@ -14,7 +14,7 @@ export class FindGoalContributionsUseCase {
         userId: string,
         goalId: string,
         params: FindGoalContributionsQuery,
-    ): Promise<IPaginated<GoalContributionDto>> {
+    ): Promise<ICursorPaginated<GoalContributionDto>> {
         const goal = await this.goalRepository.get(userId, goalId)
         if (!goal) throw new NotFoundError("Savings goal not found")
 

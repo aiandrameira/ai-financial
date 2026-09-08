@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { stTransactionEnum, tpTransactionEnum, tpTransferMethodEnum } from "../enums";
 
@@ -67,3 +68,18 @@ export const transactionSchema = z.object({
 });
 
 export type TransactionDto = z.infer<typeof transactionSchema>;
+
+export const transactionFilterSchema = cursorFilterSchema.extend({
+    accountId: z.string().optional(),
+    invoiceId: z.string().optional(),
+    categoryId: z.string().optional(),
+    status: z.enum(stTransactionEnum).optional(),
+    type: z.enum(tpTransactionEnum).optional(),
+    dateFrom: z.string().optional(),
+    dateTo: z.string().optional(),
+});
+export type TransactionFilterDto = z.infer<typeof transactionFilterSchema>;
+
+export function makeTransactionFilter(raw: Partial<TransactionFilterDto> = {}): TransactionFilterDto {
+    return transactionFilterSchema.parse(raw);
+}

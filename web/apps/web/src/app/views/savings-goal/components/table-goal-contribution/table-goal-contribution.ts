@@ -1,11 +1,11 @@
 import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from "@angular/core";
 import { formatUtcDateDayjs } from "@core/helpers";
-import { TableImports } from "@core/ui";
+import { createCursorPageNav, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { GoalContributionDto } from "@domain/schemas";
-import { GoalContributionService } from "@infra/services";
+import { GoalContributionFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-goal-contribution",
@@ -14,13 +14,16 @@ import { GoalContributionService } from "@infra/services";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableGoalContribution {
-    #service = inject(GoalContributionService);
+    #facade = inject(GoalContributionFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
 
-    #contributions = signal<GoalContributionDto[]>([]);
-
     readonly goalId = input.required<string>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorPageNav(this.#facade);
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<GoalContributionDto>[]>([
         { key: "date", label: "Data" },
@@ -30,20 +33,20 @@ export class TableGoalContribution {
 
     readonly config = computed<AiTableConfig<GoalContributionDto>>(() => ({
         columns: this.columns(),
-        data: this.#contributions(),
+        data: this.#facade.contributions(),
     }));
 
     constructor() {
         effect(() => {
             const goalId = this.goalId();
             if (goalId) {
-                this.load();
+                untracked(() => this.load());
             }
         });
     }
 
     load(): void {
-        this.#service.find(this.goalId()).subscribe(contributions => this.#contributions.set(contributions));
+        this.#facade.load(this.goalId());
     }
 
     protected dateLabel(date: string): string {
@@ -58,7 +61,7 @@ export class TableGoalContribution {
     }
 
     private _remove(item: GoalContributionDto): void {
-        this.#service.delete(this.goalId(), item.id).subscribe({
+        this.#facade.delete(this.goalId(), item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Aporte apagado com sucesso." });
                 this.load();

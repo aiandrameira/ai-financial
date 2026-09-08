@@ -54,14 +54,18 @@ export const investmentRoutes = new Elysia({ prefix: "/investments", tags: ["Inv
         query: findInvestmentAssetsQuerySchema,
         detail: {
             summary: "List investment assets",
-            description: "Includes computed position (quantity, average price, invested amount, current value, profit/loss) derived from movements and the latest manual price.",
-            responses: { 200: { description: "Paginated list of investment assets" } },
+            description:
+                "Includes computed position (quantity, average price, invested amount, current value, profit/loss) derived from movements and the latest manual price.",
+            responses: { 200: { description: "Cursor-paginated list of investment assets" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Get investment asset",
-            responses: { 200: { description: "Investment asset found" }, 404: { description: "Investment asset not found" } },
+            responses: {
+                200: { description: "Investment asset found" },
+                404: { description: "Investment asset not found" },
+            },
         },
     })
     .post(
@@ -82,21 +86,30 @@ export const investmentRoutes = new Elysia({ prefix: "/investments", tags: ["Inv
         body: updateInvestmentAssetSchema,
         detail: {
             summary: "Update investment asset",
-            responses: { 200: { description: "Investment asset updated" }, 404: { description: "Investment asset not found" } },
+            responses: {
+                200: { description: "Investment asset updated" },
+                404: { description: "Investment asset not found" },
+            },
         },
     })
     .delete("/:id", ({ params }) => controller.delete(env.DEV_USER_ID, params.id), {
         detail: {
             summary: "Delete investment asset",
             description: "Cascades to delete all of its movements and price history.",
-            responses: { 200: { description: "Investment asset deleted" }, 404: { description: "Investment asset not found" } },
+            responses: {
+                200: { description: "Investment asset deleted" },
+                404: { description: "Investment asset not found" },
+            },
         },
     })
     .get("/:id/movements", ({ params, query }) => controller.findMovements(env.DEV_USER_ID, params.id, query), {
         query: findInvestmentMovementsQuerySchema,
         detail: {
             summary: "List investment movements",
-            responses: { 200: { description: "Paginated list of movements" }, 404: { description: "Investment asset not found" } },
+            responses: {
+                200: { description: "Cursor-paginated list of movements" },
+                404: { description: "Investment asset not found" },
+            },
         },
     })
     .post(
@@ -109,22 +122,34 @@ export const investmentRoutes = new Elysia({ prefix: "/investments", tags: ["Inv
             body: createInvestmentMovementSchema,
             detail: {
                 summary: "Create investment movement",
-                description: "Buy/contribution increase the position; sell/withdrawal decrease it and are rejected if they exceed the current quantity.",
-                responses: { 201: { description: "Movement created" }, 400: { description: "Quantity exceeds current position" }, 404: { description: "Investment asset not found" } },
+                description:
+                    "Buy/contribution increase the position; sell/withdrawal decrease it and are rejected if they exceed the current quantity.",
+                responses: {
+                    201: { description: "Movement created" },
+                    400: { description: "Quantity exceeds current position" },
+                    404: { description: "Investment asset not found" },
+                },
             },
         },
     )
-    .delete("/:id/movements/:movementId", ({ params }) => controller.deleteMovement(env.DEV_USER_ID, params.id, params.movementId), {
-        detail: {
-            summary: "Delete investment movement",
-            responses: { 200: { description: "Movement deleted" }, 404: { description: "Movement not found" } },
+    .delete(
+        "/:id/movements/:movementId",
+        ({ params }) => controller.deleteMovement(env.DEV_USER_ID, params.id, params.movementId),
+        {
+            detail: {
+                summary: "Delete investment movement",
+                responses: { 200: { description: "Movement deleted" }, 404: { description: "Movement not found" } },
+            },
         },
-    })
+    )
     .get("/:id/prices", ({ params, query }) => controller.findPrices(env.DEV_USER_ID, params.id, query), {
         query: findInvestmentPricesQuerySchema,
         detail: {
             summary: "List investment price history",
-            responses: { 200: { description: "Paginated list of prices" }, 404: { description: "Investment asset not found" } },
+            responses: {
+                200: { description: "Cursor-paginated list of prices" },
+                404: { description: "Investment asset not found" },
+            },
         },
     })
     .post(
@@ -137,7 +162,8 @@ export const investmentRoutes = new Elysia({ prefix: "/investments", tags: ["Inv
             body: createInvestmentPriceSchema,
             detail: {
                 summary: "Add a manual price point",
-                description: "Used as the current value reference for the asset until an automatic quote source is added (future phase).",
+                description:
+                    "Used as the current value reference for the asset until an automatic quote source is added (future phase).",
                 responses: { 201: { description: "Price added" }, 404: { description: "Investment asset not found" } },
             },
         },

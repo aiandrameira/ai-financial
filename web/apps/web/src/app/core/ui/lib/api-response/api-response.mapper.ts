@@ -21,17 +21,12 @@ export function mapFind<T>(response: unknown): T[] {
     return adapter.adapt();
 }
 
-/**
- * Mapeia automaticamente respostas CursorPaginatedResponse<T> para CursorPaginated<T>
- * @param response - Resposta da API (formato de paginação por cursor)
- * @returns Estrutura paginada CursorPaginated<T>
- */
 export function mapCursorPaginated<T>(response: unknown): CursorPaginated<T> {
-    if (!isCursorPaginatedResponse<T>(response)) {
-        throw new Error("Resposta inválida para paginação por cursor");
+    if (isCursorPaginatedResponse<T>(response)) {
+        return { data: response.data, pagination: response.pagination };
     }
 
-    return { data: response.data, pagination: response.pagination };
+    throw new Error("Resposta inválida para paginação por cursor");
 }
 
 function isCursorPaginatedResponse<T>(response: unknown): response is CursorPaginatedResponse<T> {

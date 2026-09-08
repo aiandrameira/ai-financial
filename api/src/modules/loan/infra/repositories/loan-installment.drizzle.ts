@@ -2,29 +2,39 @@ import { and, count, eq, isNull, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { loanInstallments, loans } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
+import type { CursorPaginationParams } from "@/http/api/schema/schemas"
 
 import type { LoanInstallmentDto } from "../../app/dtos"
 import type { DueSoonInstallmentDto, LoanInstallmentRepository } from "../../domain/repositories"
 import { mapLoanInstallmentToDto } from "../mappers"
 
 export class LoanInstallmentDrizzleRepository implements LoanInstallmentRepository {
-    async find(userId: string, loanId: string, params: PaginationParams): Promise<IPaginated<LoanInstallmentDto>> {
+    async find(
+        userId: string,
+        loanId: string,
+        params: CursorPaginationParams,
+    ): Promise<ICursorPaginated<LoanInstallmentDto>> {
         const where = and(eq(loanInstallments.userId, userId), eq(loanInstallments.loanId, loanId))
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = { column: loanInstallments.number, direction: "asc" as const }
+        const pageWhere = and(where, cursorWhere({ id: loanInstallments.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(loanInstallments)
-                .where(where)
-                .orderBy(loanInstallments.number)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(loanInstallments).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: loanInstallments.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(loanInstallments).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
-        return { data: rows.map(mapLoanInstallmentToDto), page: params.page, size: params.size, total }
+        return buildCursorPage(rows.map(mapLoanInstallmentToDto), params.limit, params, total, {
+            getValue: (row: LoanInstallmentDto) => row.number,
+        })
     }
 
     async get(userId: string, loanId: string, id: string): Promise<LoanInstallmentDto | null> {

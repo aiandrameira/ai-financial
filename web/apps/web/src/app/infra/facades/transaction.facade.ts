@@ -1,82 +1,95 @@
-import { httpResource } from "@angular/common/http";
-import { computed, inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
 import { Observable, tap } from "rxjs";
 
-import { mapFind } from "@core/ui";
-import type { AccountDto, CategoryDto, CreditCardDto, TransactionDto } from "@domain/repositories";
-import type { RequestTransactionDto, RequestTransferDto } from "@domain/schemas";
-import { environment } from "@env/environment";
-import { TransactionService } from "@infra/services";
+import { CursorPaginationState, DEFAULT_PAGE_SIZE, emptyCursorPage, toLastGoodCursorPage } from "@core/ui";
+import { AccountDto, CategoryDto, CreditCardDto, RequestTransactionDto, RequestTransferDto, TransactionDto, TransactionFilterDto } from "@domain/schemas";
+import { AccountService, CategoryService, CreditCardService, TransactionService } from "@infra/services";
 
-const TRANSACTIONS_API = environment.apiUrl.concat("/transactions");
-const ACCOUNTS_API = environment.apiUrl.concat("/accounts");
-const CATEGORIES_API = environment.apiUrl.concat("/categories");
-const CREDIT_CARDS_API = environment.apiUrl.concat("/credit-cards");
+const EMPTY_LIST = emptyCursorPage<TransactionDto>(DEFAULT_PAGE_SIZE);
 
 @Injectable({ providedIn: "root" })
-export class TransactionFacade {
-    #transactionService = inject(TransactionService);
+export class TransactionFacade extends CursorPaginationState {
+    #service = inject(TransactionService);
+    #filter = signal<TransactionFilterDto>({});
 
-    #transactionsResource = httpResource(() => ({ url: TRANSACTIONS_API, params: { page: 1, size: 100 } }), {
-        parse: response => mapFind<TransactionDto>(response),
-        defaultValue: [],
+    #listResource = rxResource({
+        params: () => ({ ...this.#filter(), ...this.toQueryParams() }) as TransactionFilterDto,
+        stream: ({ params }) => this.#service.find(params),
+        defaultValue: EMPTY_LIST,
     });
+    #page = toLastGoodCursorPage(this.#listResource, EMPTY_LIST);
+    readonly transactions = computed(() => this.#page.list().data);
 
-    #accountsResource = httpResource(() => ({ url: ACCOUNTS_API, params: { limit: 100 } }), {
-        parse: response => mapFind<AccountDto>(response),
-        defaultValue: [],
-    });
-
-    #categoriesResource = httpResource(() => ({ url: CATEGORIES_API, params: { limit: 100 } }), {
-        parse: response => mapFind<CategoryDto>(response),
-        defaultValue: [],
-    });
-
-    #creditCardsResource = httpResource(() => ({ url: CREDIT_CARDS_API, params: { limit: 100 } }), {
-        parse: response => mapFind<CreditCardDto>(response),
-        defaultValue: [],
-    });
-
-    readonly transactions = computed(() => (this.#transactionsResource.status() === "error" ? [] : this.#transactionsResource.value()));
+    #accountsService = inject(AccountService);
+    #accountsResource = rxResource({ stream: () => this.#accountsService.findAll(), defaultValue: [] as AccountDto[] });
     readonly accounts = computed(() => (this.#accountsResource.status() === "error" ? [] : this.#accountsResource.value()));
+
+    #categoriesService = inject(CategoryService);
+    #categoriesResource = rxResource({ stream: () => this.#categoriesService.findAll(), defaultValue: [] as CategoryDto[] });
     readonly categories = computed(() => (this.#categoriesResource.status() === "error" ? [] : this.#categoriesResource.value()));
+
+    #creditCardsService = inject(CreditCardService);
+    #creditCardsResource = rxResource({ stream: () => this.#creditCardsService.findAll(), defaultValue: [] as CreditCardDto[] });
     readonly creditCards = computed(() => (this.#creditCardsResource.status() === "error" ? [] : this.#creditCardsResource.value()));
 
-    readonly loading = computed(
-        () => this.#transactionsResource.isLoading() || this.#accountsResource.isLoading() || this.#categoriesResource.isLoading() || this.#creditCardsResource.isLoading(),
-    );
+    constructor() {
+        super({ getPagination: () => this.#page.list().pagination, isLoading: () => this.#listResource.isLoading() });
+    }
 
-    load(): void {
-        this.#transactionsResource.reload();
+    load(filter?: TransactionFilterDto): void {
+        if (filter) this.setFilter(filter);
+        this.reload();
         this.#accountsResource.reload();
         this.#categoriesResource.reload();
         this.#creditCardsResource.reload();
     }
 
-    create(input: RequestTransactionDto): Observable<TransactionDto> {
-        return this.#transactionService.create(input).pipe(tap(() => this.load()));
+    reload(): void {
+        this.reset();
+        this.#listResource.reload();
     }
 
-    update(id: string, input: RequestTransactionDto): Observable<void> {
-        return this.#transactionService.update(id, input).pipe(tap(() => this.load()));
+    setFilter(filter: TransactionFilterDto): void {
+        this.#filter.set(filter);
+        this.reset();
     }
 
-    save(input: RequestTransactionDto): Observable<unknown> {
-        if (input.id) {
-            return this.update(input.id, input);
-        }
-        return this.create(input);
+    search(query: string): void {
+        this.setFilter({ ...this.#filter(), query });
     }
 
-    createTransfer(input: RequestTransferDto): Observable<void> {
-        return this.#transactionService.createTransfer(input).pipe(tap(() => this.load()));
+    changeLimit(limit: number): void {
+        this.setPageSize(limit);
+    }
+    next(): void {
+        this.goNext();
+    }
+    previous(): void {
+        this.goPrevious();
+    }
+
+    create(body: RequestTransactionDto): Observable<TransactionDto> {
+        return this.#service.create(body).pipe(tap(() => this.load()));
+    }
+
+    update(id: string, body: RequestTransactionDto): Observable<void> {
+        return this.#service.update(id, body).pipe(tap(() => this.load()));
+    }
+
+    createTransfer(body: RequestTransferDto): Observable<void> {
+        return this.#service.createTransfer(body).pipe(tap(() => this.load()));
     }
 
     delete(id: string): Observable<void> {
-        return this.#transactionService.delete(id).pipe(tap(() => this.load()));
+        return this.#service.delete(id).pipe(tap(() => this.load()));
     }
 
     deleteTransfer(transferId: string): Observable<void> {
-        return this.#transactionService.deleteTransfer(transferId).pipe(tap(() => this.load()));
+        return this.#service.deleteTransfer(transferId).pipe(tap(() => this.load()));
+    }
+
+    save(input: RequestTransactionDto): Observable<unknown> {
+        return input.id ? this.update(input.id, input) : this.create(input);
     }
 }

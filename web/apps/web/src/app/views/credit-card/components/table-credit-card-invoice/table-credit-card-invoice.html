@@ -1,4 +1,4 @@
-<ai-table [config]="config()" (rowClick)="rowClick($event)">
+<ai-table [pagination]="paginationConfig()" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" [config]="config()" (rowClick)="rowClick($event)">
     <ng-template aiCellTemplate="referenceMonth" let-item>
         <ai-badge variant="default" class="capitalize">
             {{ monthLabel(item.referenceMonth) }}

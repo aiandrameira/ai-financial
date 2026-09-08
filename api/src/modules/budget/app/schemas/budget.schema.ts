@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 export const createBudgetSchema = z.object({
     categoryId: z.string().min(1),
@@ -16,7 +16,7 @@ export const updateBudgetSchema = z.object({
 
 export type UpdateBudgetSchema = z.infer<typeof updateBudgetSchema>
 
-export const findBudgetsQuerySchema = paginationQuerySchema.extend({
+export const findBudgetsQuerySchema = cursorPaginationQuerySchema.extend({
     categoryId: z.string().optional(),
     referenceMonth: z.coerce.date().optional(),
 })

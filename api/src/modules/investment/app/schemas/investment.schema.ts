@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { paginationQuerySchema } from "@/http/api/schema/schemas"
+import { cursorPaginationQuerySchema } from "@/http/api/schema/schemas"
 
 import { tpInvestmentEnum, tpInvestmentMovementEnum } from "../../domain/enums"
 
@@ -17,7 +17,7 @@ export const updateInvestmentAssetSchema = createInvestmentAssetSchema
 
 export type UpdateInvestmentAssetSchema = z.infer<typeof updateInvestmentAssetSchema>
 
-export const findInvestmentAssetsQuerySchema = paginationQuerySchema
+export const findInvestmentAssetsQuerySchema = cursorPaginationQuerySchema
 
 export type FindInvestmentAssetsQuery = z.infer<typeof findInvestmentAssetsQuerySchema>
 
@@ -31,9 +31,7 @@ export const createInvestmentMovementSchema = z.object({
 
 export type CreateInvestmentMovementSchema = z.infer<typeof createInvestmentMovementSchema>
 
-export const findInvestmentMovementsQuerySchema = paginationQuerySchema.extend({
-    size: z.coerce.number().int().min(1).max(300).default(10),
-})
+export const findInvestmentMovementsQuerySchema = cursorPaginationQuerySchema
 
 export type FindInvestmentMovementsQuery = z.infer<typeof findInvestmentMovementsQuerySchema>
 
@@ -44,6 +42,6 @@ export const createInvestmentPriceSchema = z.object({
 
 export type CreateInvestmentPriceSchema = z.infer<typeof createInvestmentPriceSchema>
 
-export const findInvestmentPricesQuerySchema = paginationQuerySchema
+export const findInvestmentPricesQuerySchema = cursorPaginationQuerySchema
 
 export type FindInvestmentPricesQuery = z.infer<typeof findInvestmentPricesQuerySchema>

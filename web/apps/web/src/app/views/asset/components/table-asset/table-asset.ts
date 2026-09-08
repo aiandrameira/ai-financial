@@ -1,29 +1,36 @@
-import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiBadge, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { TrendPipe } from "@core/pipes";
-import { BadgeTpAsset, IconMaterial, TableImports } from "@core/ui";
+import { BadgeTpAsset, createCursorSearchController, IconMaterial, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpAssetMap } from "@domain/enums";
 import { AssetDto } from "@domain/schemas";
-import { AssetService } from "@infra/services";
+import { AssetFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-asset",
-    imports: [TableImports, AiBadge, IconMaterial, BadgeTpAsset, TrendPipe],
+    imports: [TableImports, AiInput, AiBadge, IconMaterial, BadgeTpAsset, TrendPipe],
     templateUrl: "./table-asset.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableAsset implements OnInit {
-    #service = inject(AssetService);
+    #facade = inject(AssetFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
-
-    #assets = signal<AssetDto[]>([]);
 
     protected readonly tpAssetMap = tpAssetMap;
 
     readonly edit = output<AssetDto>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<AssetDto>[]>([
         { key: "name", label: "Nome" },
@@ -35,7 +42,7 @@ export class TableAsset implements OnInit {
 
     readonly config = computed<AiTableConfig<AssetDto>>(() => ({
         columns: this.columns(),
-        data: this.#assets(),
+        data: this.#facade.assets(),
     }));
 
     ngOnInit() {
@@ -43,7 +50,7 @@ export class TableAsset implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(assets => this.#assets.set(assets));
+        this.#facade.load();
     }
 
     rowClick(item: AssetDto) {
@@ -60,7 +67,7 @@ export class TableAsset implements OnInit {
     }
 
     private _remove(item: AssetDto): void {
-        this.#service.delete(item.id).subscribe({
+        this.#facade.delete(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Bem apagado com sucesso." });
                 this.load();

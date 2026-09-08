@@ -40,7 +40,7 @@ export class InvestmentController {
 
     async find(userId: string, params: FindInvestmentAssetsQuery) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {
@@ -65,7 +65,7 @@ export class InvestmentController {
 
     async findMovements(userId: string, investmentId: string, params: FindInvestmentMovementsQuery) {
         const result = await this.usecases.findMovements.execute(userId, investmentId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async createMovement(userId: string, investmentId: string, body: CreateInvestmentMovementSchema) {
@@ -80,7 +80,7 @@ export class InvestmentController {
 
     async findPrices(userId: string, investmentId: string, params: FindInvestmentPricesQuery) {
         const result = await this.usecases.findPrices.execute(userId, investmentId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async createPrice(userId: string, investmentId: string, body: CreateInvestmentPriceSchema) {

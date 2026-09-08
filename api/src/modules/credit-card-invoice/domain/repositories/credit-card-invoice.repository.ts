@@ -1,4 +1,4 @@
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { CreditCardInvoiceDto } from "../../app/dtos"
 import type { FindCreditCardInvoicesQuery } from "../../app/schemas"
@@ -15,7 +15,7 @@ export interface CreditCardInvoiceRepository {
         userId: string,
         creditCardId: string,
         params: FindCreditCardInvoicesQuery,
-    ): Promise<IPaginated<CreditCardInvoiceDto>>
+    ): Promise<ICursorPaginated<CreditCardInvoiceDto>>
     get(userId: string, creditCardId: string, id: string): Promise<CreditCardInvoiceDto | null>
     getOrCreateForDate(
         userId: string,

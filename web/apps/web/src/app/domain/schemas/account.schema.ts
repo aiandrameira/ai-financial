@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { tpAccountEnum } from "../enums";
 
@@ -38,3 +39,13 @@ export const accountSchema = z.object({
 });
 
 export type AccountDto = z.infer<typeof accountSchema>;
+
+export const accountFilterSchema = cursorFilterSchema.extend({
+    sortBy: z.enum(["name", "type", "createdAt"]).optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+});
+export type AccountFilterDto = z.infer<typeof accountFilterSchema>;
+
+export function makeAccountFilter(raw: Partial<AccountFilterDto> = {}): AccountFilterDto {
+    return accountFilterSchema.parse(raw);
+}

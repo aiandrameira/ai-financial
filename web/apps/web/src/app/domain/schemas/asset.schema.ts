@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { tpAssetEnum } from "../enums";
 
@@ -32,3 +33,10 @@ export const assetSchema = z.object({
 });
 
 export type AssetDto = z.infer<typeof assetSchema>;
+
+export const assetFilterSchema = cursorFilterSchema;
+export type AssetFilterDto = z.infer<typeof assetFilterSchema>;
+
+export function makeAssetFilter(raw: Partial<AssetFilterDto> = {}): AssetFilterDto {
+    return assetFilterSchema.parse(raw);
+}

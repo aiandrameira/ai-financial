@@ -1,4 +1,4 @@
-<ai-table [config]="config()">
+<ai-table [pagination]="paginationConfig()" (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" [config]="config()">
     <ng-template aiCellTemplate="type" let-item>
         <ai-badge-tp-investment-movement [type]="item.type" />
     </ng-template>

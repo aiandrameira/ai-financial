@@ -4,6 +4,7 @@ export * from "./budget.schema";
 export * from "./category.schema";
 export * from "./credit-card-invoice.schema";
 export * from "./credit-card.schema";
+export * from "./cursor-filter.schema";
 export * from "./goal-contribution.schema";
 export * from "./investment-movement.schema";
 export * from "./investment-price.schema";

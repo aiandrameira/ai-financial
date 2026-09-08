@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 import { tpCreditCardNetworkEnum } from "../enums";
 
@@ -39,3 +40,13 @@ export const creditCardSchema = z.object({
 });
 
 export type CreditCardDto = z.infer<typeof creditCardSchema>;
+
+export const creditCardFilterSchema = cursorFilterSchema.extend({
+    sortBy: z.enum(["name", "network", "createdAt"]).optional(),
+    sortDirection: z.enum(["asc", "desc"]).optional(),
+});
+export type CreditCardFilterDto = z.infer<typeof creditCardFilterSchema>;
+
+export function makeCreditCardFilter(raw: Partial<CreditCardFilterDto> = {}): CreditCardFilterDto {
+    return creditCardFilterSchema.parse(raw);
+}

@@ -9,7 +9,7 @@ import { BadgeStLoanInstallment } from "@core/ui";
 import { LOAN_INSTALLMENT_STATUS_VARIANT } from "@domain/constants";
 import { stLoanInstallmentEnum, stLoanInstallmentMap } from "@domain/enums";
 import { LoanDto, LoanInstallmentDto } from "@domain/schemas";
-import { LoanInstallmentService } from "@infra/services";
+import { LoanInstallmentFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-dialog-loan-installment",
@@ -18,7 +18,7 @@ import { LoanInstallmentService } from "@infra/services";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogLoanInstallment {
-    #service = inject(LoanInstallmentService);
+    #facade = inject(LoanInstallmentFacade);
     #toast = inject(AiToastService);
     #dialogRef = inject(AiDialogRef<DialogLoanInstallment>);
 
@@ -34,7 +34,7 @@ export class DialogLoanInstallment {
     protected onPay(): void {
         this.paying.set(true);
 
-        this.#service
+        this.#facade
             .pay(this.data.loan.id, this.data.installment.id)
             .pipe(finalize(() => this.paying.set(false)))
             .subscribe({

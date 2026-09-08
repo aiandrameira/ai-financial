@@ -95,6 +95,8 @@ ai-financial/
 
 Veja [`CONTRIBUTING.md`](./CONTRIBUTING.md) para o passo a passo de desenvolvimento, convenções de arquitetura e fluxo de commits.
 
+O padrão de filtros, respostas e paginação por cursor está documentado em [`docs/pagination.md`](./docs/pagination.md).
+
 ## 📄 Licença
 
 UNLICENSED — projeto pessoal, uso privado.

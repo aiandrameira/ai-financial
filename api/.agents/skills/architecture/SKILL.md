@@ -59,7 +59,7 @@ The domain modules planned for this product (per `docs/planning.md` sections 4 a
   - `*.schema.ts` → Zod schema(s) + inferred type(s), lives in `app/schemas/`.
   - `*.dto.ts` → plain TypeScript interface describing data shape returned to callers, lives in `app/dtos/`.
 - **Repository method names** (mirrors the interface contract across all modules):
-  - `find`: paginated list → returns `IPaginated<T>`.
+  - `find`: paginated list → returns `ICursorPaginated<T>`.
   - `findBy*`: unpaginated list of related resources (e.g., `findByAccount`).
   - `get`: single item by id → `T | null`.
   - `getBy*`: single related item.
@@ -72,7 +72,7 @@ The domain modules planned for this product (per `docs/planning.md` sections 4 a
 
 The innermost layer. Contains **only interfaces** — no Drizzle, no Elysia, no I/O.
 
-- **Repositories (`domain/repositories/`)**: One interface per aggregate/entity, named `<Entity>Repository`. Methods return `Promise<Dto>` / `Promise<Dto[]>` / `Promise<IPaginated<Dto>>`, never ORM row types directly.
+- **Repositories (`domain/repositories/`)**: One interface per aggregate/entity, named `<Entity>Repository`. Methods return `Promise<Dto>` / `Promise<Dto[]>` / `Promise<ICursorPaginated<Dto>>`, never ORM row types directly.
 - Domain files commonly re-export the DTO types they reference via `export type { ... }` so consumers can import both the repository and its shapes from one place.
 
 ```ts
@@ -80,8 +80,8 @@ The innermost layer. Contains **only interfaces** — no Drizzle, no Elysia, no 
 export interface AccountRepository {
   find(
     userId: string,
-    params?: PaginationParams,
-  ): Promise<IPaginated<AccountListItemDto>>;
+    params?: CursorPaginationParams,
+  ): Promise<ICursorPaginated<AccountListItemDto>>;
   get(userId: string, id: string): Promise<AccountDto | null>;
   create(userId: string, body: CreateAccountSchema): Promise<AccountDto>;
   update(id: string, body: UpdateAccountSchema): Promise<void>;
@@ -122,7 +122,7 @@ export class CreateTransactionUseCase {
 Concrete, framework-touching implementations. This is the only layer allowed to import Drizzle, Elysia, and other modules' `infra/` classes.
 
 - **Repositories (`infra/repositories/*.drizzle.ts`)**: Implement the module's `domain` repository interface using `db` (Drizzle client) and the tables from `src/db/schema/`. Map query results to DTOs explicitly in the `select({...})` projection — don't leak raw table row types past this layer.
-- **Controllers (`infra/controllers/*.controller.ts`)**: Thin adapters between HTTP and usecases. Constructor takes a typed map of usecases (`type UseCases = { find: FindXUseCase; get: GetXUseCase; ... }`). Each method calls exactly one usecase and wraps the result with `ApiResponse` (`.paginated`, `.list`, `.item`, `.success`), or sets `set.status` directly for no-content responses (e.g., `204` on delete). No business logic here.
+- **Controllers (`infra/controllers/*.controller.ts`)**: Thin adapters between HTTP and usecases. Constructor takes a typed map of usecases (`type UseCases = { find: FindXUseCase; get: GetXUseCase; ... }`). Each method calls exactly one usecase and wraps the result with `ApiResponse` (`.cursorPaginated`, `.list`, `.item`, `.success`), or sets `set.status` directly for no-content responses (e.g., `204` on delete). No business logic here.
 - **Routes (`infra/routes/*.routes.ts`)**: The composition root for the module's HTTP surface.
   - A local `buildController()` function `new`s up the concrete Drizzle repositories and usecases and wires them into the controller. This is the one place `new` is called for these classes.
   - The exported `const <entity>Routes = new Elysia({ prefix: "/<entities>", tags: ["<Entities>"] })` chains one HTTP method call per endpoint. Until Fase 7 (auth), handlers read `env.DEV_USER_ID` in place of a session-derived user id.
@@ -145,7 +145,7 @@ export const accountRoutes = new Elysia({
   prefix: "/accounts",
   tags: ["Accounts"],
 }).get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-  query: paginationQuerySchema,
+  query: cursorPaginationQuerySchema,
   detail: {
     summary: "List accounts",
     description: "...",
@@ -156,8 +156,8 @@ export const accountRoutes = new Elysia({
 
 ## 6. Cross-Cutting HTTP Layer (`src/http/`)
 
-- **`http/api/response.ts`**: The `ApiResponse` envelope factory — every response body is `{ data, meta: { message, status, type } }` (plus `page`/`size`/`total` for paginated/list responses). Always return through `ApiResponse.*` from controllers; never hand-roll a response shape.
-- **`http/api/schema/`**: Shared Zod schemas reused across modules (e.g., `paginationQuerySchema` / `PaginationParams`).
+- **`http/api/response.ts`**: The `ApiResponse` envelope factory — every response body is `{ data, meta: { message, status, type } }` (plus `pagination: { limit, next, prev, total? }` for cursor-paginated responses, or `total` for full lists). Always return through `ApiResponse.*` from controllers; never hand-roll a response shape.
+- **`http/api/schema/`**: Shared Zod schemas reused across modules (e.g., `cursorPaginationQuerySchema` / `CursorPaginationParams`).
 - **`http/errors/errors.ts`**: `AppError` base class carrying an HTTP `status`, with subclasses per case (`NotFoundError` 404, `ConflictError` 409, `ValidationError` 400, `UnauthorizedError` 401). Usecases `throw` these; a single `.onError(...)` handler in `src/index.ts` catches them, reads `.status`/`.message`, and returns `ApiResponse.error(...)`. Add new subclasses here rather than throwing plain `Error`/status codes ad hoc.
 - **`http/plugins/`**: doesn't exist yet. Fase 7 adds an auth plugin here (embedded session/user resolution, adapted from `ai-book`/`better-auth`) — see `docs/planning.md` section 3. Until then, don't add auth macros; handlers use `env.DEV_USER_ID` directly.
 
@@ -181,7 +181,7 @@ When generating new code in this project:
 - **New endpoint** → add (as needed) a DTO, a Zod schema, a usecase, a repository method (interface + Drizzle impl), a controller method, and a route — in that dependency order.
 - **Business rules** (existence checks, conflicts, authorization beyond permission strings) belong in the **usecase**, not the controller or the Drizzle repository.
 - **Errors**: throw the specific `AppError` subclass (`NotFoundError`, `ConflictError`, etc.) from `http/errors/errors.ts`; let `src/index.ts`'s `.onError` translate it — don't catch-and-format errors manually in controllers.
-- **Responses**: always go through `ApiResponse.paginated/list/item/success/error`.
+- **Responses**: always go through `ApiResponse.cursorPaginated/list/item/success/error`.
 - **User scoping**: every module's queries must be scoped by `userId` — `env.DEV_USER_ID` until Fase 7 adds real auth, never a client-supplied id trusted as-is.
 - **Repositories**: never return raw Drizzle row/table types from a `domain` interface method — always map to a DTO in the `.drizzle.ts` implementation.
 - **Validation**: request bodies/queries are validated by Zod schemas passed to Elysia's `body`/`query` route options — don't manually validate inside usecases/controllers.

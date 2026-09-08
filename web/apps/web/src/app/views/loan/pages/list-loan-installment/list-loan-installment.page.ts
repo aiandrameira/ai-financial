@@ -28,7 +28,7 @@ export class ListLoanInstallmentPage implements OnInit {
     readonly loan = computed(() => this.#loans().find(loan => loan.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#loanService.find().subscribe(loans => this.#loans.set(loans));
+        this.#loanService.findAll().subscribe(loans => this.#loans.set(loans));
     }
 
     protected goBack(): void {

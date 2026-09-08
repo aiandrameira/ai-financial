@@ -55,7 +55,7 @@ export class FormLoan {
     };
 
     constructor() {
-        this.#accountService.find().subscribe(accounts => this.#accounts.set(accounts));
+        this.#accountService.findAll().subscribe(accounts => this.#accounts.set(accounts));
 
         effect(() => {
             const loan = this.loan();

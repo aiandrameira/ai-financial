@@ -1,8 +1,9 @@
-import { and, count, eq, inArray } from "drizzle-orm"
+import { ilike, and, count, eq, inArray } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { investmentAssets, investmentMovements, investmentPrices } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { InvestmentAssetDto } from "../../app/dtos"
 import type {
@@ -65,28 +66,39 @@ async function computePositions(
 const emptyPosition = computeInvestmentPosition([], null)
 
 export class InvestmentAssetDrizzleRepository implements InvestmentAssetRepository {
-    async find(userId: string, params: FindInvestmentAssetsQuery): Promise<IPaginated<InvestmentAssetDto>> {
-        const where = eq(investmentAssets.userId, userId)
+    async find(userId: string, params: FindInvestmentAssetsQuery): Promise<ICursorPaginated<InvestmentAssetDto>> {
+        const where = and(
+            eq(investmentAssets.userId, userId),
+            params.query ? ilike(investmentAssets.name, `%${params.query}%`) : undefined,
+        )
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: investmentAssets.createdAt,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: investmentAssets.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(investmentAssets)
-                .where(where)
-                .orderBy(investmentAssets.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(investmentAssets).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: investmentAssets.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(investmentAssets).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
         const positions = await computePositions(rows.map((row) => row.id))
 
-        return {
-            data: rows.map((row) => mapInvestmentAssetToDto(row, positions.get(row.id) ?? emptyPosition)),
-            page: params.page,
-            size: params.size,
+        return buildCursorPage(
+            rows.map((row) => mapInvestmentAssetToDto(row, positions.get(row.id) ?? emptyPosition)),
+            params.limit,
+            params,
             total,
-        }
+            { getValue: (row: InvestmentAssetDto) => row.createdAt },
+        )
     }
 
     async get(userId: string, id: string): Promise<InvestmentAssetDto | null> {

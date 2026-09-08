@@ -1,32 +1,39 @@
-import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiBadge, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { DecimalPipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { TrendPipe } from "@core/pipes";
-import { BadgeTpInvestment, IconMaterial, TableImports } from "@core/ui";
+import { BadgeTpInvestment, createCursorSearchController, IconMaterial, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMap } from "@domain/enums";
 import { InvestmentAssetDto } from "@domain/schemas";
-import { InvestmentService } from "@infra/services";
+import { InvestmentFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-investment",
-    imports: [TableImports, AiBadge, IconMaterial, DecimalPipe, BadgeTpInvestment, TrendPipe],
+    imports: [TableImports, AiInput, AiBadge, IconMaterial, DecimalPipe, BadgeTpInvestment, TrendPipe],
     templateUrl: "./table-investment.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableInvestment implements OnInit {
-    #service = inject(InvestmentService);
+    #facade = inject(InvestmentFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
     #router = inject(Router);
 
-    #assets = signal<InvestmentAssetDto[]>([]);
-
     protected readonly tpInvestmentMap = tpInvestmentMap;
 
     readonly edit = output<InvestmentAssetDto>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<InvestmentAssetDto>[]>([
         { key: "name", label: "Nome" },
@@ -42,7 +49,7 @@ export class TableInvestment implements OnInit {
 
     readonly config = computed<AiTableConfig<InvestmentAssetDto>>(() => ({
         columns: this.columns(),
-        data: this.#assets(),
+        data: this.#facade.assets(),
     }));
 
     ngOnInit() {
@@ -50,7 +57,7 @@ export class TableInvestment implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(assets => this.#assets.set(assets));
+        this.#facade.load();
     }
 
     rowClick(item: InvestmentAssetDto) {
@@ -73,7 +80,7 @@ export class TableInvestment implements OnInit {
     }
 
     private _remove(item: InvestmentAssetDto): void {
-        this.#service.delete(item.id).subscribe({
+        this.#facade.delete(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Investimento apagado com sucesso." });
                 this.load();

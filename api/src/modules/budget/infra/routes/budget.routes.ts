@@ -4,7 +4,13 @@ import { env } from "@/env"
 import { CategoryDrizzleRepository } from "@/modules/category/infra/repositories/category.drizzle"
 
 import { createBudgetSchema, findBudgetsQuerySchema, updateBudgetSchema } from "../../app/schemas"
-import { CreateBudgetUseCase, DeleteBudgetUseCase, FindBudgetsUseCase, GetBudgetUseCase, UpdateBudgetUseCase } from "../../app/usecases"
+import {
+    CreateBudgetUseCase,
+    DeleteBudgetUseCase,
+    FindBudgetsUseCase,
+    GetBudgetUseCase,
+    UpdateBudgetUseCase,
+} from "../../app/usecases"
 import { BudgetController } from "../controllers/budget.controller"
 import { BudgetDrizzleRepository } from "../repositories/budget.drizzle"
 
@@ -29,7 +35,7 @@ export const budgetRoutes = new Elysia({ prefix: "/budgets", tags: ["Budgets"] }
         detail: {
             summary: "List budgets",
             description: "Supports filters by category and reference month. Includes computed realized amount.",
-            responses: { 200: { description: "Paginated list of budgets" } },
+            responses: { 200: { description: "Cursor-paginated list of budgets" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
@@ -49,7 +55,10 @@ export const budgetRoutes = new Elysia({ prefix: "/budgets", tags: ["Budgets"] }
             detail: {
                 summary: "Create budget",
                 description: "Only allowed for expense categories. One budget per category per month.",
-                responses: { 201: { description: "Budget created" }, 409: { description: "Budget already exists for this category and month" } },
+                responses: {
+                    201: { description: "Budget created" },
+                    409: { description: "Budget already exists for this category and month" },
+                },
             },
         },
     )

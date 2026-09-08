@@ -33,7 +33,7 @@ export class TransactionController {
 
     async find(userId: string, query: FindTransactionsQuery) {
         const result = await this.usecases.find.execute(userId, query)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {

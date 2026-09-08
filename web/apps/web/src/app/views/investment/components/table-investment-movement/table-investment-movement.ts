@@ -1,13 +1,13 @@
 import { AiAlertDialogService, AiBadge, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { DecimalPipe } from "@angular/common";
 import { HttpErrorResponse } from "@angular/common/http";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from "@angular/core";
 import { formatUtcDateDayjs } from "@core/helpers";
-import { BadgeTpInvestmentMovement, TableImports } from "@core/ui";
+import { BadgeTpInvestmentMovement, createCursorPageNav, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { tpInvestmentMovementMap } from "@domain/enums";
 import { InvestmentMovementDto } from "@domain/schemas";
-import { InvestmentMovementService } from "@infra/services";
+import { InvestmentMovementFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-investment-movement",
@@ -16,15 +16,18 @@ import { InvestmentMovementService } from "@infra/services";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableInvestmentMovement {
-    #service = inject(InvestmentMovementService);
+    #facade = inject(InvestmentMovementFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
-
-    #movements = signal<InvestmentMovementDto[]>([]);
 
     readonly investmentId = input.required<string>();
 
     protected readonly tpInvestmentMovementMap = tpInvestmentMovementMap;
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorPageNav(this.#facade);
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<InvestmentMovementDto>[]>([
         { key: "type", label: "Tipo" },
@@ -37,20 +40,20 @@ export class TableInvestmentMovement {
 
     readonly config = computed<AiTableConfig<InvestmentMovementDto>>(() => ({
         columns: this.columns(),
-        data: this.#movements(),
+        data: this.#facade.movements(),
     }));
 
     constructor() {
         effect(() => {
             const investmentId = this.investmentId();
             if (investmentId) {
-                this.load();
+                untracked(() => this.load());
             }
         });
     }
 
     load(): void {
-        this.#service.find(this.investmentId()).subscribe(movements => this.#movements.set(movements));
+        this.#facade.load(this.investmentId());
     }
 
     protected dateLabel(date: string): string {
@@ -65,7 +68,7 @@ export class TableInvestmentMovement {
     }
 
     private _remove(item: InvestmentMovementDto): void {
-        this.#service.delete(this.investmentId(), item.id).subscribe({
+        this.#facade.delete(this.investmentId(), item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Movimentação apagada com sucesso." });
                 this.load();

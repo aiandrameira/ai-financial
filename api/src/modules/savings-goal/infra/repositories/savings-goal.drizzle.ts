@@ -1,8 +1,9 @@
-import { and, eq, inArray, sql } from "drizzle-orm"
+import { ilike, count, and, eq, inArray, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { goalContributions, savingsGoals } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { SavingsGoalDto } from "../../app/dtos"
 import type { CreateSavingsGoalSchema, FindSavingsGoalsQuery, UpdateSavingsGoalSchema } from "../../app/schemas"
@@ -25,28 +26,39 @@ async function computeContributedAmounts(goalIds: string[]): Promise<Map<string,
 }
 
 export class SavingsGoalDrizzleRepository implements SavingsGoalRepository {
-    async find(userId: string, params: FindSavingsGoalsQuery): Promise<IPaginated<SavingsGoalDto>> {
-        const where = eq(savingsGoals.userId, userId)
+    async find(userId: string, params: FindSavingsGoalsQuery): Promise<ICursorPaginated<SavingsGoalDto>> {
+        const where = and(
+            eq(savingsGoals.userId, userId),
+            params.query ? ilike(savingsGoals.name, `%${params.query}%`) : undefined,
+        )
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: savingsGoals.createdAt,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: savingsGoals.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(savingsGoals)
-                .where(where)
-                .orderBy(savingsGoals.createdAt)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: sql<number>`count(*)` }).from(savingsGoals).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: savingsGoals.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(savingsGoals).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
         const contributedAmounts = await computeContributedAmounts(rows.map((row) => row.id))
 
-        return {
-            data: rows.map((row) => mapSavingsGoalToDto(row, contributedAmounts.get(row.id))),
-            page: params.page,
-            size: params.size,
-            total: Number(total),
-        }
+        return buildCursorPage(
+            rows.map((row) => mapSavingsGoalToDto(row, contributedAmounts.get(row.id))),
+            params.limit,
+            params,
+            total,
+            { getValue: (row: SavingsGoalDto) => row.createdAt },
+        )
     }
 
     async get(userId: string, id: string): Promise<SavingsGoalDto | null> {

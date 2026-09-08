@@ -3,7 +3,7 @@ import { computed, Signal } from "@angular/core";
 
 import { CursorTablePaginationSource } from "./table-pagination.interface";
 
-export function toAiTablePagination(source: CursorTablePaginationSource): Signal<AiTablePagination> {
+export function toAiTablePagination(source: CursorTablePaginationSource, pageSizeOptions?: number[]): Signal<AiTablePagination> {
     return computed(() => ({
         mode: "cursor",
         pageIndex: source.pageIndex(),
@@ -12,6 +12,7 @@ export function toAiTablePagination(source: CursorTablePaginationSource): Signal
         hasPrevious: source.hasPrevious(),
         hasNext: source.hasNext(),
         disabled: source.loading(),
+        pageSizeOptions,
         showInfo: true,
         showPageSize: true,
         showFirstLast: false,

@@ -51,7 +51,7 @@ export class FormSavingsGoal {
     };
 
     constructor() {
-        this.#accountService.find().subscribe(accounts => this.#accounts.set(accounts));
+        this.#accountService.findAll().subscribe(accounts => this.#accounts.set(accounts));
 
         effect(() => {
             const goal = this.goal();

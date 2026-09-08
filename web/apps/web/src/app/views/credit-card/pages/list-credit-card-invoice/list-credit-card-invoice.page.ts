@@ -28,7 +28,7 @@ export class ListCreditCardInvoicePage implements OnInit {
     readonly creditCard = computed(() => this.#creditCards().find(creditCard => creditCard.id === this.id()) ?? null);
 
     ngOnInit(): void {
-        this.#creditCardService.find().subscribe(creditCards => this.#creditCards.set(creditCards));
+        this.#creditCardService.findAll().subscribe(creditCards => this.#creditCards.set(creditCards));
     }
 
     protected goBack(): void {

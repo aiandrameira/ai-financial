@@ -3,7 +3,7 @@
  * @param filter - Objeto de filtro a ser verificado
  * @returns true se houver pelo menos um filtro ativo (não vazio, não null, não undefined)
  */
-export function hasActiveFilters<T extends Record<string, any>>(filter: T | null | undefined): boolean {
+export function hasActiveFilters<T extends Record<string, unknown>>(filter: T | null | undefined): boolean {
     if (!filter) return false;
 
     return Object.values(filter).some(value => {

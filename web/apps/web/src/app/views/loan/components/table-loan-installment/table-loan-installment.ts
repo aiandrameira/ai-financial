@@ -1,10 +1,10 @@
 import { AiBadge, AiTableColumn, AiTableConfig } from "@aiandralves/ai-ui";
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { DueSoonPipe } from "@core/pipes";
-import { BadgeStLoanInstallment, TableImports } from "@core/ui";
+import { BadgeStLoanInstallment, createCursorPageNav, TableImports, toAiTablePagination } from "@core/ui";
 import { stLoanInstallmentMap } from "@domain/enums";
 import { LoanInstallmentDto } from "@domain/schemas";
-import { LoanInstallmentService } from "@infra/services";
+import { LoanInstallmentFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-loan-installment",
@@ -13,14 +13,17 @@ import { LoanInstallmentService } from "@infra/services";
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableLoanInstallment {
-    #service = inject(LoanInstallmentService);
-
-    #installments = signal<LoanInstallmentDto[]>([]);
+    #facade = inject(LoanInstallmentFacade);
 
     readonly loanId = input.required<string>();
     readonly view = output<LoanInstallmentDto>();
 
     protected readonly stLoanInstallmentMap = stLoanInstallmentMap;
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorPageNav(this.#facade);
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<LoanInstallmentDto>[]>([
         { key: "number", label: "Parcela" },
@@ -31,14 +34,14 @@ export class TableLoanInstallment {
 
     readonly config = computed<AiTableConfig<LoanInstallmentDto>>(() => ({
         columns: this.columns(),
-        data: this.#installments(),
+        data: this.#facade.installments(),
     }));
 
     constructor() {
         effect(() => {
             const loanId = this.loanId();
             if (loanId) {
-                this.#service.find(loanId).subscribe(installments => this.#installments.set(installments));
+                untracked(() => this.#facade.load(loanId));
             }
         });
     }

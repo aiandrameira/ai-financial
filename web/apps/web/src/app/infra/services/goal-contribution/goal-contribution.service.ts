@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { GoalContributionFilter } from "@domain/filters";
+import { GoalContributionFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { GoalContributionDto, GoalContributionRepository } from "@domain/repositories";
 import type { RequestGoalContributionDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -15,8 +18,13 @@ export class GoalContributionService implements GoalContributionRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/goals");
 
-    find(goalId: string): Observable<GoalContributionDto[]> {
-        return this.#client.get(`${this.#api}/${goalId}/contributions`, { params: { page: 1, size: 300 } }).pipe(map(response => mapFind(response)));
+    find(goalId: string, filter: GoalContributionFilterDto = {}): Observable<CursorPaginated<GoalContributionDto>> {
+        const params = new GoalContributionFilter(filter).getFilters().toParams();
+        return this.#client.get(`${this.#api}/${goalId}/contributions`, { params }).pipe(map(response => mapCursorPaginated<GoalContributionDto>(response)));
+    }
+
+    findAll(goalId: string, filter: GoalContributionFilterDto = {}): Observable<GoalContributionDto[]> {
+        return collectCursorPages(cursor => this.find(goalId, { ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(goalId: string, body: RequestGoalContributionDto): Observable<GoalContributionDto> {

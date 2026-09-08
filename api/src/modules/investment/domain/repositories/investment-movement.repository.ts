@@ -1,10 +1,14 @@
-import type { IPaginated } from "@/http/api/response"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { InvestmentMovementDto } from "../../app/dtos"
 import type { CreateInvestmentMovementSchema, FindInvestmentMovementsQuery } from "../../app/schemas"
 
 export interface InvestmentMovementRepository {
-    find(userId: string, investmentId: string, params: FindInvestmentMovementsQuery): Promise<IPaginated<InvestmentMovementDto>>
+    find(
+        userId: string,
+        investmentId: string,
+        params: FindInvestmentMovementsQuery,
+    ): Promise<ICursorPaginated<InvestmentMovementDto>>
     findAll(userId: string, investmentId: string): Promise<InvestmentMovementDto[]>
     get(userId: string, investmentId: string, id: string): Promise<InvestmentMovementDto | null>
     create(userId: string, investmentId: string, body: CreateInvestmentMovementSchema): Promise<InvestmentMovementDto>

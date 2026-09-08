@@ -4,7 +4,13 @@ import { env } from "@/env"
 import { AccountDrizzleRepository } from "@/modules/account/infra/repositories/account.drizzle"
 import { TransactionDrizzleRepository } from "@/modules/transaction/infra/repositories/transaction.drizzle"
 
-import { createLoanSchema, findLoanInstallmentsQuerySchema, findLoansQuerySchema, payLoanInstallmentSchema, updateLoanSchema } from "../../app/schemas"
+import {
+    createLoanSchema,
+    findLoanInstallmentsQuerySchema,
+    findLoansQuerySchema,
+    payLoanInstallmentSchema,
+    updateLoanSchema,
+} from "../../app/schemas"
 import {
     CreateLoanUseCase,
     DeleteLoanUseCase,
@@ -43,7 +49,7 @@ export const loanRoutes = new Elysia({ prefix: "/loans", tags: ["Loans"] })
         detail: {
             summary: "List loans",
             description: "Includes computed outstanding balance based on paid installments.",
-            responses: { 200: { description: "Paginated list of loans" } },
+            responses: { 200: { description: "Cursor-paginated list of loans" } },
         },
     })
     .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
@@ -71,7 +77,8 @@ export const loanRoutes = new Elysia({ prefix: "/loans", tags: ["Loans"] })
         body: updateLoanSchema,
         detail: {
             summary: "Update loan",
-            description: "Only name, type and account can be changed — financial terms are fixed once the amortization schedule is generated.",
+            description:
+                "Only name, type and account can be changed — financial terms are fixed once the amortization schedule is generated.",
             responses: { 200: { description: "Loan updated" }, 404: { description: "Loan or account not found" } },
         },
     })
@@ -86,14 +93,23 @@ export const loanRoutes = new Elysia({ prefix: "/loans", tags: ["Loans"] })
         query: findLoanInstallmentsQuerySchema,
         detail: {
             summary: "List loan installments",
-            responses: { 200: { description: "Paginated list of installments" } },
+            responses: { 200: { description: "Cursor-paginated list of installments" } },
         },
     })
-    .post("/:id/installments/:installmentId/pay", ({ params, body }) => controller.payInstallment(env.DEV_USER_ID, params.id, params.installmentId, body), {
-        body: payLoanInstallmentSchema,
-        detail: {
-            summary: "Pay a loan installment",
-            description: "Creates a settlement transaction on the loan's associated account and marks the installment as paid.",
-            responses: { 200: { description: "Installment paid" }, 404: { description: "Installment not found" }, 409: { description: "Installment already paid" } },
+    .post(
+        "/:id/installments/:installmentId/pay",
+        ({ params, body }) => controller.payInstallment(env.DEV_USER_ID, params.id, params.installmentId, body),
+        {
+            body: payLoanInstallmentSchema,
+            detail: {
+                summary: "Pay a loan installment",
+                description:
+                    "Creates a settlement transaction on the loan's associated account and marks the installment as paid.",
+                responses: {
+                    200: { description: "Installment paid" },
+                    404: { description: "Installment not found" },
+                    409: { description: "Installment already paid" },
+                },
+            },
         },
-    })
+    )

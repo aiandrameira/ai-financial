@@ -1,31 +1,46 @@
-import { inject, Injectable, signal } from "@angular/core";
-import { finalize, forkJoin, Observable, tap } from "rxjs";
+import { computed, inject, Injectable, signal } from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
+import { Observable, tap } from "rxjs";
 
-import type { BudgetDto, CategoryDto, RequestBudgetDto } from "@domain/schemas";
+import { CursorPaginationState, DEFAULT_PAGE_SIZE, emptyCursorPage, toLastGoodCursorPage } from "@core/ui";
+import type { BudgetDto, BudgetFilterDto, CategoryDto, RequestBudgetDto } from "@domain/schemas";
 import { BudgetService, CategoryService } from "@infra/services";
 
 @Injectable({ providedIn: "root" })
-export class BudgetFacade {
+export class BudgetFacade extends CursorPaginationState {
     #budgetService = inject(BudgetService);
     #categoryService = inject(CategoryService);
 
-    #budgets = signal<BudgetDto[]>([]);
-    readonly budgets = this.#budgets.asReadonly();
+    #referenceMonth = signal("");
+    #emptyList = emptyCursorPage<BudgetDto>(DEFAULT_PAGE_SIZE);
+    #listResource = rxResource({
+        params: () => (this.#referenceMonth() ? ({ ...this.toQueryParams(), referenceMonth: this.#referenceMonth() } as BudgetFilterDto) : undefined),
+        stream: ({ params }) => this.#budgetService.find(params),
+        defaultValue: this.#emptyList,
+    });
+    #page = toLastGoodCursorPage(this.#listResource, this.#emptyList);
+    #categoriesResource = rxResource({ stream: () => this.#categoryService.findAll(), defaultValue: [] as CategoryDto[] });
+    readonly budgets = computed(() => this.#page.list().data);
+    readonly categories = computed(() => (this.#categoriesResource.status() === "error" ? [] : this.#categoriesResource.value()));
 
-    #categories = signal<CategoryDto[]>([]);
-    readonly categories = this.#categories.asReadonly();
-
-    #loading = signal(false);
-    readonly loading = this.#loading.asReadonly();
+    constructor() {
+        super({ getPagination: () => this.#page.list().pagination, isLoading: () => this.#listResource.isLoading() });
+    }
 
     load(referenceMonth: string): void {
-        this.#loading.set(true);
-        forkJoin([this.#budgetService.find(referenceMonth), this.#categoryService.find()])
-            .pipe(finalize(() => this.#loading.set(false)))
-            .subscribe(([budgets, categories]) => {
-                this.#budgets.set(budgets);
-                this.#categories.set(categories);
-            });
+        this.#referenceMonth.set(referenceMonth);
+        this.reset();
+        this.#listResource.reload();
+    }
+
+    changeLimit(limit: number): void {
+        this.setPageSize(limit);
+    }
+    next(): void {
+        this.goNext();
+    }
+    previous(): void {
+        this.goPrevious();
     }
 
     create(input: RequestBudgetDto): Observable<BudgetDto> {

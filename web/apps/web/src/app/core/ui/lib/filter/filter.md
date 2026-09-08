@@ -37,8 +37,8 @@ O `FilterManager` retornado por `getFilters()` expõe dois formatos de saída:
 Prefira `toParams()` nos serviços Angular, pois evita concatenação manual de URL:
 
 ```typescript
-find(filter?: UserFilterDto): Observable<IPaginated<UserListDto>> {
+find(filter?: UserFilterDto): Observable<CursorPaginated<UserListDto>> {
     const params = new UserFilter(filter ?? {}).getFilters().toParams();
-    return this.#client.get<UserListDto[]>(this.#api, { params }).pipe(map(response => mapPaginated(response)));
+    return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<UserListDto>(response)));
 }
 ```

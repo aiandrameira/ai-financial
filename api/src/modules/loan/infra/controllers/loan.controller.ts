@@ -1,5 +1,5 @@
 import { ApiResponse } from "@/http/api/response"
-import type { PaginationParams } from "@/http/api/schema/schemas"
+import type { CursorPaginationParams } from "@/http/api/schema/schemas"
 
 import type { CreateLoanSchema, FindLoansQuery, PayLoanInstallmentSchema, UpdateLoanSchema } from "../../app/schemas"
 import type {
@@ -27,7 +27,7 @@ export class LoanController {
 
     async find(userId: string, params: FindLoansQuery) {
         const result = await this.usecases.find.execute(userId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async get(userId: string, id: string) {
@@ -50,9 +50,9 @@ export class LoanController {
         return ApiResponse.success("Loan deleted")
     }
 
-    async findInstallments(userId: string, loanId: string, params: PaginationParams) {
+    async findInstallments(userId: string, loanId: string, params: CursorPaginationParams) {
         const result = await this.usecases.findInstallments.execute(userId, loanId, params)
-        return ApiResponse.paginated(result)
+        return ApiResponse.cursorPaginated(result)
     }
 
     async payInstallment(userId: string, loanId: string, id: string, body: PayLoanInstallmentSchema) {

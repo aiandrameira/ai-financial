@@ -1,46 +1,77 @@
-import { inject, Injectable, signal } from "@angular/core";
-import { finalize, forkJoin, Observable, tap } from "rxjs";
+import { computed, inject, Injectable, signal } from "@angular/core";
+import { rxResource } from "@angular/core/rxjs-interop";
+import { Observable, tap } from "rxjs";
 
-import type { AccountDto, CreditCardDto, RequestCreditCardDto } from "@domain/schemas";
+import { CursorPaginationState, DEFAULT_PAGE_SIZE, emptyCursorPage, toLastGoodCursorPage } from "@core/ui";
+import { AccountDto, CreditCardDto, CreditCardFilterDto, RequestCreditCardDto } from "@domain/schemas";
 import { AccountService, CreditCardService } from "@infra/services";
 
+const EMPTY_LIST = emptyCursorPage<CreditCardDto>(DEFAULT_PAGE_SIZE);
+
 @Injectable({ providedIn: "root" })
-export class CreditCardFacade {
-    #creditCardService = inject(CreditCardService);
-    #accountService = inject(AccountService);
+export class CreditCardFacade extends CursorPaginationState {
+    #service = inject(CreditCardService);
+    #filter = signal<CreditCardFilterDto>({});
 
-    #creditCards = signal<CreditCardDto[]>([]);
-    readonly creditCards = this.#creditCards.asReadonly();
+    #listResource = rxResource({
+        params: () => ({ ...this.#filter(), ...this.toQueryParams() }) as CreditCardFilterDto,
+        stream: ({ params }) => this.#service.find(params),
+        defaultValue: EMPTY_LIST,
+    });
+    #page = toLastGoodCursorPage(this.#listResource, EMPTY_LIST);
+    readonly creditCards = computed(() => this.#page.list().data);
 
-    #accounts = signal<AccountDto[]>([]);
-    readonly accounts = this.#accounts.asReadonly();
+    #accountsService = inject(AccountService);
+    #accountsResource = rxResource({ stream: () => this.#accountsService.findAll(), defaultValue: [] as AccountDto[] });
+    readonly accounts = computed(() => (this.#accountsResource.status() === "error" ? [] : this.#accountsResource.value()));
 
-    #loading = signal(false);
-    readonly loading = this.#loading.asReadonly();
-
-    load(): void {
-        this.#loading.set(true);
-        forkJoin([this.#creditCardService.find(), this.#accountService.find()])
-            .pipe(finalize(() => this.#loading.set(false)))
-            .subscribe(([creditCards, accounts]) => {
-                this.#creditCards.set(creditCards);
-                this.#accounts.set(accounts);
-            });
+    constructor() {
+        super({ getPagination: () => this.#page.list().pagination, isLoading: () => this.#listResource.isLoading() });
     }
 
-    create(input: RequestCreditCardDto): Observable<CreditCardDto> {
-        return this.#creditCardService.create(input).pipe(tap(() => this.load()));
+    load(filter?: CreditCardFilterDto): void {
+        if (filter) this.setFilter(filter);
+        this.reload();
+        this.#accountsResource.reload();
     }
 
-    update(id: string, input: RequestCreditCardDto): Observable<void> {
-        return this.#creditCardService.update(id, input).pipe(tap(() => this.load()));
+    reload(): void {
+        this.reset();
+        this.#listResource.reload();
+    }
+
+    setFilter(filter: CreditCardFilterDto): void {
+        this.#filter.set(filter);
+        this.reset();
+    }
+
+    search(query: string): void {
+        this.setFilter({ ...this.#filter(), query });
+    }
+
+    changeLimit(limit: number): void {
+        this.setPageSize(limit);
+    }
+    next(): void {
+        this.goNext();
+    }
+    previous(): void {
+        this.goPrevious();
+    }
+
+    create(body: RequestCreditCardDto): Observable<CreditCardDto> {
+        return this.#service.create(body).pipe(tap(() => this.reload()));
+    }
+
+    update(id: string, body: RequestCreditCardDto): Observable<void> {
+        return this.#service.update(id, body).pipe(tap(() => this.reload()));
+    }
+
+    archive(id: string): Observable<void> {
+        return this.#service.archive(id).pipe(tap(() => this.reload()));
     }
 
     save(input: RequestCreditCardDto): Observable<unknown> {
         return input.id ? this.update(input.id, input) : this.create(input);
-    }
-
-    archive(id: string): Observable<void> {
-        return this.#creditCardService.archive(id).pipe(tap(() => this.load()));
     }
 }

@@ -2,7 +2,8 @@ import { and, count, eq, gte, lt, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { budgets, transactions } from "@/db/schema"
-import type { IPaginated } from "@/http/api/response"
+import { buildCursorPage, cursorOrder, cursorWhere } from "@/http/api/cursor"
+import type { ICursorPaginated } from "@/http/api/response"
 
 import type { BudgetDto } from "../../app/dtos"
 import type { CreateBudgetSchema, FindBudgetsQuery, UpdateBudgetSchema } from "../../app/schemas"
@@ -31,7 +32,7 @@ async function computeRealizedAmount(categoryId: string, referenceMonth: Date): 
 }
 
 export class BudgetDrizzleRepository implements BudgetRepository {
-    async find(userId: string, params: FindBudgetsQuery): Promise<IPaginated<BudgetDto>> {
+    async find(userId: string, params: FindBudgetsQuery): Promise<ICursorPaginated<BudgetDto>> {
         const where = and(
             eq(budgets.userId, userId),
             params.categoryId ? eq(budgets.categoryId, params.categoryId) : undefined,
@@ -45,16 +46,23 @@ export class BudgetDrizzleRepository implements BudgetRepository {
                 : undefined,
         )
 
-        const [rows, [{ total }]] = await Promise.all([
+        const sort = {
+            column: budgets.referenceMonth,
+            direction: "asc" as const,
+            parseValue: (value: string | number) => new Date(value),
+        }
+        const pageWhere = and(where, cursorWhere({ id: budgets.id }, params, sort))
+
+        const [rows, totalResult] = await Promise.all([
             db
                 .select()
                 .from(budgets)
-                .where(where)
-                .orderBy(budgets.referenceMonth)
-                .limit(params.size)
-                .offset((params.page - 1) * params.size),
-            db.select({ total: count() }).from(budgets).where(where),
+                .where(pageWhere)
+                .orderBy(...cursorOrder({ id: budgets.id }, params, sort))
+                .limit(params.limit + 1),
+            params.includeTotal ? db.select({ total: count() }).from(budgets).where(where) : undefined,
         ])
+        const total = totalResult?.[0].total
 
         const data = await Promise.all(
             rows.map(async (row) =>
@@ -62,7 +70,7 @@ export class BudgetDrizzleRepository implements BudgetRepository {
             ),
         )
 
-        return { data, page: params.page, size: params.size, total }
+        return buildCursorPage(data, params.limit, params, total, { getValue: (row: BudgetDto) => row.referenceMonth })
     }
 
     async get(userId: string, id: string): Promise<BudgetDto | null> {

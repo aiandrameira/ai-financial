@@ -1,25 +1,32 @@
-import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
-import { BadgeCategory, BadgeTpCategory, TableImports } from "@core/ui";
+import { BadgeCategory, BadgeTpCategory, createCursorSearchController, TableImports, toAiTablePagination } from "@core/ui";
 import { removeAlertDialog } from "@core/utils";
 import { CategoryDto } from "@domain/schemas";
-import { CategoryService } from "@infra/services";
+import { CategoryFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-category",
-    imports: [TableImports, BadgeTpCategory, BadgeCategory],
+    imports: [TableImports, AiInput, BadgeTpCategory, BadgeCategory],
     templateUrl: "./table-category.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableCategory implements OnInit {
-    #service = inject(CategoryService);
+    #facade = inject(CategoryFacade);
     #alert = inject(AiAlertDialogService);
     #toast = inject(AiToastService);
 
-    #categories = signal<CategoryDto[]>([]);
-
     readonly edit = output<CategoryDto>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<CategoryDto>[]>([
         { key: "name", label: "Nome" },
@@ -29,7 +36,7 @@ export class TableCategory implements OnInit {
 
     readonly config = computed<AiTableConfig<CategoryDto>>(() => ({
         columns: this.columns(),
-        data: this.#categories(),
+        data: this.#facade.categories(),
     }));
 
     ngOnInit() {
@@ -37,7 +44,7 @@ export class TableCategory implements OnInit {
     }
 
     load(): void {
-        this.#service.find().subscribe(categories => this.#categories.set(categories));
+        this.#facade.load();
     }
 
     rowClick(item: CategoryDto) {
@@ -54,7 +61,7 @@ export class TableCategory implements OnInit {
     }
 
     private _remove(item: CategoryDto): void {
-        this.#service.delete(item.id).subscribe({
+        this.#facade.delete(item.id).subscribe({
             next: () => {
                 this.#toast.success({ message: "Categoria apagada com sucesso." });
                 this.load();

@@ -1,9 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
+import { collectCursorPages, CursorPaginated, mapCursorPaginated } from "@core/ui";
+import { CreditCardFilter } from "@domain/filters";
+import { CreditCardFilterDto } from "@domain/schemas";
 import type { Observable } from "rxjs";
 import { map } from "rxjs";
 
-import { mapFind, mapGet } from "@core/ui";
+import { mapGet } from "@core/ui";
 import type { CreditCardDto, CreditCardRepository } from "@domain/repositories";
 import type { RequestCreditCardDto } from "@domain/schemas";
 import { environment } from "@env/environment";
@@ -15,8 +18,13 @@ export class CreditCardService implements CreditCardRepository {
     #client = inject(HttpClient);
     #api = environment.apiUrl.concat("/credit-cards");
 
-    find(): Observable<CreditCardDto[]> {
-        return this.#client.get(this.#api, { params: { limit: 100 } }).pipe(map(response => mapFind(response)));
+    find(filter: CreditCardFilterDto = {}): Observable<CursorPaginated<CreditCardDto>> {
+        const params = new CreditCardFilter(filter).getFilters().toParams();
+        return this.#client.get(this.#api, { params }).pipe(map(response => mapCursorPaginated<CreditCardDto>(response)));
+    }
+
+    findAll(filter: CreditCardFilterDto = {}): Observable<CreditCardDto[]> {
+        return collectCursorPages(cursor => this.find({ ...filter, limit: 100, cursor, includeTotal: false }));
     }
 
     create(body: RequestCreditCardDto): Observable<CreditCardDto> {

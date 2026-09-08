@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cursorFilterSchema } from "./cursor-filter.schema";
 
 export const requestBudgetSchema = z.object({
     id: z
@@ -27,3 +28,13 @@ export const budgetSchema = z.object({
 });
 
 export type BudgetDto = z.infer<typeof budgetSchema>;
+
+export const budgetFilterSchema = cursorFilterSchema.extend({
+    categoryId: z.string().optional(),
+    referenceMonth: z.string().optional(),
+});
+export type BudgetFilterDto = z.infer<typeof budgetFilterSchema>;
+
+export function makeBudgetFilter(raw: Partial<BudgetFilterDto> = {}): BudgetFilterDto {
+    return budgetFilterSchema.parse(raw);
+}

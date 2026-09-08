@@ -1,15 +1,15 @@
-import { AiAlertDialogService, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
+import { AiAlertDialogService, AiInput, AiTableColumn, AiTableConfig, AiToastService } from "@aiandralves/ai-ui";
 import { HttpErrorResponse } from "@angular/common/http";
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, output, signal } from "@angular/core";
 import { Router } from "@angular/router";
-import { BadgeTpAccount, TableImports } from "@core/ui";
+import { BadgeTpAccount, createCursorSearchController, TableImports, toAiTablePagination } from "@core/ui";
 import { archiveAlertDialog } from "@core/utils";
 import { CreditCardDto } from "@domain/schemas";
 import { CreditCardFacade } from "@infra/facades";
 
 @Component({
     selector: "ai-table-credit-card",
-    imports: [TableImports, BadgeTpAccount],
+    imports: [TableImports, AiInput, BadgeTpAccount],
     templateUrl: "./table-credit-card.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -22,6 +22,15 @@ export class TableCreditCard implements OnInit {
     readonly accounts = this.#facade.accounts;
 
     readonly edit = output<CreditCardDto>();
+
+    readonly paginationConfig = toAiTablePagination(this.#facade, [5, 10, 20, 50]);
+    readonly #pageNav = createCursorSearchController(this.#facade);
+    readonly query = this.#pageNav.query;
+    readonly onQueryChange = this.#pageNav.onQueryChange;
+    readonly search = this.#pageNav.search;
+    readonly clear = this.#pageNav.clear;
+    readonly onPageChange = this.#pageNav.onPageChange;
+    readonly onPageSizeChange = this.#pageNav.onPageSizeChange;
 
     readonly columns = signal<AiTableColumn<CreditCardDto>[]>([
         { key: "name", label: "Nome" },
