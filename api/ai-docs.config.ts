@@ -12,5 +12,10 @@ export default defineConfig({
         darkMode: true,
         copyCode: true,
         mermaid: true,
+        editOnGitHub: {
+            repo: "https://github.com/aiandrameira/ai-financial",
+            branch: "main",
+            docsDir: "api/docs",
+        },
     },
 })
