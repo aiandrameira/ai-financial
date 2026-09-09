@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: ai_financial_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ai_financial}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-ai_financial}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ai_financial} -d ${POSTGRES_DB:-ai_financial}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sem "ports:" de propósito — só a rede interna do compose acessa o Postgres.
+
+  api:
+    build:
+      context: ./api
+      args:
+        NPM_AUTH_TOKEN: ${NPM_AUTH_TOKEN}
+    container_name: ai_financial_api
+    restart: unless-stopped
+    env_file:
+      - ./api/.env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ai_financial}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_financial}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - default
+      - caddy_shared
+    # Sem "ports:" — só o Caddy do ai-infra fala com a API, pela rede "caddy_shared" (ver docs/deploy.md).
+
+  web:
+    build:
+      context: ./web
+      dockerfile: apps/web/Dockerfile
+      args:
+        NPM_AUTH_TOKEN: ${NPM_AUTH_TOKEN}
+    container_name: ai_financial_web
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - default
+      - caddy_shared
+    # Sem "ports:" — mesmo esquema da API, o Caddy do ai-infra faz o reverse proxy.
+
+networks:
+  caddy_shared:
+    external: true
+
+volumes:
+  postgres_data:

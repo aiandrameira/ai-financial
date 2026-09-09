@@ -33,17 +33,17 @@ services:
       postgres:
         condition: service_healthy
 
-  # web: app Angular ainda não gerado (web/apps/ está vazio — ver docs/planning.md Fase 0/1).
-  # Descomentar quando web/apps/web/Dockerfile existir.
-  # web:
-  #   build:
-  #     context: ./web
-  #     dockerfile: apps/web/Dockerfile
-  #   container_name: ai_financial_web
-  #   ports:
-  #     - "4213:80"
-  #   depends_on:
-  #     - api
+  web:
+    build:
+      context: ./web
+      dockerfile: apps/web/Dockerfile
+      args:
+        NPM_AUTH_TOKEN: ${NPM_AUTH_TOKEN}
+    container_name: ai_financial_web
+    ports:
+      - "4213:80"
+    depends_on:
+      - api
 
   docs:
     build:
