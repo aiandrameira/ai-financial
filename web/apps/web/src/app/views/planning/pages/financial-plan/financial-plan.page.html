@@ -1,0 +1,71 @@
+<div class="main flex flex-col gap-y-6">
+    <ai-heading icon="compass-3" title="Planejamento" description="Sua renda, contas fixas, dívidas e metas em um só lugar." />
+
+    <div class="flex flex-col gap-y-1 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col">
+            <span class="text-sm text-muted-foreground">Renda mensal</span>
+            <span class="text-2xl font-semibold">{{ monthlyIncome() | currency }}</span>
+        </div>
+        <ai-button variant="primary" size="sm" icon="pencil" (click)="openIncomeDialog()">Editar renda</ai-button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-y-1 rounded-xl border border-border p-4">
+            <span class="text-sm text-muted-foreground">Contas fixas do mês</span>
+            <span class="text-2xl font-semibold">{{ fixedExpenses() | currency }}</span>
+        </div>
+        <div class="flex flex-col gap-y-1 rounded-xl border p-4" [class]="surplus() >= 0 ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-rose-500/40 bg-rose-500/5'">
+            <span class="text-sm text-muted-foreground">Sobra do mês</span>
+            <span class="text-2xl font-semibold" [class]="surplus() >= 0 ? 'text-emerald-600' : 'text-rose-600'">{{ surplus() | currency }}</span>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-y-3">
+        <ai-heading icon="file-list" title="Dívidas ativas" />
+
+        @if (debts().length === 0) {
+            <p class="text-sm text-muted-foreground">Nenhuma dívida ativa.</p>
+        } @else {
+            <div class="flex flex-col gap-y-2">
+                @for (debt of debts(); track debt.id) {
+                    <div class="flex flex-col gap-y-1 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex flex-col">
+                            <span class="font-medium">{{ debt.name }}</span>
+                            <span class="text-sm text-muted-foreground">Saldo devedor: {{ debt.outstandingBalance | currency }}</span>
+                        </div>
+                        @if (debt.nextInstallmentAmount) {
+                            <div class="flex flex-col sm:text-right">
+                                <span class="font-medium">{{ debt.nextInstallmentAmount | currency }}</span>
+                                <span class="text-sm text-muted-foreground">
+                                    @if (debt.nextInstallmentDueDate) {
+                                        vence em {{ debt.nextInstallmentDueDate | date: "dd/MM/yyyy" }}
+                                    }
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="flex flex-col gap-y-3">
+        <ai-heading icon="triangular-flag" title="Metas ativas" />
+
+        @if (goals().length === 0) {
+            <p class="text-sm text-muted-foreground">Nenhuma meta ativa.</p>
+        } @else {
+            <div class="flex flex-col gap-y-3">
+                @for (goal of goals(); track goal.id) {
+                    <div class="flex flex-col gap-y-2 rounded-lg border border-border p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium">{{ goal.name }}</span>
+                            <span class="text-sm text-muted-foreground">Faltam {{ goal.remainingAmount | currency }}</span>
+                        </div>
+                        <ai-progress-bar [progress]="goalProgress(goal.progressPercent)" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

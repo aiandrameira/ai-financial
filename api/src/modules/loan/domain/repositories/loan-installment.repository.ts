@@ -16,6 +16,7 @@ export interface LoanInstallmentRepository {
     get(userId: string, loanId: string, id: string): Promise<LoanInstallmentDto | null>
     pay(userId: string, id: string, paidAt: Date): Promise<void>
     findDueSoon(maxDueDate: Date): Promise<DueSoonInstallmentDto[]>
+    findNextUnpaid(userId: string, loanId: string): Promise<LoanInstallmentDto | null>
 }
 
 export type { LoanInstallmentDto }

@@ -1,7 +1,15 @@
 import { z } from "zod";
 import { cursorFilterSchema } from "./cursor-filter.schema";
 
-import { stTransactionEnum, tpTransactionEnum, tpTransferMethodEnum } from "../enums";
+import { stTransactionEnum, tpRecurrenceFrequencyEnum, tpTransactionEnum, tpTransferMethodEnum } from "../enums";
+
+export const requestRecurrenceSchema = z.object({
+    frequency: z.enum(tpRecurrenceFrequencyEnum).default(tpRecurrenceFrequencyEnum.MONTHLY),
+    interval: z.number().int().positive().default(1),
+    endDate: z.string().optional(),
+});
+
+export type RequestRecurrenceDto = z.infer<typeof requestRecurrenceSchema>;
 
 export const requestTransactionSchema = z.object({
     id: z
@@ -12,10 +20,12 @@ export const requestTransactionSchema = z.object({
     creditCardId: z.string().default(""),
     categoryId: z.string().default(""),
     type: z.enum(tpTransactionEnum).exclude(["TRANSFER"]).default(tpTransactionEnum.EXPENSE),
+    status: z.enum(stTransactionEnum).optional(),
     amount: z.number().positive("Informe um valor maior que zero").default(0),
     description: z.string().default(""),
     date: z.string().min(1, "Informe a data").default(new Date().toISOString().slice(0, 10)),
     installments: z.number().int().min(1).max(48).default(1),
+    recurrence: requestRecurrenceSchema.optional(),
 });
 
 export type RequestTransactionDto = z.infer<typeof requestTransactionSchema>;

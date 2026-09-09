@@ -48,7 +48,7 @@ export class TableTransaction implements OnInit {
     }));
 
     ngOnInit() {
-        this.#facade.load();
+        this.#facade.load({});
     }
 
     rowClick(item: TransactionDto) {

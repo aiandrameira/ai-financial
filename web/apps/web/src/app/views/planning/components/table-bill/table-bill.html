@@ -1,0 +1,19 @@
+<ai-table [config]="config()">
+    <ng-template aiCellTemplate="date" let-item>
+        <ai-badge variant="default">
+            {{ item.date | date: "dd/MM/yyyy" }}
+        </ai-badge>
+    </ng-template>
+
+    <ng-template aiCellTemplate="type" let-item>
+        <ai-badge-tp-transaction [type]="item.type" />
+    </ng-template>
+
+    <ng-template aiCellTemplate="amount" let-item>
+        {{ abs(item.amount) | currency }}
+    </ng-template>
+
+    <ng-template aiCellTemplate="pay" let-item>
+        <ai-button variant="primary" fill="line" icon="checkbox-circle" size="xs" (click)="markAsPaid($event, item)">Marcar como paga</ai-button>
+    </ng-template>
+</ai-table>

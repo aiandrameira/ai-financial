@@ -5,8 +5,8 @@ import { disabled, form, required, submit, validateStandardSchema } from "@angul
 import { isArrayId } from "@core/helpers";
 import { BadgeCategory, BadgeTpAccount, BadgeTpTransaction, FormImports } from "@core/ui";
 import { matchesCategoryType } from "@core/utils";
-import { TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPES } from "@domain/constants";
-import { tpTransactionEnum } from "@domain/enums";
+import { RECURRENCE_FREQUENCY_ITEMS, TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPES } from "@domain/constants";
+import { tpRecurrenceFrequencyEnum, tpTransactionEnum } from "@domain/enums";
 import { makeRequestTransaction, RequestTransactionDto, requestTransactionSchema, TransactionDto } from "@domain/schemas";
 import { TransactionAdapter } from "@infra/adapters";
 import { TransactionFacade } from "@infra/facades";
@@ -31,6 +31,8 @@ export class FormTransaction {
     readonly enabled = signal<boolean>(false);
     readonly origin = signal<TransactionOrigin>("account");
     readonly parcelar = signal<boolean>(false);
+    readonly recorrente = signal<boolean>(false);
+    readonly recurrenceFrequencyItems = RECURRENCE_FREQUENCY_ITEMS;
     protected transactionSchema = signal<RequestTransactionDto>(makeRequestTransaction());
 
     readonly form = form(this.transactionSchema, schema => {
@@ -52,6 +54,7 @@ export class FormTransaction {
     readonly selectedCreditCard = computed(() => this.creditCards().find(creditCard => creditCard.id === this.form().value().creditCardId) ?? null);
     readonly selectedCategory = computed(() => this.categoriesForType().find(category => category.id === this.form().value().categoryId) ?? null);
     readonly canInstall = computed(() => this.origin() === "creditCard" && this.form().value().type === tpTransactionEnum.EXPENSE && !this.id());
+    readonly canRecur = computed(() => this.origin() === "account" && !this.id());
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
@@ -82,7 +85,8 @@ export class FormTransaction {
         const origin = (Array.isArray(value) ? value[0] : value) as TransactionOrigin;
         this.origin.set(origin);
         this.parcelar.set(false);
-        this.transactionSchema.update(current => ({ ...current, accountId: "", creditCardId: "", installments: 1 }));
+        this.recorrente.set(false);
+        this.transactionSchema.update(current => ({ ...current, accountId: "", creditCardId: "", installments: 1, recurrence: undefined }));
     }
 
     protected onTypeChange(value: unknown): void {
@@ -94,6 +98,30 @@ export class FormTransaction {
     protected onParcelarChange(checked: boolean): void {
         this.parcelar.set(checked);
         this.transactionSchema.update(current => ({ ...current, installments: checked ? 2 : 1 }));
+    }
+
+    protected onRecorrenteChange(checked: boolean): void {
+        this.recorrente.set(checked);
+        this.transactionSchema.update(current => ({
+            ...current,
+            recurrence: checked ? { frequency: tpRecurrenceFrequencyEnum.MONTHLY, interval: 1 } : undefined,
+        }));
+    }
+
+    protected onRecurrenceFrequencyChange(value: unknown): void {
+        const frequency = (Array.isArray(value) ? value[0] : value) as tpRecurrenceFrequencyEnum;
+        this.transactionSchema.update(current => ({
+            ...current,
+            recurrence: { frequency, interval: current.recurrence?.interval ?? 1 },
+        }));
+    }
+
+    protected onRecurrenceIntervalChange(value: string | number | null): void {
+        const interval = Math.max(1, Number(value) || 1);
+        this.transactionSchema.update(current => ({
+            ...current,
+            recurrence: { frequency: current.recurrence?.frequency ?? tpRecurrenceFrequencyEnum.MONTHLY, interval },
+        }));
     }
 
     protected onAccountChange(value: unknown): void {

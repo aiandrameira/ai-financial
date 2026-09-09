@@ -1,4 +1,4 @@
-import { and, count, eq, isNull, lte } from "drizzle-orm"
+import { and, asc, count, eq, isNull, lte } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { loanInstallments, loans } from "@/db/schema"
@@ -73,5 +73,22 @@ export class LoanInstallmentDrizzleRepository implements LoanInstallmentReposito
             .where(and(isNull(loanInstallments.paidAt), lte(loanInstallments.dueDate, maxDueDate)))
 
         return rows.map((row) => ({ ...row, dueDate: row.dueDate.toISOString() }))
+    }
+
+    async findNextUnpaid(userId: string, loanId: string): Promise<LoanInstallmentDto | null> {
+        const [row] = await db
+            .select()
+            .from(loanInstallments)
+            .where(
+                and(
+                    eq(loanInstallments.userId, userId),
+                    eq(loanInstallments.loanId, loanId),
+                    isNull(loanInstallments.paidAt),
+                ),
+            )
+            .orderBy(asc(loanInstallments.number))
+            .limit(1)
+
+        return row ? mapLoanInstallmentToDto(row) : null
     }
 }

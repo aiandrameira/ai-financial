@@ -30,6 +30,10 @@ export const appRoutes: Route[] = [
                 loadChildren: () => import("./views/budget/budget.routes").then(m => m.budgetRoutes),
             },
             {
+                path: "planning",
+                loadChildren: () => import("./views/planning/planning.routes").then(m => m.planningRoutes),
+            },
+            {
                 path: "loans",
                 loadChildren: () => import("./views/loan/loan.routes").then(m => m.loanRoutes),
             },

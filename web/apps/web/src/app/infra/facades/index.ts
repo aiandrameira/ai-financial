@@ -4,6 +4,7 @@ export * from "./budget.facade";
 export * from "./category.facade";
 export * from "./credit-card-invoice.facade";
 export * from "./credit-card.facade";
+export * from "./financial-plan.facade";
 export * from "./goal-contribution.facade";
 export * from "./investment-movement.facade";
 export * from "./investment-price.facade";

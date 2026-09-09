@@ -107,10 +107,43 @@
             </div>
 
             @if (parcelar()) {
-                <ai-input class="w-28" 
-                    type="number" 
-                    label="Parcelas" 
+                <ai-input class="w-28"
+                    type="number"
+                    label="Parcelas"
                     [formField]="form.installments" />
+            }
+        </div>
+    }
+
+    @if (canRecur()) {
+        <div class="flex flex-col gap-y-3 rounded-lg border border-border p-3">
+            <div class="flex items-center gap-x-2">
+                <ai-switch
+                    [checked]="recorrente()"
+                    [disabled]="form().disabled()"
+                    (changeCheck)="onRecorrenteChange($event)" />
+                <span class="text-sm font-medium">Repetir automaticamente</span>
+            </div>
+
+            @if (recorrente()) {
+                <div class="grid grid-cols-2 gap-x-2">
+                    <ai-select
+                        class="w-full [&_button]:h-12"
+                        placeholder="Frequência"
+                        [value]="transactionSchema().recurrence?.frequency"
+                        [disabled]="form().disabled()"
+                        (selectionChange)="onRecurrenceFrequencyChange($event)">
+                        @for (item of recurrenceFrequencyItems; track item.value) {
+                            <ai-select-item [value]="item.value">{{ item.label }}</ai-select-item>
+                        }
+                    </ai-select>
+
+                    <ai-input class="w-full"
+                        type="number"
+                        label="A cada"
+                        [value]="transactionSchema().recurrence?.interval ?? 1"
+                        (valueChange)="onRecurrenceIntervalChange($event)" />
+                </div>
             }
         </div>
     }

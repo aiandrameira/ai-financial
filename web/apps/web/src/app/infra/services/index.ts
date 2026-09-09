@@ -4,6 +4,8 @@ export * from "./budget/budget.service";
 export * from "./category/category.service";
 export * from "./credit-card-invoice/credit-card-invoice.service";
 export * from "./credit-card/credit-card.service";
+export * from "./financial-plan/financial-plan.service";
+export * from "./financial-settings/financial-settings.service";
 export * from "./goal-contribution/goal-contribution.service";
 export * from "./investment-movement/investment-movement.service";
 export * from "./investment-price/investment-price.service";

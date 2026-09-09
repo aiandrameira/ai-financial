@@ -4,6 +4,8 @@ export * from "./budget.repository";
 export * from "./category.repository";
 export * from "./credit-card-invoice.repository";
 export * from "./credit-card.repository";
+export * from "./financial-plan.repository";
+export * from "./financial-settings.repository";
 export * from "./goal-contribution.repository";
 export * from "./investment-movement.repository";
 export * from "./investment-price.repository";

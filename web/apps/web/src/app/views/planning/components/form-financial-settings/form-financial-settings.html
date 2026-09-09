@@ -1,0 +1,15 @@
+<div class="flex flex-col gap-y-4">
+    <ai-input class="w-full" label="Renda mensal" [maskConfig]="vlMaskConfig" [formField]="form.monthlyIncome" />
+
+    <div class="flex justify-end gap-x-2 border-t border-border pt-2">
+        @let isDisabled = form().disabled();
+
+        <ai-button-form
+            [isNew]="false"
+            [disabled]="isDisabled"
+            [loading]="loading()"
+            (cancelEdit)="enabled.set(true)"
+            (edit)="enabled.set(false)"
+            (save)="onSave()" />
+    </div>
+</div>
