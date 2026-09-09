@@ -10,7 +10,7 @@
     },
     "private": true,
     "dependencies": {
-        "@aiandralves/ai-ui": "^1.1.13",
+        "@aiandralves/ai-ui": "^1.1.14",
         "@angular-devkit/build-angular": "21.1.1",
         "@angular/animations": "21.1.1",
         "@angular/cdk": "21.1.1",
