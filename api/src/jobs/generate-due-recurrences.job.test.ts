@@ -13,7 +13,7 @@ function fakeUseCase(created: TransactionDto[]): GenerateDueRecurrencesUseCase {
 
 describe("generateDueRecurrences", () => {
     test("returns zero when no recurrence is due", async () => {
-        const result = await generateDueRecurrences(fakeUseCase([]))
+        const result = await generateDueRecurrences(fakeUseCase([]), () => Promise.resolve("user-1"))
 
         expect(result).toEqual({ generated: 0 })
     })
@@ -21,9 +21,19 @@ describe("generateDueRecurrences", () => {
     test("returns the count of occurrences created", async () => {
         const usecase = fakeUseCase([{ id: "tx-1" } as TransactionDto, { id: "tx-2" } as TransactionDto])
 
-        const result = await generateDueRecurrences(usecase)
+        const result = await generateDueRecurrences(usecase, () => Promise.resolve("user-1"))
 
         expect(result).toEqual({ generated: 2 })
         expect(usecase.execute).toHaveBeenCalledTimes(1)
+        expect(usecase.execute).toHaveBeenCalledWith("user-1")
+    })
+
+    test("returns zero and does not call the use case when no user exists", async () => {
+        const usecase = fakeUseCase([{ id: "tx-1" } as TransactionDto])
+
+        const result = await generateDueRecurrences(usecase, () => Promise.resolve(null))
+
+        expect(result).toEqual({ generated: 0 })
+        expect(usecase.execute).not.toHaveBeenCalled()
     })
 })

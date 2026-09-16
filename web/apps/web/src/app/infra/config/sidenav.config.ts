@@ -1,4 +1,4 @@
-import type { SidenavGroup, SidenavUser, SidenavUserMenuItem } from "@core/ui";
+import type { SidenavGroup, SidenavUserMenuItem } from "@core/ui";
 
 export const SIDENAV_MODULES: SidenavGroup[] = [
     {
@@ -17,11 +17,6 @@ export const SIDENAV_MODULES: SidenavGroup[] = [
         ],
     },
 ];
-
-export const SIDENAV_USER: SidenavUser = {
-    name: "Aiandra Meira",
-    email: "aiandraalves.meira@gmail.com",
-};
 
 export const SIDENAV_USER_MENU_ITEMS: SidenavUserMenuItem[] = [
     { icon: "user", label: "Perfil", action: "profile" },

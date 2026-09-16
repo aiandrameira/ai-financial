@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 
-import { env } from "@/env"
+import { betterAuthPlugin } from "@/http/plugins/better-auth.plugin"
 
 import { createAccountSchema, findAccountsQuerySchema, updateAccountSchema } from "../../app/schemas"
 import {
@@ -29,49 +29,53 @@ function buildController() {
 const controller = buildController()
 
 export const accountRoutes = new Elysia({ prefix: "/accounts", tags: ["Accounts"] })
-    .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: findAccountsQuerySchema,
-        detail: {
-            summary: "List accounts",
-            responses: { 200: { description: "Cursor-paginated list of accounts" } },
-        },
-    })
-    .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Get account",
-            responses: { 200: { description: "Account found" }, 404: { description: "Account not found" } },
-        },
-    })
-    .post(
-        "/",
-        ({ body, set }) => {
-            set.status = 201
-            return controller.create(env.DEV_USER_ID, body)
-        },
-        {
-            body: createAccountSchema,
-            detail: {
-                summary: "Create account",
-                responses: { 201: { description: "Account created" } },
-            },
-        },
+    .use(betterAuthPlugin)
+    .guard({ auth: true }, app =>
+        app
+            .get("/", ({ query, user }) => controller.find(user.id, query), {
+                query: findAccountsQuerySchema,
+                detail: {
+                    summary: "List accounts",
+                    responses: { 200: { description: "Cursor-paginated list of accounts" } },
+                },
+            })
+            .get("/:id", ({ params, user }) => controller.get(user.id, params.id), {
+                detail: {
+                    summary: "Get account",
+                    responses: { 200: { description: "Account found" }, 404: { description: "Account not found" } },
+                },
+            })
+            .post(
+                "/",
+                ({ body, set, user }) => {
+                    set.status = 201
+                    return controller.create(user.id, body)
+                },
+                {
+                    body: createAccountSchema,
+                    detail: {
+                        summary: "Create account",
+                        responses: { 201: { description: "Account created" } },
+                    },
+                },
+            )
+            .put("/:id", ({ params, body, user }) => controller.update(user.id, params.id, body), {
+                body: updateAccountSchema,
+                detail: {
+                    summary: "Update account",
+                    responses: { 200: { description: "Account updated" }, 404: { description: "Account not found" } },
+                },
+            })
+            .post("/:id/archive", ({ params, user }) => controller.archive(user.id, params.id), {
+                detail: {
+                    summary: "Archive account",
+                    responses: { 200: { description: "Account archived" }, 404: { description: "Account not found" } },
+                },
+            })
+            .post("/:id/restore", ({ params, user }) => controller.restore(user.id, params.id), {
+                detail: {
+                    summary: "Restore an archived account",
+                    responses: { 200: { description: "Account restored" }, 404: { description: "Account not found" } },
+                },
+            }),
     )
-    .put("/:id", ({ params, body }) => controller.update(env.DEV_USER_ID, params.id, body), {
-        body: updateAccountSchema,
-        detail: {
-            summary: "Update account",
-            responses: { 200: { description: "Account updated" }, 404: { description: "Account not found" } },
-        },
-    })
-    .post("/:id/archive", ({ params }) => controller.archive(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Archive account",
-            responses: { 200: { description: "Account archived" }, 404: { description: "Account not found" } },
-        },
-    })
-    .post("/:id/restore", ({ params }) => controller.restore(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Restore an archived account",
-            responses: { 200: { description: "Account restored" }, 404: { description: "Account not found" } },
-        },
-    })

@@ -8,6 +8,13 @@
       "when": 1788955392972,
       "tag": "0000_cold_tyrannus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789572933274,
+      "tag": "0001_same_anita_blake",
+      "breakpoints": true
     }
   ]
 }

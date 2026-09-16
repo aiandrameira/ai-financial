@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 
-import { env } from "@/env"
+import { betterAuthPlugin } from "@/http/plugins/better-auth.plugin"
 
 import { updateFinancialSettingsSchema } from "../../app/schemas"
 import { GetFinancialSettingsUseCase, UpdateFinancialSettingsUseCase } from "../../app/usecases"
@@ -19,18 +19,22 @@ function buildController() {
 const controller = buildController()
 
 export const financialSettingsRoutes = new Elysia({ prefix: "/financial-settings", tags: ["Financial Settings"] })
-    .get("/", () => controller.get(env.DEV_USER_ID), {
-        detail: {
-            summary: "Get financial settings",
-            description: "Returns the user's monthly income setting, defaulting to zero if never set.",
-            responses: { 200: { description: "Financial settings" } },
-        },
-    })
-    .put("/", ({ body }) => controller.update(env.DEV_USER_ID, body), {
-        body: updateFinancialSettingsSchema,
-        detail: {
-            summary: "Update financial settings",
-            description: "Upserts the user's monthly income.",
-            responses: { 200: { description: "Financial settings updated" } },
-        },
-    })
+    .use(betterAuthPlugin)
+    .guard({ auth: true }, app =>
+        app
+            .get("/", ({ user }) => controller.get(user.id), {
+                detail: {
+                    summary: "Get financial settings",
+                    description: "Returns the user's monthly income setting, defaulting to zero if never set.",
+                    responses: { 200: { description: "Financial settings" } },
+                },
+            })
+            .put("/", ({ body, user }) => controller.update(user.id, body), {
+                body: updateFinancialSettingsSchema,
+                detail: {
+                    summary: "Update financial settings",
+                    description: "Upserts the user's monthly income.",
+                    responses: { 200: { description: "Financial settings updated" } },
+                },
+            }),
+    )

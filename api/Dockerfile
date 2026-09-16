@@ -11,4 +11,4 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 EXPOSE 3006
-CMD ["sh", "-c", "bunx drizzle-kit migrate && bun run src/index.ts"]
+CMD ["sh", "-c", "bunx drizzle-kit migrate && bun run src/db/seed-auth.ts && bun run src/index.ts"]

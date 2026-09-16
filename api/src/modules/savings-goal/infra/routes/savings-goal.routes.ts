@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 
-import { env } from "@/env"
+import { betterAuthPlugin } from "@/http/plugins/better-auth.plugin"
 import { AccountDrizzleRepository } from "@/modules/account/infra/repositories/account.drizzle"
 import { TransactionDrizzleRepository } from "@/modules/transaction/infra/repositories/transaction.drizzle"
 
@@ -53,87 +53,104 @@ function buildController() {
 const controller = buildController()
 
 export const savingsGoalRoutes = new Elysia({ prefix: "/goals", tags: ["Savings Goals"] })
-    .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: findSavingsGoalsQuerySchema,
-        detail: {
-            summary: "List savings goals",
-            description:
-                "Includes computed progress (current amount, remaining amount, percent) derived from contributions.",
-            responses: { 200: { description: "Cursor-paginated list of savings goals" } },
-        },
-    })
-    .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Get savings goal",
-            responses: { 200: { description: "Savings goal found" }, 404: { description: "Savings goal not found" } },
-        },
-    })
-    .post(
-        "/",
-        ({ body, set }) => {
-            set.status = 201
-            return controller.create(env.DEV_USER_ID, body)
-        },
-        {
-            body: createSavingsGoalSchema,
-            detail: {
-                summary: "Create savings goal",
-                responses: { 201: { description: "Savings goal created" } },
-            },
-        },
-    )
-    .put("/:id", ({ params, body }) => controller.update(env.DEV_USER_ID, params.id, body), {
-        body: updateSavingsGoalSchema,
-        detail: {
-            summary: "Update savings goal",
-            responses: { 200: { description: "Savings goal updated" }, 404: { description: "Savings goal not found" } },
-        },
-    })
-    .delete("/:id", ({ params }) => controller.delete(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Delete savings goal",
-            description: "Cascades to delete all of its contributions.",
-            responses: { 200: { description: "Savings goal deleted" }, 404: { description: "Savings goal not found" } },
-        },
-    })
-    .get("/:id/contributions", ({ params, query }) => controller.findContributions(env.DEV_USER_ID, params.id, query), {
-        query: findGoalContributionsQuerySchema,
-        detail: {
-            summary: "List goal contributions",
-            responses: {
-                200: { description: "Cursor-paginated list of contributions" },
-                404: { description: "Savings goal not found" },
-            },
-        },
-    })
-    .post(
-        "/:id/contributions",
-        ({ params, body, set }) => {
-            set.status = 201
-            return controller.createContribution(env.DEV_USER_ID, params.id, body)
-        },
-        {
-            body: createGoalContributionSchema,
-            detail: {
-                summary: "Add a contribution",
-                description: "Optionally references the transaction that actually moved the money.",
-                responses: {
-                    201: { description: "Contribution added" },
-                    404: { description: "Savings goal or transaction not found" },
+    .use(betterAuthPlugin)
+    .guard({ auth: true }, app =>
+        app
+            .get("/", ({ query, user }) => controller.find(user.id, query), {
+                query: findSavingsGoalsQuerySchema,
+                detail: {
+                    summary: "List savings goals",
+                    description:
+                        "Includes computed progress (current amount, remaining amount, percent) derived from contributions.",
+                    responses: { 200: { description: "Cursor-paginated list of savings goals" } },
                 },
-            },
-        },
-    )
-    .delete(
-        "/:id/contributions/:contributionId",
-        ({ params }) => controller.deleteContribution(env.DEV_USER_ID, params.id, params.contributionId),
-        {
-            detail: {
-                summary: "Delete a contribution",
-                responses: {
-                    200: { description: "Contribution deleted" },
-                    404: { description: "Contribution not found" },
+            })
+            .get("/:id", ({ params, user }) => controller.get(user.id, params.id), {
+                detail: {
+                    summary: "Get savings goal",
+                    responses: {
+                        200: { description: "Savings goal found" },
+                        404: { description: "Savings goal not found" },
+                    },
                 },
-            },
-        },
+            })
+            .post(
+                "/",
+                ({ body, set, user }) => {
+                    set.status = 201
+                    return controller.create(user.id, body)
+                },
+                {
+                    body: createSavingsGoalSchema,
+                    detail: {
+                        summary: "Create savings goal",
+                        responses: { 201: { description: "Savings goal created" } },
+                    },
+                },
+            )
+            .put("/:id", ({ params, body, user }) => controller.update(user.id, params.id, body), {
+                body: updateSavingsGoalSchema,
+                detail: {
+                    summary: "Update savings goal",
+                    responses: {
+                        200: { description: "Savings goal updated" },
+                        404: { description: "Savings goal not found" },
+                    },
+                },
+            })
+            .delete("/:id", ({ params, user }) => controller.delete(user.id, params.id), {
+                detail: {
+                    summary: "Delete savings goal",
+                    description: "Cascades to delete all of its contributions.",
+                    responses: {
+                        200: { description: "Savings goal deleted" },
+                        404: { description: "Savings goal not found" },
+                    },
+                },
+            })
+            .get(
+                "/:id/contributions",
+                ({ params, query, user }) => controller.findContributions(user.id, params.id, query),
+                {
+                    query: findGoalContributionsQuerySchema,
+                    detail: {
+                        summary: "List goal contributions",
+                        responses: {
+                            200: { description: "Cursor-paginated list of contributions" },
+                            404: { description: "Savings goal not found" },
+                        },
+                    },
+                },
+            )
+            .post(
+                "/:id/contributions",
+                ({ params, body, set, user }) => {
+                    set.status = 201
+                    return controller.createContribution(user.id, params.id, body)
+                },
+                {
+                    body: createGoalContributionSchema,
+                    detail: {
+                        summary: "Add a contribution",
+                        description: "Optionally references the transaction that actually moved the money.",
+                        responses: {
+                            201: { description: "Contribution added" },
+                            404: { description: "Savings goal or transaction not found" },
+                        },
+                    },
+                },
+            )
+            .delete(
+                "/:id/contributions/:contributionId",
+                ({ params, user }) => controller.deleteContribution(user.id, params.id, params.contributionId),
+                {
+                    detail: {
+                        summary: "Delete a contribution",
+                        responses: {
+                            200: { description: "Contribution deleted" },
+                            404: { description: "Contribution not found" },
+                        },
+                    },
+                },
+            ),
     )

@@ -1,13 +1,19 @@
 import { Route } from "@angular/router";
-import { Sidenav } from "@core/ui";
-import { SIDENAV_MODULES, SIDENAV_USER, SIDENAV_USER_MENU_ITEMS } from "@infra/config";
+import { AppShell } from "@core/ui";
+import { authGuard } from "@infra/guards";
+import { SIDENAV_MODULES, SIDENAV_USER_MENU_ITEMS } from "@infra/config";
 
 export const appRoutes: Route[] = [
+    {
+        path: "auth",
+        loadChildren: () => import("./views/auth/auth.routes").then(m => m.authRoutes),
+    },
     { path: "", pathMatch: "full", redirectTo: "accounts" },
     {
         path: "",
-        component: Sidenav,
-        data: { groups: SIDENAV_MODULES, user: SIDENAV_USER, userMenuItems: SIDENAV_USER_MENU_ITEMS, breadcrumb: "Home", icon: "home" },
+        component: AppShell,
+        canActivate: [authGuard],
+        data: { groups: SIDENAV_MODULES, userMenuItems: SIDENAV_USER_MENU_ITEMS, breadcrumb: "Home", icon: "home" },
         children: [
             {
                 path: "accounts",

@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 
-import { env } from "@/env"
+import { betterAuthPlugin } from "@/http/plugins/better-auth.plugin"
 
 import { createCategorySchema, findCategoriesQuerySchema, updateCategorySchema } from "../../app/schemas"
 import {
@@ -27,47 +27,51 @@ function buildController() {
 const controller = buildController()
 
 export const categoryRoutes = new Elysia({ prefix: "/categories", tags: ["Categories"] })
-    .get("/", ({ query }) => controller.find(env.DEV_USER_ID, query), {
-        query: findCategoriesQuerySchema,
-        detail: {
-            summary: "List categories",
-            responses: { 200: { description: "Cursor-paginated list of categories" } },
-        },
-    })
-    .get("/:id", ({ params }) => controller.get(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Get category",
-            responses: { 200: { description: "Category found" }, 404: { description: "Category not found" } },
-        },
-    })
-    .post(
-        "/",
-        ({ body, set }) => {
-            set.status = 201
-            return controller.create(env.DEV_USER_ID, body)
-        },
-        {
-            body: createCategorySchema,
-            detail: {
-                summary: "Create category",
-                responses: { 201: { description: "Category created" } },
-            },
-        },
+    .use(betterAuthPlugin)
+    .guard({ auth: true }, app =>
+        app
+            .get("/", ({ query, user }) => controller.find(user.id, query), {
+                query: findCategoriesQuerySchema,
+                detail: {
+                    summary: "List categories",
+                    responses: { 200: { description: "Cursor-paginated list of categories" } },
+                },
+            })
+            .get("/:id", ({ params, user }) => controller.get(user.id, params.id), {
+                detail: {
+                    summary: "Get category",
+                    responses: { 200: { description: "Category found" }, 404: { description: "Category not found" } },
+                },
+            })
+            .post(
+                "/",
+                ({ body, set, user }) => {
+                    set.status = 201
+                    return controller.create(user.id, body)
+                },
+                {
+                    body: createCategorySchema,
+                    detail: {
+                        summary: "Create category",
+                        responses: { 201: { description: "Category created" } },
+                    },
+                },
+            )
+            .put("/:id", ({ params, body, user }) => controller.update(user.id, params.id, body), {
+                body: updateCategorySchema,
+                detail: {
+                    summary: "Update category",
+                    responses: { 200: { description: "Category updated" }, 404: { description: "Category not found" } },
+                },
+            })
+            .delete("/:id", ({ params, user }) => controller.delete(user.id, params.id), {
+                detail: {
+                    summary: "Delete category",
+                    responses: {
+                        200: { description: "Category deleted" },
+                        404: { description: "Category not found" },
+                        409: { description: "Category is in use by subcategories or transactions" },
+                    },
+                },
+            }),
     )
-    .put("/:id", ({ params, body }) => controller.update(env.DEV_USER_ID, params.id, body), {
-        body: updateCategorySchema,
-        detail: {
-            summary: "Update category",
-            responses: { 200: { description: "Category updated" }, 404: { description: "Category not found" } },
-        },
-    })
-    .delete("/:id", ({ params }) => controller.delete(env.DEV_USER_ID, params.id), {
-        detail: {
-            summary: "Delete category",
-            responses: {
-                200: { description: "Category deleted" },
-                404: { description: "Category not found" },
-                409: { description: "Category is in use by subcategories or transactions" },
-            },
-        },
-    })

@@ -1,5 +1,6 @@
 export * from "./account.schema";
 export * from "./asset.schema";
+export * from "./auth.schema";
 export * from "./budget.schema";
 export * from "./category.schema";
 export * from "./credit-card-invoice.schema";

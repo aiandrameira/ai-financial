@@ -4,6 +4,7 @@ import { Elysia } from "elysia"
 
 import { env } from "./env"
 import { ApiResponse } from "./http/api/response"
+import { betterAuthPlugin } from "./http/plugins/better-auth.plugin"
 import { uploadRoutes } from "./http/uploads/uploads.routes"
 import { generateDueRecurrencesJob } from "./jobs/generate-due-recurrences.job"
 import { notifyDueInstallmentsJob } from "./jobs/notify-due-installments.job"
@@ -31,10 +32,11 @@ const start = async () => {
             return ApiResponse.error("message" in error ? error.message : "Internal server error", status)
         })
         .get("/health", () => ApiResponse.success("ok"))
-        .use(uploadRoutes)
+        .use(betterAuthPlugin)
         .use(notifyDueInvoicesJob)
         .use(notifyDueInstallmentsJob)
         .use(generateDueRecurrencesJob)
+        .use(uploadRoutes)
         .use(accountRoutes)
         .use(assetRoutes)
         .use(budgetRoutes)

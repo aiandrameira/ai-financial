@@ -12,7 +12,17 @@ const envSchema = z.object({
 
     API_PUBLIC_URL: z.url().default("http://localhost:3006"),
 
-    DEV_USER_ID: z.string().min(1).default("00000000-0000-0000-0000-000000000001"),
+    BETTER_AUTH_SECRET: z.string(),
+    BETTER_AUTH_URL: z.url(),
+    SESSION_EXPIRES_IN: z.coerce.number().default(60 * 60), // segundos — padrão: 1 hora
+    SESSION_COOKIE_CACHE_MAX_AGE: z.coerce.number().default(60 * 5), // segundos — padrão: 5 min
+
+    SEED_MASTER_NAME: z.string().default("Master User"),
+    SEED_MASTER_EMAIL: z.email().default("master@example.com"),
+    SEED_MASTER_PASSWORD: z.string().default("changeme"),
+
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
 
     RESEND_API_KEY: z.string().default(""),
     DEFAULT_MAIL_FROM: z.string().default(""),
