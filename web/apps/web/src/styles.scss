@@ -4,9 +4,13 @@
 @source "../../../node_modules/@aiandralves/ai-ui";
 
 @layer base {
+    // Sem isso, o conteúdo do <main> (rolável internamente via overflow-y-auto) "vaza" pro
+    // scrollHeight do documento — o navegador ainda permite rolar html/body por essa altura
+    // extra, mesmo já mostrando tudo dentro do <main>, resultando num scroll "fantasma" com
+    // espaço em branco no fim da página (visível sobretudo no mobile).
     html,
     body {
-        @apply h-full;
+        @apply h-full overflow-hidden;
     }
     body {
         @apply bg-background text-muted-foreground text-base font-text font-semibold;
