@@ -12,6 +12,7 @@ export * from "./badge-tp-loan/badge-tp-loan";
 export * from "./badge-tp-transaction/badge-tp-transaction";
 export * from "./badge-tp-transfer-method/badge-tp-transfer-method";
 export * from "./button-form/button-form";
+export * from "./dialog-profile/dialog-profile";
 export * from "./heading/heading";
 export * from "./icon-material/icon-material";
 export * from "./info-card/info-card";

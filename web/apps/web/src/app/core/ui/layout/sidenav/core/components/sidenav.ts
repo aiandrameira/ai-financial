@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from "@angular/core";
 import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 import { AiIcon, AiResizeHandle, AiTooltipImports } from "@aiandralves/ai-ui";
+import { formatDuration } from "@core/helpers";
 
 import { SIDENAV_COLLAPSED_WIDTH, SIDENAV_MAX_WIDTH, SIDENAV_MIN_WIDTH, SidenavService } from "../../infra/services/sidenav.service";
 import type { SidenavGroup, SidenavUser, SidenavUserMenuItem } from "../../domain/schemas/sidenav.model";
@@ -21,6 +22,7 @@ export class Sidenav {
     groups = input<SidenavGroup[]>([]);
     user = input<SidenavUser | null>(null);
     userMenuItems = input<SidenavUserMenuItem[]>([]);
+    sessionExpiresAt = input<Date | null>(null);
 
     userMenuAction = output<string>();
 
@@ -28,6 +30,18 @@ export class Sidenav {
     protected readonly width = this.sidenav.width;
     protected readonly mobileOpen = this.sidenav.mobileOpen;
     protected readonly resizing = signal(false);
+
+    readonly #now = signal(Date.now());
+    protected readonly remainingSessionTime = computed(() => {
+        const expiresAt = this.sessionExpiresAt();
+        if (!expiresAt) return "00:00";
+        return formatDuration(expiresAt.getTime() - this.#now());
+    });
+
+    constructor() {
+        const interval = setInterval(() => this.#now.set(Date.now()), 1000);
+        inject(DestroyRef).onDestroy(() => clearInterval(interval));
+    }
 
     // "Collapsed" is a desktop density preference persisted in localStorage — the mobile overlay
     // must always render fully expanded (with labels), since its own collapse toggle is desktop-only

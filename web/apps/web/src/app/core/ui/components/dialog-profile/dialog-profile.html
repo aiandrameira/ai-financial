@@ -1,0 +1,43 @@
+<div class="flex flex-col gap-y-4 pt-1">
+    <div class="flex flex-col items-center gap-y-2 pb-2">
+        <button
+            type="button"
+            class="relative rounded-full disabled:cursor-wait"
+            [disabled]="uploadingAvatar()"
+            (click)="onAvatarClick()"
+            (mouseenter)="hoveringAvatar.set(true)"
+            (mouseleave)="hoveringAvatar.set(false)"
+        >
+            <ai-avatar [image]="avatarImage()" [fallback]="initials()" [alt]="user()?.name ?? ''" size="xl" shape="circle" />
+            <span
+                class="absolute inset-0 z-20 flex items-center justify-center rounded-full bg-black/40 cursor-pointer"
+                [style.opacity]="uploadingAvatar() || hoveringAvatar() ? 1 : 0"
+                style="transition: opacity 150ms ease"
+            >
+                @if (uploadingAvatar()) {
+                    <span class="size-5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                } @else {
+                    <ai-icon size="sm" icon="camera" class="text-white" />
+                }
+            </span>
+        </button>
+        <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
+
+        <p class="font-title text-base font-semibold text-primary">{{ user()?.name }}</p>
+    </div>
+
+    <ai-input label="E-mail" type="email" [maxlength]="150" [formField]="form.email" />
+    <ai-input label="Nome" [maxlength]="60" [formField]="form.name" />
+
+    <div class="flex justify-end gap-x-2 pt-2">
+        <ai-button variant="default" type="button" [disabled]="loading()" (click)="onCancel()">Cancelar</ai-button>
+        <ai-button
+            variant="primary"
+            type="button"
+            [loading]="loading()"
+            [icon]="loading() ? undefined : 'check-double'"
+            (click)="onSave()">
+            {{ loading() ? "Salvando" : "Salvar" }}
+        </ai-button>
+    </div>
+</div>

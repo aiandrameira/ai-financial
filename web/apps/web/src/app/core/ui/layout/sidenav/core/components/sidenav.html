@@ -54,11 +54,11 @@
             <div class="flex min-w-0 items-center gap-2 rounded-md font-text font-semibold px-2 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
                 [class.justify-center]="effectiveCollapsed()"
                 [aiPosition]="'right'"
-                [aiTooltip]="effectiveCollapsed() ? '00:00' : ''">
+                [aiTooltip]="effectiveCollapsed() ? remainingSessionTime() : ''">
                 <ai-icon icon="timer" size="sm" />
                 @if (!effectiveCollapsed()) {
                     <span class="min-w-0 flex-1 truncate">Tempo</span>
-                    <span class="shrink-0 text-xs">00:00</span>
+                    <span class="shrink-0 text-xs">{{ remainingSessionTime() }}</span>
                 }
             </div>
         </div>

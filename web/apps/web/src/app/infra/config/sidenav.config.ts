@@ -20,6 +20,5 @@ export const SIDENAV_MODULES: SidenavGroup[] = [
 
 export const SIDENAV_USER_MENU_ITEMS: SidenavUserMenuItem[] = [
     { icon: "user", label: "Perfil", action: "profile" },
-    { icon: "settings-3", label: "Configurações", action: "settings" },
     { icon: "logout-circle-r", label: "Sair", action: "logout" },
 ];

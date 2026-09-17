@@ -6,12 +6,12 @@
         </ai-button>
     </div>
 
-    <div class="flex items-center justify-between rounded-xl border border-border p-3">
+    <div class="flex flex-wrap items-center justify-center gap-3 rounded-xl border border-border p-3 sm:justify-between">
         <ai-button variant="outline" fill="line" size="sm" [disabled]="isCurrentMonth()" (click)="goToToday()">Hoje</ai-button>
 
         <div class="flex items-center gap-x-3">
             <ai-button variant="outline" fill="line" icon="arrow-left-s" size="sm" (click)="previousMonth()" />
-            <span class="font-title text-lg font-bold capitalize">{{ monthLabel() }}</span>
+            <span class="font-title text-lg font-bold capitalize whitespace-nowrap">{{ monthLabel() }}</span>
             <ai-button variant="outline" fill="line" icon="arrow-right-s" size="sm" (click)="nextMonth()" />
         </div>
     </div>

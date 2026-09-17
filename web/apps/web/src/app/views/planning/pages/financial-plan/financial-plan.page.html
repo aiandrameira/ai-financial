@@ -1,46 +1,42 @@
 <div class="main flex flex-col gap-y-6">
-    <ai-heading icon="compass-3" title="Planejamento" description="Sua renda, contas fixas, dívidas e metas em um só lugar." />
-
-    <div class="flex flex-col gap-y-1 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex flex-col">
-            <span class="text-sm text-muted-foreground">Renda mensal</span>
-            <span class="text-2xl font-semibold">{{ monthlyIncome() | currency }}</span>
-        </div>
-        <ai-button variant="primary" size="sm" icon="pencil" (click)="openIncomeDialog()">Editar renda</ai-button>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <ai-heading icon="compass-3" title="Planejamento" description="Sua renda, contas fixas, dívidas e metas em um só lugar." />
+        <ai-button variant="primary" size="sm" icon="pencil" class="self-start sm:self-auto" (click)="openIncomeDialog()">Editar renda</ai-button>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div class="flex flex-col gap-y-1 rounded-xl border border-border p-4">
-            <span class="text-sm text-muted-foreground">Contas fixas do mês</span>
-            <span class="text-2xl font-semibold">{{ fixedExpenses() | currency }}</span>
-        </div>
-        <div class="flex flex-col gap-y-1 rounded-xl border p-4" [class]="surplus() >= 0 ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-rose-500/40 bg-rose-500/5'">
-            <span class="text-sm text-muted-foreground">Sobra do mês</span>
-            <span class="text-2xl font-semibold" [class]="surplus() >= 0 ? 'text-emerald-600' : 'text-rose-600'">{{ surplus() | currency }}</span>
-        </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <ai-stat-card title="Renda mensal" [value]="monthlyIncome() | currency" icon="wallet" variant="sky" />
+        <ai-stat-card title="Contas fixas" [value]="fixedExpenses() | currency" icon="file-list" variant="amber" />
+        <ai-stat-card title="Sobra do mês" [value]="surplus() | currency" icon="line-chart" [variant]="surplusVariant()" />
+        <ai-stat-card title="Renda comprometida" [value]="commitmentPercent() + '%'" icon="pie-chart" [variant]="commitmentVariant()" />
     </div>
 
     <div class="flex flex-col gap-y-3">
         <ai-heading icon="file-list" title="Dívidas ativas" />
 
         @if (debts().length === 0) {
-            <p class="text-sm text-muted-foreground">Nenhuma dívida ativa.</p>
+            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
+                <ai-icon icon="file-list" size="lg" class="opacity-50" />
+                <p>Nenhuma dívida ativa.</p>
+            </div>
         } @else {
-            <div class="flex flex-col gap-y-2">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 @for (debt of debts(); track debt.id) {
-                    <div class="flex flex-col gap-y-1 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex flex-col">
-                            <span class="font-medium">{{ debt.name }}</span>
-                            <span class="text-sm text-muted-foreground">Saldo devedor: {{ debt.outstandingBalance | currency }}</span>
+                    <div class="flex flex-col gap-y-2 rounded-xl border border-border p-4">
+                        <div class="flex items-center justify-between gap-x-2">
+                            <span class="font-medium truncate">{{ debt.name }}</span>
+                            <ai-badge variant="default" icon="hand-coin" class="shrink-0">{{ debt.outstandingBalance | currency }}</ai-badge>
                         </div>
+
                         @if (debt.nextInstallmentAmount) {
-                            <div class="flex flex-col sm:text-right">
-                                <span class="font-medium">{{ debt.nextInstallmentAmount | currency }}</span>
-                                <span class="text-sm text-muted-foreground">
+                            <div class="flex items-center justify-between border-t border-border pt-2 text-sm">
+                                <span class="text-muted-foreground">
+                                    Próxima parcela
                                     @if (debt.nextInstallmentDueDate) {
-                                        vence em {{ debt.nextInstallmentDueDate | date: "dd/MM/yyyy" }}
+                                        · vence em {{ debt.nextInstallmentDueDate | date: "dd/MM/yyyy" }}
                                     }
                                 </span>
+                                <span class="font-semibold text-primary">{{ debt.nextInstallmentAmount | currency }}</span>
                             </div>
                         }
                     </div>
@@ -53,16 +49,20 @@
         <ai-heading icon="triangular-flag" title="Metas ativas" />
 
         @if (goals().length === 0) {
-            <p class="text-sm text-muted-foreground">Nenhuma meta ativa.</p>
+            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
+                <ai-icon icon="triangular-flag" size="lg" class="opacity-50" />
+                <p>Nenhuma meta ativa.</p>
+            </div>
         } @else {
-            <div class="flex flex-col gap-y-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 @for (goal of goals(); track goal.id) {
-                    <div class="flex flex-col gap-y-2 rounded-lg border border-border p-3">
-                        <div class="flex items-center justify-between">
-                            <span class="font-medium">{{ goal.name }}</span>
-                            <span class="text-sm text-muted-foreground">Faltam {{ goal.remainingAmount | currency }}</span>
+                    <div class="flex flex-col gap-y-2 rounded-xl border border-border p-4">
+                        <div class="flex items-center justify-between gap-x-2">
+                            <span class="font-medium truncate">{{ goal.name }}</span>
+                            <span class="shrink-0 text-sm font-semibold text-primary">{{ goalProgress(goal.progressPercent) }}%</span>
                         </div>
                         <ai-progress-bar [progress]="goalProgress(goal.progressPercent)" />
+                        <span class="text-xs text-muted-foreground">Faltam {{ goal.remainingAmount | currency }}</span>
                     </div>
                 }
             </div>
