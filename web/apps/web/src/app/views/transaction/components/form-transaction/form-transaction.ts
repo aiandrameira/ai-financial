@@ -49,10 +49,7 @@ export class FormTransaction {
     readonly id = computed(() => this.transaction()?.id ?? "");
 
     readonly categoriesForType = computed(() => this.#facade.categories().filter(category => matchesCategoryType(category.type, this.transactionSchema().type)));
-    readonly selectedType = computed(() => this.form().value().type);
-    readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
     readonly selectedCreditCard = computed(() => this.creditCards().find(creditCard => creditCard.id === this.form().value().creditCardId) ?? null);
-    readonly selectedCategory = computed(() => this.categoriesForType().find(category => category.id === this.form().value().categoryId) ?? null);
     readonly canInstall = computed(() => this.origin() === "creditCard" && this.form().value().type === tpTransactionEnum.EXPENSE && !this.id());
     readonly canRecur = computed(() => this.origin() === "account" && !this.id());
 

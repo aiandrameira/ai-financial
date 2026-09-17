@@ -39,9 +39,6 @@ export class FormSavingsGoal {
     readonly save = output<RequestSavingsGoalDto>();
     readonly loading = signal<boolean>(false);
 
-    readonly selectedIcon = computed(() => this.goalIcons.find(item => item.value === this.form().value().icon) ?? null);
-    readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().linkedAccountId) ?? null);
-
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
         decimal: ",",

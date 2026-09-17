@@ -5,24 +5,18 @@
             [maxlength]="80" 
             [formField]="form.name" />
 
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12 [&_button]:capitalize"
-                placeholder="Selecione o tipo de conta"
-                [value]="form().value().type"
-                [disabled]="form().disabled()"
-                (selectionChange)="onTypeChange($event)">
-                @for (type of accountTypes; track type) {
-                    <ai-select-item [value]="type">
-                        <ai-badge-tp-account [type]="type" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedType(); as type) {
-                <ai-badge-tp-account [type]="type" />
+        <ai-select
+            class="w-full [&_button]:h-12 [&_button]:capitalize"
+            placeholder="Selecione o tipo de conta"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of accountTypes; track type) {
+                <ai-select-item [value]="type">
+                    <ai-badge-tp-account [type]="type" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">

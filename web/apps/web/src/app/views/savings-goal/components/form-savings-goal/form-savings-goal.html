@@ -4,28 +4,20 @@
         [maxlength]="120" 
         [formField]="form.name" />
 
-    <div class="flex flex-col gap-y-2">
-        <ai-select
-            class="w-full [&_button]:h-12"
-            placeholder="Selecione o ícone"
-            [value]="form().value().icon"
-            [disabled]="form().disabled()"
-            (selectionChange)="onIconChange($event)">
-            @for (item of goalIcons; track item.value) {
-                <ai-select-item [value]="item.value">
-                    <ai-badge [icon]="item.icon" variant="default" fill="line">
-                        {{ item.label }}
-                    </ai-badge>
-                </ai-select-item>
-            }
-        </ai-select>
-
-        @if (selectedIcon(); as icon) {
-            <ai-badge [icon]="icon.icon" variant="default" fill="line" class="w-max">
-                {{ icon.label }}
-            </ai-badge>
+    <ai-select
+        class="w-full [&_button]:h-12"
+        placeholder="Selecione o ícone"
+        [value]="form().value().icon"
+        [disabled]="form().disabled()"
+        (selectionChange)="onIconChange($event)">
+        @for (item of goalIcons; track item.value) {
+            <ai-select-item [value]="item.value">
+                <ai-badge [icon]="item.icon" variant="default" fill="line">
+                    {{ item.label }}
+                </ai-badge>
+            </ai-select-item>
         }
-    </div>
+    </ai-select>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
         <ai-input class="w-full" 
@@ -42,25 +34,19 @@
             (valueChange)="onDateChange($event)" />
     </div>
 
-    <div class="flex flex-col gap-y-2">
-        <ai-select
-            class="w-full [&_button]:h-12"
-            placeholder="Conta vinculada (opcional)"
-            [value]="form().value().linkedAccountId"
-            [disabled]="form().disabled()"
-            (selectionChange)="onAccountChange($event)">
-            <ai-select-item value="">Nenhuma</ai-select-item>
-            @for (account of accounts(); track account.id) {
-                <ai-select-item [value]="account.id">
-                    <ai-badge-tp-account [account]="account" />
-                </ai-select-item>
-            }
-        </ai-select>
-
-        @if (selectedAccount(); as account) {
-            <ai-badge-tp-account [account]="account" class="w-max" />
+    <ai-select
+        class="w-full [&_button]:h-12"
+        placeholder="Conta vinculada (opcional)"
+        [value]="form().value().linkedAccountId"
+        [disabled]="form().disabled()"
+        (selectionChange)="onAccountChange($event)">
+        <ai-select-item value="">Nenhuma</ai-select-item>
+        @for (account of accounts(); track account.id) {
+            <ai-select-item [value]="account.id">
+                <ai-badge-tp-account [account]="account" />
+            </ai-select-item>
         }
-    </div>
+    </ai-select>
 
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">
         @let isDisabled = form().disabled();

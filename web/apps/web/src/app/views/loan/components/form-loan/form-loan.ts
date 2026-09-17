@@ -44,8 +44,6 @@ export class FormLoan {
     readonly save = output<RequestLoanDto>();
     readonly loading = signal<boolean>(false);
 
-    readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
-
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,
         decimal: ",",

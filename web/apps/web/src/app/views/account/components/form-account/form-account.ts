@@ -33,7 +33,6 @@ export class FormAccount {
 
     readonly account = input<AccountDto | null>(null);
     readonly id = computed(() => this.account()?.id ?? "");
-    readonly selectedType = computed(() => this.form().value().type);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,

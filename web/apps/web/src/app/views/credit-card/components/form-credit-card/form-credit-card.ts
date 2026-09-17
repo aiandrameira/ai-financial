@@ -39,7 +39,6 @@ export class FormCreditCard {
 
     readonly creditCard = input<CreditCardDto | null>(null);
     readonly id = computed(() => this.creditCard()?.id ?? "");
-    readonly selectedAccount = computed(() => this.accounts().find(account => account.id === this.form().value().accountId) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,

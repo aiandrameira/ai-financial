@@ -1,6 +1,6 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
 import { AiButton, AiToastService } from "@aiandralves/ai-ui";
-import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, output, signal } from "@angular/core";
 import { form, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
 import { BadgeTpAccount, FormImports } from "@core/ui";
@@ -32,9 +32,6 @@ export class FormTransfer {
 
     readonly save = output<RequestTransferDto>();
     readonly loading = signal<boolean>(false);
-
-    readonly selectedSource = computed(() => this.accounts().find(account => account.id === this.form().value().sourceAccountId) ?? null);
-    readonly selectedDestination = computed(() => this.accounts().find(account => account.id === this.form().value().destinationAccountId) ?? null);
 
     vlMaskConfig: AiMaskConfig = {
         isCurrency: true,

@@ -1,23 +1,17 @@
 <div class="flex flex-col gap-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12 [&_button]:capitalize"
-                placeholder="Selecione o tipo"
-                [value]="form().value().type"
-                [disabled]="form().disabled()"
-                (selectionChange)="onTypeChange($event)">
-                @for (type of transactionTypes; track type) {
-                    <ai-select-item [value]="type">
-                        <ai-badge-tp-transaction [type]="type" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedType(); as type) {
-                <ai-badge-tp-transaction [type]="type" />
+        <ai-select
+            class="w-full [&_button]:h-12 [&_button]:capitalize"
+            placeholder="Selecione o tipo"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of transactionTypes; track type) {
+                <ai-select-item [value]="type">
+                    <ai-badge-tp-transaction [type]="type" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
 
         <div class="flex flex-col gap-y-2">
             <ai-button-toggle
@@ -42,10 +36,6 @@
                         </ai-select-item>
                     }
                 </ai-select>
-
-                @if (selectedAccount(); as account) {
-                    <ai-badge-tp-account [account]="account" class="w-max" />
-                }
             } @else {
                 <ai-select
                     class="w-full [&_button]:h-12"
@@ -70,24 +60,18 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione a categoria"
-                [value]="form().value().categoryId"
-                [disabled]="form().disabled()"
-                (selectionChange)="onCategoryChange($event)">
-                @for (category of categoriesForType(); track category.id) {
-                    <ai-select-item [value]="category.id">
-                        <ai-badge-category [category]="category" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedCategory(); as category) {
-                <ai-badge-category [category]="category" />
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione a categoria"
+            [value]="form().value().categoryId"
+            [disabled]="form().disabled()"
+            (selectionChange)="onCategoryChange($event)">
+            @for (category of categoriesForType(); track category.id) {
+                <ai-select-item [value]="category.id">
+                    <ai-badge-category [category]="category" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
 
         <ai-input class="w-full" 
             label="Valor" 

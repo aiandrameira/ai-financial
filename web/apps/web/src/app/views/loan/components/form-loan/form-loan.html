@@ -12,43 +12,31 @@
         [formField]="form.name" />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione o tipo"
-                [value]="form().value().type"
-                [disabled]="form().disabled()"
-                (selectionChange)="onTypeChange($event)">
-                @for (type of loanTypes; track type) {
-                    <ai-select-item [value]="type">
-                        <ai-badge-tp-loan [type]="type" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (form().value().type; as type) {
-                <ai-badge-tp-loan [type]="type" class="w-max" />
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione o tipo"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of loanTypes; track type) {
+                <ai-select-item [value]="type">
+                    <ai-badge-tp-loan [type]="type" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
 
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Selecione a conta"
-                [value]="form().value().accountId"
-                [disabled]="form().disabled()"
-                (selectionChange)="onAccountChange($event)">
-                @for (account of accounts(); track account.id) {
-                    <ai-select-item [value]="account.id">
-                        <ai-badge-tp-account [account]="account" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedAccount(); as account) {
-                <ai-badge-tp-account [account]="account" class="w-max" />
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Selecione a conta"
+            [value]="form().value().accountId"
+            [disabled]="form().disabled()"
+            (selectionChange)="onAccountChange($event)">
+            @for (account of accounts(); track account.id) {
+                <ai-select-item [value]="account.id">
+                    <ai-badge-tp-account [account]="account" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">

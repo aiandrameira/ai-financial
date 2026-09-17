@@ -40,9 +40,6 @@ export class FormCategory {
 
     readonly parentOptions = computed(() => this.#categories().filter(item => item.type === this.categorySchema().type && item.id !== this.id()));
 
-    readonly selectedType = computed(() => this.form().value().type);
-    readonly selectedParent = computed(() => this.parentOptions().find(item => item.id === this.form().value().parentId) ?? null);
-
     constructor() {
         this.#service.findAll().subscribe(categories => this.#categories.set(categories));
 

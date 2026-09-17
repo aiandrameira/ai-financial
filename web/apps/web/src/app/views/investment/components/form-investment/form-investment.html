@@ -1,24 +1,18 @@
 <div class="flex flex-col gap-y-4">
     <ai-input class="w-full" label="Nome" [maxlength]="120" [formField]="form.name" />
 
-    <div class="flex flex-col gap-y-2">
-        <ai-select
-            class="w-full [&_button]:h-12"
-            placeholder="Selecione o tipo"
-            [value]="form().value().type"
-            [disabled]="form().disabled()"
-            (selectionChange)="onTypeChange($event)">
-            @for (type of investmentTypes; track type) {
-                <ai-select-item [value]="type">
-                    <ai-badge-tp-investment [type]="type" />
-                </ai-select-item>
-            }
-        </ai-select>
-
-        @if (form().value().type; as type) {
-            <ai-badge-tp-investment [type]="type" class="w-max" />
+    <ai-select
+        class="w-full [&_button]:h-12"
+        placeholder="Selecione o tipo"
+        [value]="form().value().type"
+        [disabled]="form().disabled()"
+        (selectionChange)="onTypeChange($event)">
+        @for (type of investmentTypes; track type) {
+            <ai-select-item [value]="type">
+                <ai-badge-tp-investment [type]="type" />
+            </ai-select-item>
         }
-    </div>
+    </ai-select>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-4">
         <ai-input class="w-full" label="Corretora" [maxlength]="120" [formField]="form.broker" />

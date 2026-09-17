@@ -5,44 +5,32 @@
         [formField]="form.name" />
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12 [&_button]:capitalize"
-                placeholder="Selecione o tipo"
-                [value]="form().value().type"
-                [disabled]="form().disabled()"
-                (selectionChange)="onTypeChange($event)">
-                @for (type of categoryTypes; track type) {
-                    <ai-select-item [value]="type">
-                        <ai-badge-tp-category [type]="type" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedType(); as type) {
-                <ai-badge-tp-category [type]="type" />
+        <ai-select
+            class="w-full [&_button]:h-12 [&_button]:capitalize"
+            placeholder="Selecione o tipo"
+            [value]="form().value().type"
+            [disabled]="form().disabled()"
+            (selectionChange)="onTypeChange($event)">
+            @for (type of categoryTypes; track type) {
+                <ai-select-item [value]="type">
+                    <ai-badge-tp-category [type]="type" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
 
-        <div class="flex flex-col gap-y-2">
-            <ai-select
-                class="w-full [&_button]:h-12"
-                placeholder="Categoria principal (opcional)"
-                [value]="form().value().parentId"
-                [disabled]="form().disabled()"
-                (selectionChange)="onParentChange($event)">
-                <ai-select-item value="">Nenhuma</ai-select-item>
-                @for (parent of parentOptions(); track parent.id) {
-                    <ai-select-item [value]="parent.id">
-                        <ai-badge-category [category]="parent" />
-                    </ai-select-item>
-                }
-            </ai-select>
-
-            @if (selectedParent(); as parent) {
-                <ai-badge-category [category]="parent" />
+        <ai-select
+            class="w-full [&_button]:h-12"
+            placeholder="Categoria principal (opcional)"
+            [value]="form().value().parentId"
+            [disabled]="form().disabled()"
+            (selectionChange)="onParentChange($event)">
+            <ai-select-item value="">Nenhuma</ai-select-item>
+            @for (parent of parentOptions(); track parent.id) {
+                <ai-select-item [value]="parent.id">
+                    <ai-badge-category [category]="parent" />
+                </ai-select-item>
             }
-        </div>
+        </ai-select>
     </div>
 
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">

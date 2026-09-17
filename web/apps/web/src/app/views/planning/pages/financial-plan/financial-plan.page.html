@@ -1,4 +1,4 @@
-<div class="main flex flex-col gap-y-6">
+<div class="main flex flex-col gap-y-4">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <ai-heading icon="compass-3" title="Planejamento" description="Sua renda, contas fixas, dívidas e metas em um só lugar." />
         <ai-button variant="primary" size="sm" icon="pencil" class="self-start sm:self-auto" (click)="openIncomeDialog()">Editar renda</ai-button>
@@ -15,7 +15,7 @@
         <ai-heading icon="file-list" title="Dívidas ativas" />
 
         @if (debts().length === 0) {
-            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
+            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-8 text-center text-muted-foreground">
                 <ai-icon icon="file-list" size="lg" class="opacity-50" />
                 <p>Nenhuma dívida ativa.</p>
             </div>
@@ -49,7 +49,7 @@
         <ai-heading icon="triangular-flag" title="Metas ativas" />
 
         @if (goals().length === 0) {
-            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-12 text-center text-muted-foreground">
+            <div class="flex flex-col items-center justify-center gap-y-2 rounded-xl border border-dashed border-border py-8 text-center text-muted-foreground">
                 <ai-icon icon="triangular-flag" size="lg" class="opacity-50" />
                 <p>Nenhuma meta ativa.</p>
             </div>
