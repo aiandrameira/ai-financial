@@ -1,18 +1,17 @@
 <div class="flex flex-col gap-y-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <ai-select
-            class="w-full [&_button]:h-12 [&_button]:capitalize"
-            placeholder="Selecione o tipo"
-            [value]="form().value().type"
-            [disabled]="form().disabled()"
-            (selectionChange)="onTypeChange($event)">
-            @for (type of transactionTypes; track type) {
-                <ai-select-item [value]="type">
-                    <ai-badge-tp-transaction [type]="type" />
-                </ai-select-item>
-            }
-        </ai-select>
+    <ai-radio-group
+        class="flex flex-row flex-wrap gap-4"
+        [value]="form().value().type"
+        [disabled]="form().disabled()"
+        (valueChange)="onTypeChange($event)">
+        @for (type of transactionTypes; track type) {
+            <ai-radio [value]="type">
+                <ai-badge-tp-transaction [type]="type" />
+            </ai-radio>
+        }
+    </ai-radio-group>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
         <div class="flex flex-col gap-y-2">
             <ai-button-toggle
                 mode="single"
@@ -28,7 +27,7 @@
                     class="w-full [&_button]:h-12"
                     placeholder="Selecione a conta"
                     [value]="form().value().accountId"
-                    [disabled]="form().disabled()"
+                    [disabled]="form().disabled() || accounts().length === 0"
                     (selectionChange)="onAccountChange($event)">
                     @for (account of accounts(); track account.id) {
                         <ai-select-item [value]="account.id">
@@ -36,12 +35,19 @@
                         </ai-select-item>
                     }
                 </ai-select>
+
+                @if (accounts().length === 0) {
+                    <span class="flex items-center gap-x-1 text-xs text-amber-600">
+                        <ai-icon icon="error-warning" size="xs" />
+                        Nenhuma conta cadastrada.
+                    </span>
+                }
             } @else {
                 <ai-select
                     class="w-full [&_button]:h-12"
                     placeholder="Selecione o cartão"
                     [value]="form().value().creditCardId"
-                    [disabled]="form().disabled()"
+                    [disabled]="form().disabled() || creditCards().length === 0"
                     (selectionChange)="onCreditCardChange($event)">
                     @for (creditCard of creditCards(); track creditCard.id) {
                         <ai-select-item [value]="creditCard.id">
@@ -54,37 +60,59 @@
                     <ai-badge icon="bank-card" variant="default" fill="line" class="w-max">
                         {{ creditCard.name }}
                     </ai-badge>
+                } @else if (creditCards().length === 0) {
+                    <span class="flex items-center gap-x-1 text-xs text-amber-600">
+                        <ai-icon icon="error-warning" size="xs" />
+                        Nenhum cartão cadastrado.
+                    </span>
                 }
+            }
+        </div>
+
+        <div class="flex flex-col gap-y-2">
+            <ai-select
+                class="w-full [&_button]:h-12"
+                placeholder="Selecione a categoria"
+                [value]="form().value().categoryId"
+                [disabled]="form().disabled() || categoriesForType().length === 0"
+                (selectionChange)="onCategoryChange($event)">
+                @for (category of categoriesForType(); track category.id) {
+                    <ai-select-item [value]="category.id">
+                        <ai-badge-category [category]="category" />
+                    </ai-select-item>
+                }
+            </ai-select>
+
+            @if (categoriesForType().length === 0) {
+                <span class="flex items-center gap-x-1 text-xs text-amber-600">
+                    <ai-icon icon="error-warning" size="xs" />
+                    Nenhuma categoria cadastrada para esse tipo.
+                </span>
             }
         </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4">
-        <ai-select
-            class="w-full [&_button]:h-12"
-            placeholder="Selecione a categoria"
-            [value]="form().value().categoryId"
-            [disabled]="form().disabled()"
-            (selectionChange)="onCategoryChange($event)">
-            @for (category of categoriesForType(); track category.id) {
-                <ai-select-item [value]="category.id">
-                    <ai-badge-category [category]="category" />
-                </ai-select-item>
-            }
-        </ai-select>
-
-        <ai-input class="w-full" 
-            label="Valor" 
-            [maskConfig]="vlMaskConfig" 
+        <ai-input class="w-full"
+            label="Valor"
+            [maskConfig]="vlMaskConfig"
             [formField]="form.amount" />
+
+        <ai-date-picker
+            class="w-full"
+            placeholder="Selecione a data"
+            format="dd/MM/yyyy"
+            [value]="form().value().date"
+            [disabled]="form().disabled()"
+            (valueChange)="onDateChange($event)" />
     </div>
 
     @if (canInstall()) {
         <div class="flex items-center justify-between gap-x-4 rounded-lg border border-border p-3">
             <div class="flex items-center gap-x-2">
-                <ai-switch 
-                    [checked]="parcelar()" 
-                    [disabled]="form().disabled()" 
+                <ai-switch
+                    [checked]="parcelar()"
+                    [disabled]="form().disabled()"
                     (changeCheck)="onParcelarChange
                     ($event)" />
                 <span class="text-sm font-medium">Parcelar compra</span>
@@ -132,18 +160,10 @@
         </div>
     }
 
-    <ai-date-picker
-        class="w-full"
-        placeholder="Selecione a data"
-        format="dd/MM/yyyy"
-        [value]="form().value().date"
-        [disabled]="form().disabled()"
-        (valueChange)="onDateChange($event)" />
-
-    <ai-textarea class="w-full" 
-        label="Descrição" 
-        [rows]="6" 
-        [maxlength]="280" 
+    <ai-textarea class="w-full"
+        label="Descrição"
+        [rows]="6"
+        [maxlength]="280"
         [formField]="form.description" />
 
     <div class="flex justify-end gap-x-2 border-t border-border pt-2">

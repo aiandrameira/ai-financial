@@ -1,5 +1,5 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiButtonToggle, AiSwitch, AiToastService } from "@aiandralves/ai-ui";
+import { AiButtonToggle, AiIcon, AiRadio, AiRadioGroup, AiSwitch, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
@@ -15,7 +15,7 @@ type TransactionOrigin = "account" | "creditCard";
 
 @Component({
     selector: "ai-form-transaction",
-    imports: [FormImports, AiButtonToggle, AiSwitch, BadgeTpTransaction, BadgeCategory, BadgeTpAccount],
+    imports: [FormImports, AiButtonToggle, AiSwitch, AiIcon, AiRadio, AiRadioGroup, BadgeTpTransaction, BadgeCategory, BadgeTpAccount],
     templateUrl: "./form-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
