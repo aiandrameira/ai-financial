@@ -9,6 +9,13 @@ import { env } from "./env"
 export const auth = betterAuth({
     basePath: "/auth",
     trustedOrigins: env.FRONT_URLS,
+    onAPIError: {
+        // O padrão do better-auth (`${baseURL}/error`) é uma página própria dele que faz um
+        // redirect relativo pra "/" — funciona quando a API serve o front no mesmo domínio, mas
+        // aqui API e front ficam em domínios separados, então esse "/" cai na raiz da API (sem
+        // rota, 404). Aponta direto pro login de verdade, no domínio do front.
+        errorURL: `${env.FRONT_URLS[0]}/auth/login`,
+    },
     database: drizzleAdapter(db, {
         provider: "pg",
         schema: {
