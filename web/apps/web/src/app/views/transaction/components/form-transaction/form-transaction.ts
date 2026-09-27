@@ -1,11 +1,11 @@
 import type { AiMaskConfig } from "@aiandralves/ai-ui";
-import { AiButtonToggle, AiIcon, AiRadio, AiRadioGroup, AiSwitch, AiToastService } from "@aiandralves/ai-ui";
+import { AiButtonToggle, AiIcon, AiSwitch, AiToastService } from "@aiandralves/ai-ui";
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from "@angular/core";
 import { disabled, form, required, submit, validateStandardSchema } from "@angular/forms/signals";
 import { isArrayId } from "@core/helpers";
-import { BadgeCategory, BadgeTpAccount, BadgeTpTransaction, FormImports } from "@core/ui";
+import { BadgeCategory, BadgeTpAccount, FormImports } from "@core/ui";
 import { matchesCategoryType } from "@core/utils";
-import { RECURRENCE_FREQUENCY_ITEMS, TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPES } from "@domain/constants";
+import { RECURRENCE_FREQUENCY_ITEMS, TRANSACTION_ORIGIN_ITEMS, TRANSACTION_TYPE_ITEMS } from "@domain/constants";
 import { tpRecurrenceFrequencyEnum, tpTransactionEnum } from "@domain/enums";
 import { makeRequestTransaction, RequestTransactionDto, requestTransactionSchema, TransactionDto } from "@domain/schemas";
 import { TransactionAdapter } from "@infra/adapters";
@@ -15,7 +15,7 @@ type TransactionOrigin = "account" | "creditCard";
 
 @Component({
     selector: "ai-form-transaction",
-    imports: [FormImports, AiButtonToggle, AiSwitch, AiIcon, AiRadio, AiRadioGroup, BadgeTpTransaction, BadgeCategory, BadgeTpAccount],
+    imports: [FormImports, AiButtonToggle, AiSwitch, AiIcon, BadgeCategory, BadgeTpAccount],
     templateUrl: "./form-transaction.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -23,10 +23,10 @@ export class FormTransaction {
     #toast = inject(AiToastService);
     #facade = inject(TransactionFacade);
 
-    readonly transactionTypes = TRANSACTION_TYPES;
     readonly accounts = this.#facade.accounts;
     readonly creditCards = this.#facade.creditCards;
     readonly originItems = TRANSACTION_ORIGIN_ITEMS;
+    readonly transactionTypeItems = TRANSACTION_TYPE_ITEMS;
 
     readonly enabled = signal<boolean>(false);
     readonly origin = signal<TransactionOrigin>("account");

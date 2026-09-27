@@ -3,6 +3,11 @@ import { tpRecurrenceFrequencyEnum, tpRecurrenceFrequencyMap, tpTransactionEnum,
 
 export const TRANSACTION_TYPES = Object.values(tpTransactionEnum).filter(type => type !== tpTransactionEnum.TRANSFER);
 
+export const TRANSACTION_TYPE_ITEMS: AiButtonToggleItem[] = [
+    { value: tpTransactionEnum.INCOME, label: "Receita", icon: "arrow-right-up" },
+    { value: tpTransactionEnum.EXPENSE, label: "Despesa", icon: "arrow-right-down" },
+];
+
 export const TRANSACTION_ORIGIN_ITEMS: AiButtonToggleItem[] = [
     { value: "account", label: "Conta", icon: "bank" },
     { value: "creditCard", label: "Cartão", icon: "bank-card" },
